@@ -703,7 +703,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 <header class="lecture-header">
   <span class="badge">ISRT • SQL Course • Lecture 1</span>
   <h1>Introduction to Databases and SQL</h1>
-  <p class="subtitle">Start from zero: understand what databases are, how data is organized into related tables, and what SQL is built to do.</p>
+  <p class="subtitle">Understand what databases are, how data is organized into related tables, and what SQL is built to do.</p>
   <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
 </header>
 
@@ -735,8 +735,6 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
       <!-- SLIDE 1 -->
       <div class="slide active" data-slide="1">
         <h2>Welcome to Lecture 1</h2>
-        <p class="slide-subtitle">Before we write a single SQL query, let's build a solid mental model.</p>
-        <p style="margin-bottom: 16px;">Welcome to the SQL course at <strong>ISRT, University of Dhaka</strong>. I'm your instructor, <strong>K.M. Tanvir</strong>, and I'll be walking you through the language of databases over the next several weeks.</p>
         <h3>What you'll learn today</h3>
         <ul class="objectives-list">
           <li>Explain what a database is and why we use them</li>
@@ -746,7 +744,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
           <li>Connect to the ISRT MySQL server and run your very first SQL commands</li>
         </ul>
         <div class="tip-box">
-          <strong>How this module works:</strong> Use the tabs at the top to move between Slides, Quiz, Flashcards, and Exercises. Your progress is saved automatically in your browser — close the page and pick up right where you left off.
+          <strong>How this module works:</strong> Use the tabs at the top to move between Slides, Quiz, Flashcards, and Exercises. Your progress is saved automatically in your browser, close the page and pick up right where you left off.
         </div>
         <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
       </div>
@@ -754,21 +752,21 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
       <!-- SLIDE 2 -->
       <div class="slide" data-slide="2">
         <h2>What is a Database?</h2>
-        <p>A <strong>database</strong> is an organized collection of related data — designed so we can efficiently <em>store</em>, <em>search</em>, and <em>update</em> it.</p>
+        <p>A <strong>database</strong> is an organized collection of related data, designed so we can efficiently <em>store</em>, <em>search</em>, and <em>update</em> it.</p>
 
         <div class="example-box">
-          <strong>Think of a telephone book.</strong> Thousands of names and numbers organized alphabetically so you can quickly look up a contact. A database is the same idea — just electronic, and much more powerful.
+          <strong>Think of a telephone book.</strong> Thousands of names and numbers organized alphabetically so you can quickly look up a contact. A database is the same idea, just electronic, and much more powerful.
         </div>
 
         <h3>Three defining characteristics</h3>
         <ul>
-          <li><strong>Organized</strong> — data is structured, not random (like the alphabetical phone book).</li>
-          <li><strong>Searchable</strong> — you can ask specific questions ("whose number starts with 555?") and get answers fast.</li>
-          <li><strong>Persistent</strong> — data survives restarts, crashes, and years of use.</li>
+          <li><strong>Organized</strong>, data is structured, not random (like the alphabetical phone book).</li>
+          <li><strong>Searchable</strong>, you can ask specific questions ("whose number starts with 555?") and get answers fast.</li>
+          <li><strong>Persistent</strong>, data survives restarts, crashes, and years of use.</li>
         </ul>
 
         <h3>Where do you see them?</h3>
-        <p>Every time you log into a website, check your bank balance, book a ticket, or stream a movie — a database is working behind the scenes.</p>
+        <p>Every time you log into a website, check your bank balance, book a ticket, or stream a movie, a database is working behind the scenes.</p>
 
         <div class="practice" data-q="s2">
           <h4>🧠 Quick Check</h4>
@@ -786,16 +784,16 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
       <!-- SLIDE 3 -->
       <div class="slide" data-slide="3">
         <h2>The Relational Model</h2>
-        <p>In a <strong>relational database</strong>, data is stored in <strong>tables</strong>. Each table holds information about one kind of thing — students, orders, products.</p>
+        <p>In a <strong>relational database</strong>, data is stored in <strong>tables</strong>. Each table holds information about one kind of thing, students, orders, products.</p>
 
         <div class="compare-grid">
           <div class="compare-card">
             <h4>Row (record)</h4>
-            <p style="font-size: 13px;">One entry in the table — for example, one student named "Maya Hassan".</p>
+            <p style="font-size: 13px;">One entry in the table, for example, one student named "Maya Hassan".</p>
           </div>
           <div class="compare-card">
             <h4>Column (field)</h4>
-            <p style="font-size: 13px;">One attribute across all rows — like "email" or "birth_date".</p>
+            <p style="font-size: 13px;">One attribute across all rows, like "email" or "birth_date".</p>
           </div>
         </div>
 
@@ -810,7 +808,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
             <tr><td>103</td><td>Priya Das</td><td>Data Science</td><td>priya@isrt.ac.bd</td></tr>
           </tbody>
         </table>
-        <p>Three rows, four columns. Simple — but the real power comes from <em>connecting</em> tables together. That's what keys are for.</p>
+        <p>Three rows, four columns. Simple, but the real power comes from <em>connecting</em> tables together. That's what keys are for.</p>
       </div>
 
       <!-- SLIDE 4 -->
@@ -831,11 +829,11 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
             <tr><td class="pk">103</td><td>Priya Das</td><td>Data Science</td></tr>
           </tbody>
         </table>
-        <p><code>student_id</code> — because it's guaranteed unique. <code>name</code> won't work (two students might share a name), and <code>major</code> definitely won't work (many students share a major).</p>
+        <p><code>student_id</code>, because it's guaranteed unique. <code>name</code> won't work (two students might share a name), and <code>major</code> definitely won't work (many students share a major).</p>
 
         <div class="practice" data-q="s4">
           <h4>🧠 Quick Check</h4>
-          <p class="practice-q">In a <strong>Book</strong> table with columns <code>isbn</code>, <code>title</code>, <code>author</code>, <code>year</code> — which would you pick as the primary key?</p>
+          <p class="practice-q">In a <strong>Book</strong> table with columns <code>isbn</code>, <code>title</code>, <code>author</code>, <code>year</code>, which would you pick as the primary key?</p>
           <div class="practice-options">
             <button class="practice-btn" data-correct="true">isbn</button>
             <button class="practice-btn" data-correct="false">title</button>
@@ -851,9 +849,9 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
         <h2>Compound Keys and Foreign Keys</h2>
 
         <h3>Compound (composite) key</h3>
-        <p>Sometimes <em>no single column</em> is unique — but a <strong>combination</strong> of columns is.</p>
+        <p>Sometimes <em>no single column</em> is unique, but a <strong>combination</strong> of columns is.</p>
         <div class="example-box">
-          <strong>Enrollment table:</strong> Any one student might appear in many rows (enrolled in many courses). Any one course has many students. But the <em>pair</em> <code>(student_id, course_id)</code> is unique — that's the compound key.
+          <strong>Enrollment table:</strong> Any one student might appear in many rows (enrolled in many courses). Any one course has many students. But the <em>pair</em> <code>(student_id, course_id)</code> is unique, that's the compound key.
         </div>
         <table class="data-table">
           <thead><tr><th>student_id</th><th>course_id</th><th>grade</th></tr></thead>
@@ -897,7 +895,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
         <div class="timeline">
           <div class="timeline-item">
             <span class="year">1970</span>
-            <p><strong>Edgar F. Codd</strong> publishes "A Relational Model of Data for Large Shared Data Banks" at IBM — proposing that data should live in tables you can query with a mathematical language.</p>
+            <p><strong>Edgar F. Codd</strong> publishes "A Relational Model of Data for Large Shared Data Banks" at IBM, proposing that data should live in tables you can query with a mathematical language.</p>
           </div>
           <div class="timeline-item">
             <span class="year">1974</span>
@@ -905,7 +903,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
           </div>
           <div class="timeline-item">
             <span class="year">Late 1970s</span>
-            <p>Renamed to <strong>SQL</strong> (for trademark reasons) — pronounced "S-Q-L" or "sequel".</p>
+            <p>Renamed to <strong>SQL</strong> (for trademark reasons), pronounced "S-Q-L" or "sequel".</p>
           </div>
           <div class="timeline-item">
             <span class="year">1986</span>
@@ -913,7 +911,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
           </div>
           <div class="timeline-item">
             <span class="year">Today</span>
-            <p>MySQL, PostgreSQL, Oracle, SQL Server, SQLite — they all speak dialects of the same SQL.</p>
+            <p>MySQL, PostgreSQL, Oracle, SQL Server, SQLite, they all speak dialects of the same SQL.</p>
           </div>
         </div>
         <div class="tip-box"><strong>Takeaway:</strong> Learn SQL once, and you can work with most databases on Earth.</div>
@@ -921,7 +919,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 
       <!-- SLIDE 7 -->
       <div class="slide" data-slide="7">
-        <h2>Meet MySQL — Our Playground</h2>
+        <h2>MySQL</h2>
         <p><strong>MySQL</strong> is a popular, free, open-source RDBMS (Relational Database Management System). We'll use it throughout the course.</p>
 
         <h3>How you'll practice</h3>
@@ -935,11 +933,10 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
         <div class="compare-grid">
           <div class="compare-card" style="grid-column: span 2;">
             <h4>💻 MySQL Workbench (recommended client)</h4>
-            <p style="font-size: 13.5px;">A free graphical tool from MySQL. It gives you a visual schema designer, query editor, and result viewer — and it connects cleanly to the ISRT server. Install it once and you're set for the whole course.</p>
+            <p style="font-size: 13.5px;">A free graphical tool from MySQL. It gives you a visual schema designer, query editor, and result viewer, and it connects cleanly to the ISRT server. Install it once and you're set for the whole course.</p>
           </div>
         </div>
 
-        <div class="tip-box"><strong>Same server, all semester.</strong> You'll log in to the ISRT MySQL server every class. No separate accounts, no local setup required once Workbench is connected.</div>
       </div>
 
       <!-- SLIDE 8 -->
@@ -949,23 +946,23 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 
         <div class="compare-grid">
           <div class="compare-card">
-            <h4>DDL — Data Definition Language</h4>
+            <h4>DDL, Data Definition Language</h4>
             <p style="font-size: 13px;">Changes the <strong>structure</strong> of the database (tables, columns, constraints).</p>
             <ul style="font-size: 13.5px;">
-              <li><code>CREATE</code> — make a table</li>
-              <li><code>ALTER</code> — change a table</li>
-              <li><code>DROP</code> — remove a table</li>
-              <li><code>TRUNCATE</code> — empty a table</li>
+              <li><code>CREATE</code>, make a table</li>
+              <li><code>ALTER</code>, change a table</li>
+              <li><code>DROP</code>, remove a table</li>
+              <li><code>TRUNCATE</code>, empty a table</li>
             </ul>
           </div>
           <div class="compare-card">
-            <h4>DML — Data Manipulation Language</h4>
+            <h4>DML, Data Manipulation Language</h4>
             <p style="font-size: 13px;">Changes the <strong>data</strong> inside tables (rows).</p>
             <ul style="font-size: 13.5px;">
-              <li><code>SELECT</code> — read rows</li>
-              <li><code>INSERT</code> — add rows</li>
-              <li><code>UPDATE</code> — modify rows</li>
-              <li><code>DELETE</code> — remove rows</li>
+              <li><code>SELECT</code>, read rows</li>
+              <li><code>INSERT</code>, add rows</li>
+              <li><code>UPDATE</code>, modify rows</li>
+              <li><code>DELETE</code>, remove rows</li>
             </ul>
           </div>
         </div>
@@ -1067,7 +1064,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 <span class="sql-kw">ORDER BY</span> salary <span class="sql-kw">DESC</span> <span class="sql-kw">LIMIT</span> <span class="sql-num">5</span>;</code></pre>
 
         <div class="tip-box">
-          <strong>Why comment?</strong> To explain <em>why</em>, not <em>what</em>. The code already says what it does — your comment should explain intent: "we exclude part-time staff here because HR requested it."
+          <strong>Why comment?</strong> To explain <em>why</em>, not <em>what</em>. The code already says what it does, your comment should explain intent: "we exclude part-time staff here because HR requested it."
         </div>
 
         <div class="practice" data-q="s10">
@@ -1085,7 +1082,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 
       <!-- SLIDE 11 -->
       <div class="slide" data-slide="11">
-        <h2>Recap — What We Covered</h2>
+        <h2>Recap, What We Covered</h2>
         <ul>
           <li>A database is <strong>organized, searchable, persistent</strong> data.</li>
           <li>Relational databases store data in <strong>tables</strong> (rows × columns).</li>
@@ -1106,13 +1103,13 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
         <h3>Before next class</h3>
         <ol>
           <li>Take the <strong>Quiz</strong> (tab above) to check your understanding.</li>
-          <li>Review the <strong>Flashcards</strong> — click each one to flip and test yourself on key terms.</li>
-          <li>Try at least 3 of the <strong>Exercises</strong>. They're open-ended — focus on <em>reasoning</em>, not memorizing.</li>
+          <li>Review the <strong>Flashcards</strong>, click each one to flip and test yourself on key terms.</li>
+          <li>Try at least 3 of the <strong>Exercises</strong>. They're open-ended, focus on <em>reasoning</em>, not memorizing.</li>
           <li><strong>Optional:</strong> log into the ISRT MySQL server and try <code>SHOW DATABASES;</code> and <code>SHOW TABLES;</code>.</li>
         </ol>
 
         <div class="example-box">
-          <strong>Next lecture (Lecture 2):</strong> Data Types and Table Design Foundations — we'll pick the right <code>CHAR</code>, <code>VARCHAR</code>, <code>DECIMAL</code>, <code>DATE</code>, etc., for the columns we want to build.
+          <strong>Next lecture (Lecture 2):</strong> Data Types and Table Design Foundations, we'll pick the right <code>CHAR</code>, <code>VARCHAR</code>, <code>DECIMAL</code>, <code>DATE</code>, etc., for the columns we want to build.
         </div>
 
         <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs at the top to keep learning. Your progress is saved. 💾</p>
@@ -1132,7 +1129,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 <section id="quiz" class="tab-content">
   <div class="quiz-intro">
     <h2>📝 Quiz Time</h2>
-    <p>10 questions to test what you learned. Pick an answer for each — you'll see your score at the end.</p>
+    <p>10 questions to test what you learned. Pick an answer for each, you'll see your score at the end.</p>
   </div>
 
   <div id="quizContainer"></div>
@@ -1154,7 +1151,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 <!-- ============ FLASHCARDS TAB ============ -->
 <section id="flashcards" class="tab-content">
   <div class="flashcards-header">
-    <h2>🃏 Key Terms — Flashcards</h2>
+    <h2>🃏 Key Terms, Flashcards</h2>
     <p>Click any card to flip it and see the definition. Great for quick review.</p>
   </div>
   <div class="flashcards-grid" id="flashcardsGrid"></div>
@@ -1163,8 +1160,8 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 <!-- ============ EXERCISES TAB ============ -->
 <section id="exercises" class="tab-content">
   <div class="exercises-header">
-    <h2>💪 Real-World Exercises</h2>
-    <p>These don't have a single "right" answer — think them through, write your reasoning in each box, and compare with the suggested approach.</p>
+    <h2>Exercises</h2>
+    <p>These don't have a single "right" answer, think them through, write your reasoning in each box, and compare with the suggested approach.</p>
   </div>
   <div id="exercisesContainer"></div>
 </section>
@@ -1176,7 +1173,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 
 <script>
 /* ================================================================
-   LECTURE 1 — INTRODUCTION TO DATABASES AND SQL
+   LECTURE 1, INTRODUCTION TO DATABASES AND SQL
    ================================================================ */
 
 const STORAGE_KEY = 'lecture1-progress-v2';
@@ -1278,7 +1275,7 @@ document.querySelectorAll('.practice').forEach(p => {
       feedback.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
       feedback.textContent = correct
         ? '✓ Correct!'
-        : '✗ Not quite — the correct answer is highlighted in green.';
+        : '✗ Not quite, the correct answer is highlighted in green.';
       p.dataset.answered = 'true';
       state.practiceAnswers[qid] = correct;
       saveState();
@@ -1319,7 +1316,7 @@ const quizData = [
     q: "Who developed the relational model that led to SQL?",
     options: ["Bill Gates", "Edgar F. Codd", "Linus Torvalds", "Larry Ellison"],
     answer: 1,
-    explain: "Codd published his paper on the relational model at IBM in 1970 — the foundation of every SQL database today."
+    explain: "Codd published his paper on the relational model at IBM in 1970, the foundation of every SQL database today."
   },
   {
     q: "What does SQL stand for?",
@@ -1342,7 +1339,7 @@ const quizData = [
       "Stores encrypted data"
     ],
     answer: 1,
-    explain: "That's how tables are linked — a foreign key points to a primary key elsewhere."
+    explain: "That's how tables are linked, a foreign key points to a primary key elsewhere."
   },
   {
     q: "A compound primary key is made up of:",
@@ -1461,11 +1458,11 @@ function revealQuizResults() {
   } else if (pct >= 0.6) {
     verdict.className = 'verdict good';
     verdict.textContent = '👍 Good work';
-    msg.textContent = "Solid — review the wrong ones and try again if you'd like.";
+    msg.textContent = "Solid, review the wrong ones and try again if you'd like.";
   } else {
     verdict.className = 'verdict ok';
     verdict.textContent = 'Keep going 💪';
-    msg.textContent = "No worries — review the slides and flashcards, then retake.";
+    msg.textContent = "No worries, review the slides and flashcards, then retake.";
   }
   document.getElementById('quizResult').classList.add('show');
   document.getElementById('submitQuiz').disabled = true;
@@ -1490,21 +1487,21 @@ document.getElementById('retakeQuiz').addEventListener('click', () => {
 /* ============ FLASHCARDS ============ */
 const flashcards = [
   { term: "Database", def: "An organized, searchable, persistent collection of related data." },
-  { term: "RDBMS", def: "Relational Database Management System — software that manages relational databases (MySQL, PostgreSQL, Oracle, etc.)." },
+  { term: "RDBMS", def: "Relational Database Management System, software that manages relational databases (MySQL, PostgreSQL, Oracle, etc.)." },
   { term: "Table", def: "A collection of rows and columns representing one entity type (e.g., Students, Orders)." },
-  { term: "Row / Record", def: "A single entry in a table — one instance of the entity." },
+  { term: "Row / Record", def: "A single entry in a table, one instance of the entity." },
   { term: "Column / Field", def: "A single attribute across all rows (like 'email' or 'birth_date')." },
   { term: "Primary Key", def: "A column (or set) whose values uniquely identify every row in a table. Cannot be NULL or duplicated." },
   { term: "Compound Key", def: "A primary key made up of two or more columns that together are unique." },
-  { term: "Foreign Key", def: "A column whose value references the primary key of another table — creating a relationship." },
-  { term: "SQL", def: "Structured Query Language — the standard language for querying and modifying relational databases." },
+  { term: "Foreign Key", def: "A column whose value references the primary key of another table, creating a relationship." },
+  { term: "SQL", def: "Structured Query Language, the standard language for querying and modifying relational databases." },
   { term: "MySQL", def: "A popular open-source relational database management system." },
-  { term: "Edgar F. Codd", def: "IBM researcher who invented the relational model in 1970 — the foundation of every SQL database." },
-  { term: "DDL", def: "Data Definition Language — CREATE, ALTER, DROP, TRUNCATE. Changes the STRUCTURE of the database." },
-  { term: "DML", def: "Data Manipulation Language — SELECT, INSERT, UPDATE, DELETE. Changes the DATA in tables." },
+  { term: "Edgar F. Codd", def: "IBM researcher who invented the relational model in 1970, the foundation of every SQL database." },
+  { term: "DDL", def: "Data Definition Language, CREATE, ALTER, DROP, TRUNCATE. Changes the STRUCTURE of the database." },
+  { term: "DML", def: "Data Manipulation Language, SELECT, INSERT, UPDATE, DELETE. Changes the DATA in tables." },
   { term: "SHOW DATABASES;", def: "MySQL command that lists every database on the server." },
   { term: "USE databaseName;", def: "MySQL command that selects a database as the current working database." },
-  { term: "Schema", def: "The structural definition of a database — what tables exist, what columns they have, and which keys they use." },
+  { term: "Schema", def: "The structural definition of a database, what tables exist, what columns they have, and which keys they use." },
   { term: "Semicolon ;", def: "Ends every SQL statement. Tells the database where one command stops and the next begins." },
   { term: "-- (double dash)", def: "SQL single-line comment. Everything after -- on that line is ignored by the database." }
 ];
@@ -1539,60 +1536,53 @@ function restoreFlashcards() {
 /* ============ EXERCISES ============ */
 const exercises = [
   {
-    title: "1. Describe a database in your own words",
-    diff: "easy",
-    prompt: "In 2–3 sentences, explain what a database is to a non-technical friend. Use the telephone book analogy if it helps. Avoid jargon.",
-    hint: "Focus on: organized, searchable, persistent.",
-    approach: "A database is like a giant, very fast electronic notebook. It keeps related information organized (like names and phone numbers grouped together), lets you search through it quickly, and remembers everything even when the computer is turned off."
-  },
-  {
-    title: "2. Identify the primary key",
+    title: "1. Identify the primary key",
     diff: "easy",
     prompt: "For each of these tables, pick the best primary key and say why: <br>(a) <strong>Employee</strong>(employee_id, name, department, salary) <br>(b) <strong>Country</strong>(code, name, continent, population) <br>(c) <strong>Car</strong>(vin, model, year, owner_name)",
     hint: "Which column is guaranteed unique and will never be NULL?",
-    approach: "(a) <code>employee_id</code> — unique per person; names and departments repeat. (b) <code>code</code> (e.g., 'BD', 'US') — unique per country and short; names are also unique but longer. (c) <code>vin</code> (Vehicle Identification Number) — globally unique by design."
+    approach: "(a) <code>employee_id</code>, unique per person; names and departments repeat. (b) <code>code</code> (e.g., 'BD', 'US'), unique per country and short; names are also unique but longer. (c) <code>vin</code> (Vehicle Identification Number), globally unique by design."
   },
   {
-    title: "3. Spot compound and foreign keys",
+    title: "2. Spot compound and foreign keys",
     diff: "easy",
     prompt: "Three tables: <strong>Student</strong>(student_id, name), <strong>Course</strong>(course_id, title), <strong>Enrollment</strong>(student_id, course_id, grade). (a) What is the primary key of Enrollment? Why? (b) Which columns in Enrollment are foreign keys, and which tables do they reference?",
     hint: "In Enrollment, can student_id alone identify a row? Can course_id alone?",
-    approach: "(a) The compound key <code>(student_id, course_id)</code> — neither column alone is unique, but the pair is. (b) <code>student_id</code> is an FK referencing Student.student_id; <code>course_id</code> is an FK referencing Course.course_id. Both are also part of the PK — perfectly normal."
+    approach: "(a) The compound key <code>(student_id, course_id)</code>, neither column alone is unique, but the pair is. (b) <code>student_id</code> is an FK referencing Student.student_id; <code>course_id</code> is an FK referencing Course.course_id. Both are also part of the PK, perfectly normal."
   },
   {
-    title: "4. DDL or DML?",
+    title: "3. DDL or DML?",
     diff: "easy",
     prompt: "Classify each as DDL or DML and justify briefly: <code>CREATE TABLE orders...</code>, <code>SELECT * FROM orders</code>, <code>DROP TABLE orders</code>, <code>DELETE FROM orders WHERE id = 1</code>, <code>ALTER TABLE orders ADD ...</code>, <code>UPDATE orders SET ...</code>, <code>INSERT INTO orders ...</code>.",
     hint: "DDL changes STRUCTURE; DML changes DATA.",
     approach: "DDL: CREATE, DROP, ALTER (all change the table's structure). DML: SELECT, DELETE, UPDATE, INSERT (all operate on rows of data, not on the table itself)."
   },
   {
-    title: "5. Write your first SQL commands (in words)",
+    title: "4. Write your first SQL commands (in words)",
     diff: "med",
     prompt: "Describe what you'd type to: (a) see all databases on the server, (b) select the <code>sakila</code> database, (c) list all tables in it, (d) see the structure of the <code>film</code> table.",
     hint: "Four commands from slide 9, each ending with ;",
     approach: "(a) <code>SHOW DATABASES;</code> (b) <code>USE sakila;</code> (c) <code>SHOW TABLES;</code> (d) <code>DESCRIBE film;</code>"
   },
   {
-    title: "6. Why keys matter",
+    title: "5. Why keys matter",
     diff: "med",
-    prompt: "Imagine a student table with no primary key and no unique IDs — just name, major, email. List three things that go wrong in daily use.",
+    prompt: "Imagine a student table with no primary key and no unique IDs, just name, major, email. List three things that go wrong in daily use.",
     hint: "Think: two students named 'Maya Hassan', updating a grade, linking from another table.",
-    approach: "(1) Two students named 'Maya Hassan' would be indistinguishable — you can't tell whose grade to update. (2) If anyone changes their name, all history linking to that name breaks. (3) Another table (like Enrollment) can't reliably refer to a specific student — no unique handle to point to. Primary keys solve all three."
+    approach: "(1) Two students named 'Maya Hassan' would be indistinguishable, you can't tell whose grade to update. (2) If anyone changes their name, all history linking to that name breaks. (3) Another table (like Enrollment) can't reliably refer to a specific student, no unique handle to point to. Primary keys solve all three."
   },
   {
-    title: "7. Draw a simple schema",
+    title: "6. Draw a simple schema",
     diff: "med",
     prompt: "Design a tiny schema for a library: <strong>Member</strong>, <strong>Book</strong>, <strong>Loan</strong> (which member borrowed which book, and when). List the columns, mark PKs, and mark FKs.",
     hint: "One loan involves one member and one book. How does Loan know which?",
     approach: "Member(<strong>member_id PK</strong>, name, email). Book(<strong>book_id PK</strong>, title, author). Loan(<strong>loan_id PK</strong>, <em>member_id FK→Member</em>, <em>book_id FK→Book</em>, loan_date, return_date). You could alternatively use a compound PK <code>(member_id, book_id, loan_date)</code> if loan_id feels redundant."
   },
   {
-    title: "8. Case-insensitive SQL — but style matters",
+    title: "7. Case-insensitive SQL, but style matters",
     diff: "med",
     prompt: "Both <code>SELECT * FROM student;</code> and <code>select * from student;</code> work. Why do most teams write keywords in UPPERCASE? Give at least two reasons.",
     hint: "Think about reading someone else's query.",
-    approach: "(1) Readability — UPPERCASE keywords visually separate SQL syntax from your table/column names. You can scan a query and immediately see 'SELECT', 'FROM', 'WHERE'. (2) Consistency with documentation and official SQL references. (3) Some teams use ALL_CAPS for keywords, snake_case for columns, and PascalCase for table names — a consistent style makes large codebases manageable."
+    approach: "(1) Readability, UPPERCASE keywords visually separate SQL syntax from your table/column names. You can scan a query and immediately see 'SELECT', 'FROM', 'WHERE'. (2) Consistency with documentation and official SQL references. (3) Some teams use ALL_CAPS for keywords, snake_case for columns, and PascalCase for table names, a consistent style makes large codebases manageable."
   }
 ];
 

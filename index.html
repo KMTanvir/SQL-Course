@@ -422,7 +422,7 @@ body {
   <div class="lecture-grid">
 
     <!-- Class 1: Introduction (no content) -->
-    <div class="lecture-card intro" data-type="intro">
+    <div class="lecture-card intro" data-type="intro" data-released="true">
       <div class="card-head">
         <span class="lecture-num">Class 1 · Intro</span>
         <span class="status-badge badge-completed">Completed</span>
@@ -444,6 +444,7 @@ body {
     <div class="lecture-card"
          data-type="lecture"
          data-url="Lecture 1 - Introduction to Databases and SQL/index.html"
+         data-released="true"
          data-num="L1">
       <div class="card-head">
         <span class="lecture-num">Class 2 · Lecture 1</span>
@@ -837,24 +838,46 @@ function markLocked(card, badge) {
 }
 
 async function init() {
-  const cards = document.querySelectorAll('.lecture-card[data-url]');
-  const totalCards = document.querySelectorAll('.lecture-card').length; // 15
+  const allCards = document.querySelectorAll('.lecture-card');
+  const totalCards = allCards.length; // 15
 
-  const results = await Promise.all(Array.from(cards).map(checkCard));
-  const available = results.filter(r => r.available).length;
-  const upcoming = totalCards - available - 1; // minus the intro (counted as done)
+  // Source of truth for the counters: cards explicitly marked data-released="true".
+  // To release a new class, add data-released="true" to its card.
+  const releasedCards = document.querySelectorAll('.lecture-card[data-released="true"]');
+  const available = releasedCards.length;
+  const upcoming = totalCards - available;
 
-  // Counters
   document.getElementById('count-available').textContent = available;
   document.getElementById('count-upcoming').textContent = Math.max(0, upcoming);
   document.getElementById('count-total').textContent = totalCards;
 
-  // Progress bar: count intro (Class 1) as done + released cards
-  const done = available + 1; // +1 for the completed intro class
-  const pct = Math.round((done / totalCards) * 100);
+  const pct = Math.round((available / totalCards) * 100);
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('progress-label').textContent =
-    done + ' of ' + totalCards + ' classes released (' + pct + '%)';
+    available + ' of ' + totalCards + ' classes released (' + pct + '%)';
+
+  // Update individual lecture badges from "Checking..." to Available / Coming soon
+  // based on the released flag, and try to verify the link still loads.
+  const probeCards = document.querySelectorAll('.lecture-card[data-url]');
+  await Promise.all(Array.from(probeCards).map(card => {
+    const badge = card.querySelector('.status-badge');
+    if (card.getAttribute('data-released') === 'true') {
+      return checkCard(card).then(r => {
+        if (!r.available) {
+          // Even if fetch failed (e.g., file://), trust the released flag
+          card.classList.add('available');
+          badge.className = 'status-badge badge-available';
+          badge.textContent = 'Available';
+          card.addEventListener('click', () => {
+            window.location.href = card.getAttribute('data-url');
+          });
+        }
+      });
+    } else {
+      markLocked(card, badge);
+      return Promise.resolve();
+    }
+  }));
 }
 
 document.addEventListener('DOMContentLoaded', init);
