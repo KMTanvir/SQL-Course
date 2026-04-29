@@ -444,7 +444,6 @@ body {
     <div class="lecture-card"
          data-type="lecture"
          data-url="Lecture 1 - Introduction to Databases and SQL/index.html"
-         data-released="true"
          data-num="L1">
       <div class="card-head">
         <span class="lecture-num">Class 2 · Lecture 1</span>
@@ -474,7 +473,7 @@ body {
         <span class="status-badge badge-checking">Checking…</span>
       </div>
       <h3 class="lecture-title">Data Types and Table Design Foundations</h3>
-      <p class="lecture-desc">Choosing the right types for your columns — strings, numbers, dates — and thinking about keys, nullability, and the first principles of good table design.</p>
+      <p class="lecture-desc">Choosing the right types for your columns, strings, numbers, dates, and thinking about keys, nullability, and the first principles of good table design.</p>
       <div class="lecture-tags">
         <span class="tag">Data Types</span>
         <span class="tag">CHAR / VARCHAR</span>
@@ -497,7 +496,7 @@ body {
         <span class="status-badge badge-checking">Checking…</span>
       </div>
       <h3 class="lecture-title">Creating Tables and Constraints</h3>
-      <p class="lecture-desc">CREATE TABLE in practice — primary keys, foreign keys, compound keys, NOT NULL, UNIQUE, and the constraints that keep your data honest.</p>
+      <p class="lecture-desc">CREATE TABLE in practice, primary keys, foreign keys, compound keys, NOT NULL, UNIQUE, and the constraints that keep your data honest.</p>
       <div class="lecture-tags">
         <span class="tag">CREATE TABLE</span>
         <span class="tag">Primary Key</span>
@@ -793,43 +792,50 @@ body {
 
 <script>
 // ===== AUTO-DETECT WHICH LECTURES / EXERCISES ARE AVAILABLE =====
-// Each card with a data-url is probed via fetch HEAD. If the file exists
-// (response.ok), the card becomes "available" and clickable. Otherwise it
-// stays "locked". The intro card (Class 1) has no data-url — it's marked
-// "Completed" because the class happened in person without digital content.
+// Pure file-presence detection. A lecture card becomes "Available" only if its
+// data-url file actually responds OK from the server (i.e., it has been pushed
+// to GitHub). To release a class, just commit and push its folder, no edits to
+// this file required. To unrelease, remove the folder from the deploy.
+//
+// The intro card (Class 1) has no data-url and is always counted as completed
+// because the class happened in person.
+//
+// Optional override: add data-force-locked="true" to any card to keep it locked
+// even when the file is present (useful for previewing locally with all files
+// available, but only releasing some publicly).
 
-async function checkCard(card) {
-  const url = card.getAttribute('data-url');
-  if (!url) return { available: false, card };
-
-  const badge = card.querySelector('.status-badge');
-
+async function fileExists(url) {
+  // Cache-bust so newly uploaded files appear immediately on refresh
+  const bust = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
   try {
-    // Try HEAD first — lighter on the network
-    let res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-    // Some static hosts (including GitHub Pages) don't handle HEAD well,
-    // so fall back to GET if HEAD didn't respond OK.
-    if (!res.ok) {
-      res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    // HEAD is lighter; fall back to GET if HEAD isn't supported
+    let res = await fetch(bust, { method: 'HEAD', cache: 'no-store' });
+    if (!res.ok && res.status !== 405) {
+      res = await fetch(bust, { method: 'GET', cache: 'no-store' });
+    } else if (res.status === 405) {
+      // Some hosts return 405 (Method Not Allowed) on HEAD; retry with GET
+      res = await fetch(bust, { method: 'GET', cache: 'no-store' });
     }
-
-    if (res.ok) {
-      card.classList.add('available');
-      badge.className = 'status-badge badge-available';
-      badge.textContent = 'Available';
-      card.addEventListener('click', () => { window.location.href = url; });
-      return { available: true, card };
-    } else {
-      markLocked(card, badge);
-      return { available: false, card };
-    }
-  } catch (err) {
-    markLocked(card, badge);
-    return { available: false, card };
+    return res.ok;
+  } catch (e) {
+    return false;
   }
 }
 
-function markLocked(card, badge) {
+function markAvailable(card, url) {
+  const badge = card.querySelector('.status-badge');
+  card.classList.remove('locked');
+  card.classList.add('available');
+  badge.className = 'status-badge badge-available';
+  badge.textContent = 'Available';
+  const action = card.querySelector('.action');
+  if (action) action.textContent = 'Open lecture →';
+  card.addEventListener('click', () => { window.location.href = url; });
+}
+
+function markLocked(card) {
+  const badge = card.querySelector('.status-badge');
+  card.classList.remove('available');
   card.classList.add('locked');
   badge.className = 'status-badge badge-locked';
   badge.textContent = 'Coming soon';
@@ -837,47 +843,46 @@ function markLocked(card, badge) {
   if (action) action.textContent = 'Not yet released';
 }
 
+async function probeCard(card) {
+  if (card.getAttribute('data-force-locked') === 'true') {
+    markLocked(card);
+    return false;
+  }
+  const url = card.getAttribute('data-url');
+  if (!url) return false;
+  const ok = await fileExists(url);
+  if (ok) {
+    markAvailable(card, url);
+    return true;
+  }
+  markLocked(card);
+  return false;
+}
+
+function updateCounters(availableCount, totalCount) {
+  const upcoming = Math.max(0, totalCount - availableCount);
+  document.getElementById('count-available').textContent = availableCount;
+  document.getElementById('count-upcoming').textContent = upcoming;
+  document.getElementById('count-total').textContent = totalCount;
+  const pct = totalCount > 0 ? Math.round((availableCount / totalCount) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    availableCount + ' of ' + totalCount + ' classes released (' + pct + '%)';
+}
+
 async function init() {
   const allCards = document.querySelectorAll('.lecture-card');
   const totalCards = allCards.length; // 15
 
-  // Source of truth for the counters: cards explicitly marked data-released="true".
-  // To release a new class, add data-released="true" to its card.
-  const releasedCards = document.querySelectorAll('.lecture-card[data-released="true"]');
-  const available = releasedCards.length;
-  const upcoming = totalCards - available;
+  // Class 1 (intro) has no data-url; it happened in person, count it as available.
+  const introCount = document.querySelectorAll('.lecture-card[data-type="intro"]').length;
 
-  document.getElementById('count-available').textContent = available;
-  document.getElementById('count-upcoming').textContent = Math.max(0, upcoming);
-  document.getElementById('count-total').textContent = totalCards;
-
-  const pct = Math.round((available / totalCards) * 100);
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent =
-    available + ' of ' + totalCards + ' classes released (' + pct + '%)';
-
-  // Update individual lecture badges from "Checking..." to Available / Coming soon
-  // based on the released flag, and try to verify the link still loads.
+  // Probe every card with a data-url; counters update once all probes settle.
   const probeCards = document.querySelectorAll('.lecture-card[data-url]');
-  await Promise.all(Array.from(probeCards).map(card => {
-    const badge = card.querySelector('.status-badge');
-    if (card.getAttribute('data-released') === 'true') {
-      return checkCard(card).then(r => {
-        if (!r.available) {
-          // Even if fetch failed (e.g., file://), trust the released flag
-          card.classList.add('available');
-          badge.className = 'status-badge badge-available';
-          badge.textContent = 'Available';
-          card.addEventListener('click', () => {
-            window.location.href = card.getAttribute('data-url');
-          });
-        }
-      });
-    } else {
-      markLocked(card, badge);
-      return Promise.resolve();
-    }
-  }));
+  const results = await Promise.all(Array.from(probeCards).map(probeCard));
+  const probedAvailable = results.filter(Boolean).length;
+
+  updateCounters(introCount + probedAvailable, totalCards);
 }
 
 document.addEventListener('DOMContentLoaded', init);
