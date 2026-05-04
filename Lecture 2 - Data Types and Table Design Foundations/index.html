@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 2: Data Types and Table Design Foundations</title>
+<style>
+/* ============ BASE ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #dbeafe;
+  --accent: #4f46e5;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* ============ HEADER ============ */
+header.lecture-header {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: white;
+  padding: 32px 28px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+header.lecture-header::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+header.lecture-header::after {
+  content: "";
+  position: absolute;
+  bottom: -30px; right: 80px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+header.lecture-header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  position: relative; z-index: 1;
+}
+header.lecture-header h1 {
+  font-size: 28px;
+  margin: 12px 0 8px;
+  font-weight: 700;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.subtitle {
+  font-size: 15px;
+  opacity: 0.92;
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+/* ============ STATS ============ */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  background: white; padding: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1; min-width: 110px;
+  padding: 11px 16px;
+  background: transparent; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active {
+  background: var(--primary); color: white;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.28);
+}
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ CARD ============ */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+
+/* ============ SLIDES ============ */
+.progress-bar {
+  width: 100%; height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.slide-counter {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+.slide {
+  display: none;
+  min-height: 420px;
+  padding: 4px;
+  animation: slideIn 0.3s ease;
+}
+.slide.active { display: block; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide h2 {
+  font-size: 26px;
+  margin-bottom: 6px;
+  color: var(--primary-dark);
+  font-weight: 700;
+  line-height: 1.25;
+}
+.slide h3 { font-size: 18px; margin: 22px 0 10px; color: var(--text); font-weight: 600; }
+.slide p { margin-bottom: 12px; color: #334155; }
+.slide ul, .slide ol { margin: 0 0 14px 22px; }
+.slide li { margin-bottom: 6px; color: #334155; }
+.slide .slide-subtitle { color: var(--muted); font-size: 15px; margin-bottom: 18px; font-style: italic; }
+
+/* ============ CONTENT BOXES ============ */
+.example-box {
+  background: var(--primary-light);
+  border-left: 4px solid var(--primary);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.example-box strong { color: var(--primary-dark); }
+.tip-box {
+  background: var(--success-light);
+  border-left: 4px solid var(--success);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.tip-box strong { color: var(--success); }
+.warn-box {
+  background: var(--warning-light);
+  border-left: 4px solid var(--warning);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.warn-box strong { color: var(--warning); }
+
+/* ============ CODE ============ */
+code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: #be185d;
+}
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 12px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #7dd3fc; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #f9a8d4; }
+.sql-type { color: #fcd34d; font-weight: 600; }
+
+/* ============ DATA TABLES ============ */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+table.data-table th {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+table.data-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  background: white;
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #f8fafc; }
+table.data-table tr:hover td { background: var(--primary-light); }
+table.data-table .pk { background: #fef3c7 !important; font-weight: 600; }
+table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: var(--accent); }
+
+/* ============ SLIDE NAV ============ */
+.slide-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.28);
+}
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.key-hint { font-size: 12px; color: var(--muted); }
+
+/* ============ INTERACTIVE PRACTICE ============ */
+.practice {
+  background: #f1f5f9;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  margin: 18px 0;
+}
+.practice h4 {
+  color: var(--primary);
+  margin-bottom: 10px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.practice-q { margin-bottom: 10px; color: var(--text); font-weight: 500; }
+.practice-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.practice-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: all var(--transition);
+  color: var(--text);
+}
+.practice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.practice-btn.correct { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+.practice-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.practice-btn.disabled { pointer-events: none; opacity: 0.75; }
+.practice-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 14px; display: none; animation: fadeIn 0.2s; }
+.practice-feedback.show { display: block; }
+.practice-feedback.right { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+.practice-feedback.wrong { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+/* ============ QUIZ ============ */
+.quiz-intro {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+
+.quiz-question {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option {
+  padding: 11px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  transition: all var(--transition);
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  font-family: inherit;
+}
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  font-size: 13px;
+  color: #334155;
+}
+.quiz-explain.show { display: block; }
+.quiz-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result {
+  display: none;
+  padding: 30px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-top: 16px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.4s ease;
+}
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: var(--warning-light); color: var(--warning); }
+
+/* ============ FLASHCARDS ============ */
+.flashcards-header {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.flashcards-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.flashcards-header p { color: var(--muted); font-size: 14px; }
+.flashcards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.flashcard { perspective: 1000px; height: 180px; cursor: pointer; }
+.flashcard-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  transition: transform 0.55s;
+  transform-style: preserve-3d;
+}
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back {
+  position: absolute; inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.flashcard-front {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+  font-size: 17px;
+}
+.flashcard-front .hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 8px; font-style: italic; }
+.flashcard-back {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: white;
+  transform: rotateY(180deg);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ============ EXERCISES ============ */
+.exercises-header {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.exercise {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+}
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--warning-light); color: var(--warning); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #f8fafc;
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+}
+.exercise-hint { background: var(--warning-light); border-left: 3px solid var(--warning); color: #78350f; }
+.exercise-approach { background: #eff6ff; border-left: 3px solid var(--primary); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* ============ OBJECTIVES ============ */
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li {
+  padding: 8px 0 8px 30px;
+  position: relative;
+  color: #334155;
+}
+.objectives-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0; top: 10px;
+  color: var(--success);
+  font-weight: bold;
+  background: var(--success-light);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* ============ COMPARE ============ */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.compare-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+.compare-card h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; font-weight: 600; }
+.compare-card ul { margin: 0 0 0 18px; }
+
+/* ============ TYPE GRID ============ */
+.type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 14px 0; }
+.type-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  border-left: 4px solid var(--primary);
+}
+.type-card .type-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+.type-card .type-desc { font-size: 13px; color: #334155; margin-top: 4px; }
+.type-card .type-eg { font-size: 12px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+/* ============ KEYBOARD HINT ============ */
+.kbd {
+  display: inline-block;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+
+/* ============ RESET ============ */
+.reset-btn {
+  position: fixed;
+  bottom: 18px; right: 18px;
+  background: white;
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-family: inherit;
+  transition: all var(--transition);
+  z-index: 100;
+}
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  .compare-grid { grid-template-columns: 1fr; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .slide h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Lecture 2</span>
+  <h1>Data Types and Table Design Foundations</h1>
+  <p class="subtitle">Brainstorm the columns you need, then choose the right data type for each one, strings, numbers, dates, and the meaning of NULL.</p>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="progStat">0%</div><div class="stat-label">Slides Viewed</div></div>
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Quiz Score</div></div>
+  <div class="stat"><div class="stat-value" id="flipStat">0</div><div class="stat-label">Cards Flipped</div></div>
+  <div class="stat"><div class="stat-value" id="exStat">0</div><div class="stat-label">Exercises Worked</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="slides">📖 Slides</button>
+  <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+  <button class="tab-btn" data-tab="flashcards">🃏 Flashcards</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+</nav>
+
+<main>
+
+<!-- ============ SLIDES TAB ============ -->
+<section id="slides" class="tab-content active">
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  <div class="slide-counter" id="slideCounter">Slide 1 of 10</div>
+  <div class="card">
+    <div id="slidesContainer">
+
+      <!-- SLIDE 1 -->
+      <div class="slide active" data-slide="1">
+        <h2>Welcome to Lecture 2</h2>
+        <h3>What you'll learn today</h3>
+        <ul class="objectives-list">
+          <li>Brainstorm the columns of a table <em>before</em> writing any SQL</li>
+          <li>Pick the right <strong>character</strong> type, <code>CHAR</code> vs <code>VARCHAR</code> vs <code>TEXT</code></li>
+          <li>Pick the right <strong>numeric</strong> type, <code>INT</code> family vs <code>DECIMAL</code> vs <code>FLOAT</code>/<code>DOUBLE</code></li>
+          <li>Use <strong>temporal</strong> types correctly, <code>DATE</code>, <code>DATETIME</code>, <code>TIMESTAMP</code>, <code>YEAR</code>, <code>TIME</code></li>
+          <li>Understand what <strong>NULL</strong> really means and how it differs from zero or an empty string</li>
+          <li>Write your <strong>first <code>CREATE TABLE</code></strong> and learn the handful of commands you need to inspect, fill, and tidy a table on your own</li>
+        </ul>
+        <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="slide" data-slide="2">
+        <h2>Designing a Table, Start with Brainstorming</h2>
+        <p>Before writing <code>CREATE TABLE</code>, ask yourself a simple question: <strong>what do I need to store about this thing?</strong></p>
+
+        <div class="example-box">
+          <strong>Scenario:</strong> We want a table to track <em>students</em>. List every fact we'd like to remember about each student. No SQL yet, just bullet points.
+        </div>
+
+        <h3>First brainstorm pass</h3>
+        <ul>
+          <li>name</li>
+          <li>email</li>
+          <li>phone</li>
+          <li>major</li>
+          <li>date of birth</li>
+          <li>year of admission</li>
+          <li>address</li>
+        </ul>
+        <p>Then we ask the second question: <strong>what kind of value is each one?</strong> Is it text? Is it a number? A date? Could it be missing? The answer to those questions becomes our column types.</p>
+
+        <div class="practice" data-q="s2">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">You're designing a table for <strong>library books</strong>. Which of these is the <em>least useful</em> first step?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">List the facts you want to remember about each book</button>
+            <button class="practice-btn" data-correct="true">Decide every column should be VARCHAR(255)</button>
+            <button class="practice-btn" data-correct="false">Decide which column uniquely identifies a book</button>
+            <button class="practice-btn" data-correct="false">Mark which columns should never be missing</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide" data-slide="3">
+        <h2>Character Types: CHAR vs VARCHAR</h2>
+        <p>Both store text. The difference is in how MySQL stores them.</p>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <h4>CHAR(n), fixed length</h4>
+            <p style="font-size: 13.5px;">Always stores exactly <code>n</code> characters. Shorter values are padded with spaces.</p>
+            <ul style="font-size: 13.5px;">
+              <li>Fast for fixed-width data</li>
+              <li>Wastes space when values are short</li>
+              <li>Good for: country codes (<code>BD</code>), gender flags (<code>M</code>, <code>F</code>), fixed IDs</li>
+            </ul>
+          </div>
+          <div class="compare-card">
+            <h4>VARCHAR(n), variable length</h4>
+            <p style="font-size: 13.5px;">Stores up to <code>n</code> characters, only as much space as the value actually needs.</p>
+            <ul style="font-size: 13.5px;">
+              <li>Saves space for varying lengths</li>
+              <li>Tiny per-row overhead to track length</li>
+              <li>Good for: names, emails, titles, addresses</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Quick comparison</h3>
+        <table class="data-table">
+          <thead><tr><th>Stored value</th><th>CHAR(10)</th><th>VARCHAR(10)</th></tr></thead>
+          <tbody>
+            <tr><td><code>'BD'</code></td><td><code>'BD········'</code> (10 chars)</td><td><code>'BD'</code> (2 chars + 1 length byte)</td></tr>
+            <tr><td><code>'Maya'</code></td><td><code>'Maya······'</code> (10 chars)</td><td><code>'Maya'</code> (4 chars + 1)</td></tr>
+            <tr><td><code>'1234567890'</code></td><td><code>'1234567890'</code> (10 chars)</td><td><code>'1234567890'</code> (10 + 1)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>TEXT, when VARCHAR isn't enough</h3>
+        <p><code>VARCHAR</code> has a maximum (65,535 bytes per row, shared across all VARCHARs). For long content like blog posts or product descriptions, use <code>TEXT</code>.</p>
+
+        <div class="practice" data-q="s3">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">A column for a 2-letter country code (always exactly 2 characters) is best as:</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="true">CHAR(2)</button>
+            <button class="practice-btn" data-correct="false">VARCHAR(2)</button>
+            <button class="practice-btn" data-correct="false">TEXT</button>
+            <button class="practice-btn" data-correct="false">INT</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div class="slide" data-slide="4">
+        <h2>Numeric Types</h2>
+        <p>Numbers come in three flavors: integers, exact decimals, and approximate floating-point.</p>
+
+        <h3>Integers (whole numbers)</h3>
+        <div class="type-grid">
+          <div class="type-card">
+            <div class="type-name">TINYINT</div>
+            <div class="type-desc">Range -128 to 127 (or 0 to 255 unsigned)</div>
+            <div class="type-eg">Use for: small flags, age, ratings (1-5)</div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">SMALLINT</div>
+            <div class="type-desc">Range about ±32,000</div>
+            <div class="type-eg">Use for: year offsets, small counts</div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">INT</div>
+            <div class="type-desc">Range about ±2.1 billion</div>
+            <div class="type-eg">Use for: most IDs, counts, quantities</div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">BIGINT</div>
+            <div class="type-desc">Range about ±9.2 quintillion</div>
+            <div class="type-eg">Use for: huge IDs, big counters</div>
+          </div>
+        </div>
+
+        <h3>Exact decimal: DECIMAL(p, s)</h3>
+        <p><code>DECIMAL(p, s)</code> stores numbers <em>exactly</em>, where <code>p</code> = total digits and <code>s</code> = digits after the decimal point.</p>
+<pre><code><span class="sql-cm">-- price stores numbers like 12345.67</span>
+<span class="sql-kw">DECIMAL</span>(<span class="sql-num">7</span>, <span class="sql-num">2</span>)   <span class="sql-cm">-- 5 digits before, 2 after</span></code></pre>
+
+        <h3>Floating point: FLOAT and DOUBLE</h3>
+        <p><code>FLOAT</code> and <code>DOUBLE</code> store numbers in approximate floating-point form. They cover huge ranges with few bytes, but the trade-off is rounding.</p>
+      </div>
+
+      <!-- SLIDE 5 -->
+      <div class="slide" data-slide="5">
+        <h2>Temporal Types: DATE, DATETIME, TIMESTAMP, YEAR</h2>
+        <p>Storing dates as strings is a classic beginner mistake. SQL has dedicated types so you can compare, sort, and do date arithmetic.</p>
+
+        <div class="type-grid">
+          <div class="type-card">
+            <div class="type-name">DATE</div>
+            <div class="type-desc">Just the date, no time</div>
+            <div class="type-eg">Format: <code>'2026-04-29'</code></div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">DATETIME</div>
+            <div class="type-desc">Date and time, no timezone</div>
+            <div class="type-eg">Format: <code>'2026-04-29 14:30:00'</code></div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">TIMESTAMP</div>
+            <div class="type-desc">Date and time, stored in UTC, converted on display</div>
+            <div class="type-eg">Use for: created_at, updated_at</div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">YEAR</div>
+            <div class="type-desc">Just a four-digit year</div>
+            <div class="type-eg">Format: <code>2026</code></div>
+          </div>
+          <div class="type-card">
+            <div class="type-name">TIME</div>
+            <div class="type-desc">Just a time of day or duration</div>
+            <div class="type-eg">Format: <code>'14:30:00'</code></div>
+          </div>
+        </div>
+
+        <h3>DATETIME vs TIMESTAMP, the difference</h3>
+        <p><code>DATETIME</code> stores exactly what you give it. <code>TIMESTAMP</code> auto-converts to UTC on save and back to the server's local timezone on read, so the same row looks different in different timezones.</p>
+
+        <div class="practice" data-q="s5">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">A student's <strong>date of birth</strong> column should be:</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">VARCHAR(10) (text like '1999-04-15')</button>
+            <button class="practice-btn" data-correct="true">DATE</button>
+            <button class="practice-btn" data-correct="false">INT (storing days since 1970)</button>
+            <button class="practice-btn" data-correct="false">TIMESTAMP</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6 -->
+      <div class="slide" data-slide="6">
+        <h2>NULL: The Absence of a Value</h2>
+        <p><code>NULL</code> is SQL's special marker for "we don't know" or "doesn't apply". It is <strong>not</strong> the same as zero or empty string.</p>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <h4>NULL means...</h4>
+            <ul style="font-size: 13.5px;">
+              <li>"Unknown", we don't have this data yet</li>
+              <li>"Not applicable", this field doesn't matter for this row</li>
+              <li>"Missing on purpose"</li>
+            </ul>
+          </div>
+          <div class="compare-card">
+            <h4>NULL is NOT...</h4>
+            <ul style="font-size: 13.5px;">
+              <li>The number 0</li>
+              <li>The empty string <code>''</code></li>
+              <li>The string <code>'NULL'</code></li>
+              <li>Equal to itself, <code>NULL = NULL</code> is unknown, not true</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Why this matters</h3>
+        <p>When you're designing a table, every nullable column is a question: "Could this value reasonably be missing for some rows?" Phone numbers, middle names, optional notes, all good candidates. Email addresses on a sign-up form, usually not.</p>
+
+        <p>We'll see in the next lecture how to <em>force</em> a column to never be NULL. For now, the important thing is to recognize NULL as a real, distinct value, not zero, not blank.</p>
+
+        <div class="practice" data-q="s6">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">Which statement about NULL is <strong>true</strong>?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">NULL is the same as 0</button>
+            <button class="practice-btn" data-correct="false">NULL is the same as an empty string ''</button>
+            <button class="practice-btn" data-correct="true">NULL means the value is unknown or not applicable</button>
+            <button class="practice-btn" data-correct="false">NULL is the string 'NULL'</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 -->
+      <div class="slide" data-slide="7">
+        <h2>A First Taste of CREATE TABLE</h2>
+        <p>Now that you can pick types, let's actually build a small table. We'll use just types for now, the full toolbox of constraints (PRIMARY KEY, FOREIGN KEY, NOT NULL, etc.) is the focus of Lecture 3.</p>
+
+        <h3>The basic shape</h3>
+<pre><code><span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> <span class="sql-cm">table_name</span> (
+  <span class="sql-cm">column_1</span>  <span class="sql-type">TYPE</span>,
+  <span class="sql-cm">column_2</span>  <span class="sql-type">TYPE</span>,
+  ...
+);</code></pre>
+
+        <h3>A real example, the Student table</h3>
+<pre><code><span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> student (
+  student_id    <span class="sql-type">INT</span>,
+  name          <span class="sql-type">VARCHAR</span>(<span class="sql-num">100</span>),
+  email         <span class="sql-type">VARCHAR</span>(<span class="sql-num">120</span>),
+  date_of_birth <span class="sql-type">DATE</span>,
+  major         <span class="sql-type">VARCHAR</span>(<span class="sql-num">60</span>),
+  gpa           <span class="sql-type">DECIMAL</span>(<span class="sql-num">3</span>, <span class="sql-num">2</span>)
+);</code></pre>
+
+        <p>That's a working table. You could already insert and read rows from it. The catch: nothing stops two students from sharing the same <code>student_id</code>, and nothing forces <code>name</code> to be supplied. We fix that next class with constraints.</p>
+
+        <div class="tip-box">
+          <strong>Practice this week:</strong> Pick one table from your brainstorm exercises and write its <code>CREATE TABLE</code>, types only. Type it into MySQL Workbench and watch it appear in the schema panel.
+        </div>
+
+        <div class="practice" data-q="s7">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">Which line is wrong in this CREATE TABLE? <br><code>CREATE TABLE book ( book_id INT, title VARCHAR(200) author VARCHAR(120) );</code></p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">CREATE TABLE book ( is wrong</button>
+            <button class="practice-btn" data-correct="false">book_id INT, is wrong</button>
+            <button class="practice-btn" data-correct="true">A comma is missing between title and author</button>
+            <button class="practice-btn" data-correct="false">VARCHAR(200) is too long</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8 -->
+      <div class="slide" data-slide="8">
+        <h2>Useful First Commands</h2>
+        <p>Once your table exists, here is the minimal toolkit to actually use it. We'll go deeper on each in later lectures.</p>
+
+        <h3>See the structure of a table</h3>
+<pre><code><span class="sql-kw">DESCRIBE</span> student;
+<span class="sql-cm">-- or the longer form</span>
+<span class="sql-kw">SHOW COLUMNS FROM</span> student;</code></pre>
+        <p>MySQL prints each column with its type, whether it allows NULL, its default, etc. Great sanity check after a <code>CREATE TABLE</code>.</p>
+
+        <h3>Put a row in</h3>
+<pre><code><span class="sql-kw">INSERT INTO</span> student (student_id, name, email, date_of_birth, major, gpa)
+<span class="sql-kw">VALUES</span> (<span class="sql-num">101</span>, <span class="sql-str">'Maya Hassan'</span>, <span class="sql-str">'maya@isrt.ac.bd'</span>, <span class="sql-str">'2003-08-12'</span>, <span class="sql-str">'Statistics'</span>, <span class="sql-num">3.85</span>);</code></pre>
+
+        <h3>See what's in the table</h3>
+<pre><code><span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> student;</code></pre>
+        <p>The asterisk <code>*</code> means "all columns". You'll learn richer queries later, this is the quickest way to confirm your insert worked.</p>
+
+        <h3>List the tables in your database</h3>
+<pre><code><span class="sql-kw">SHOW TABLES</span>;</code></pre>
+
+        <h3>Clean up your experiments</h3>
+<pre><code><span class="sql-kw">DROP TABLE</span> student;</code></pre>
+        <p><code>DROP TABLE</code> removes the table entirely, both its structure and any data inside. While you're learning, this is how you start over with a fresh design.</p>
+
+        <div class="warn-box">
+          <strong>Heads-up:</strong> <code>DROP TABLE</code> has no undo button. On the ISRT practice server it's fine, that's what learning is for. On a production database, check twice before pressing Enter.
+        </div>
+
+        <h3>Helpful built-in functions to know exist</h3>
+        <p>You don't need to use these today, but knowing they're there pays off:</p>
+        <ul>
+          <li><code>NOW()</code>, current date and time, useful inside <code>INSERT</code> for a created_at column</li>
+          <li><code>CURDATE()</code>, today's date</li>
+          <li><code>LENGTH(text)</code>, number of characters in a string</li>
+          <li><code>UPPER(text)</code> / <code>LOWER(text)</code>, change case</li>
+          <li><code>ROUND(number, n)</code>, round to n decimal places</li>
+        </ul>
+      </div>
+
+      <!-- SLIDE 9 -->
+      <div class="slide" data-slide="9">
+        <h2>Recap, What We Covered</h2>
+        <ul>
+          <li><strong>Brainstorm columns first</strong>, list the facts you want to remember, then pick types.</li>
+          <li><strong>CHAR(n)</strong> is fixed length (good for codes), <strong>VARCHAR(n)</strong> is variable length (default for most text), <strong>TEXT</strong> is for long content.</li>
+          <li><strong>TINYINT / SMALLINT / INT / BIGINT</strong> for whole numbers, pick by the range you need.</li>
+          <li><strong>DECIMAL(p, s)</strong> for exact numbers (money, GPA). <strong>FLOAT / DOUBLE</strong> for approximate scientific values.</li>
+          <li><strong>DATE</strong>, <strong>DATETIME</strong>, <strong>TIMESTAMP</strong>, <strong>YEAR</strong>, <strong>TIME</strong>, never store dates as strings.</li>
+          <li><strong>NULL</strong> means "unknown / not applicable". It is not zero, not empty string, not the literal text "NULL".</li>
+          <li><code>CREATE TABLE name (col TYPE, ...);</code> is the basic table-building syntax. Constraints come next class.</li>
+          <li>You can <code>DESCRIBE</code> a table to see its structure, <code>INSERT INTO</code> to add a row, <code>SELECT *</code> to read it back, and <code>DROP TABLE</code> to start over.</li>
+        </ul>
+      </div>
+
+      <!-- SLIDE 10 -->
+      <div class="slide" data-slide="10">
+        <h2>You Made It! 🎉</h2>
+        <p class="slide-subtitle">Lecture 2 done, you can now reason about every column type a table needs, and you have enough syntax to start building.</p>
+
+        <h3>Before next class</h3>
+        <ol>
+          <li>Take the <strong>Quiz</strong> (tab above) to check your understanding.</li>
+          <li>Review the <strong>Flashcards</strong> on data types.</li>
+          <li>Try at least 3 of the <strong>Exercises</strong>, design a small table on paper, picking types for each column.</li>
+          <li><strong>Hands-on:</strong> on the ISRT MySQL server, write one <code>CREATE TABLE</code> for a topic you care about (your favorite books, a class roster, your monthly expenses), insert two or three rows, and run <code>SELECT * FROM your_table;</code>.</li>
+        </ol>
+
+        <div class="example-box">
+          <strong>Next lecture (Lecture 3):</strong> Creating Tables and Constraints, we'll add real rules to your tables, primary keys, foreign keys, <code>NOT NULL</code>, <code>UNIQUE</code>, <code>DEFAULT</code>, and <code>CHECK</code>, the constraints that keep your data honest.
+        </div>
+
+        <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs to keep learning. Your progress is saved. 💾</p>
+      </div>
+
+    </div>
+
+    <div class="slide-nav">
+      <button class="btn btn-ghost" id="prevBtn">← Previous</button>
+      <span class="key-hint">Use <span class="kbd">←</span> <span class="kbd">→</span> keys</span>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>📝 Quiz Time</h2>
+    <p>12 questions on data types, design choices, and your first CREATE TABLE. Pick an answer for each, you'll see your score at the end.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 12 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Great work!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/12</span></div>
+    <p id="quizMessage">You've completed the Lecture 2 quiz.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS TAB ============ -->
+<section id="flashcards" class="tab-content">
+  <div class="flashcards-header">
+    <h2>🃏 Key Terms, Flashcards</h2>
+    <p>Click any card to flip it and see the definition.</p>
+  </div>
+  <div class="flashcards-grid" id="flashcardsGrid"></div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>Exercises</h2>
+    <p>These ask you to think like a designer, picking the right type for each situation.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Lecture 2">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   LECTURE 2, DATA TYPES AND TABLE DESIGN FOUNDATIONS
+   ================================================================ */
+
+const STORAGE_KEY = 'lecture2-progress-v3';
+
+const state = {
+  currentSlide: 1,
+  totalSlides: 10,
+  maxSlideReached: 1,
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  flashcardsFlipped: new Set(),
+  exercisesOpened: new Set(),
+  exerciseAnswers: {},
+  practiceAnswers: {}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      flashcardsFlipped: [...state.flashcardsFlipped],
+      exercisesOpened: [...state.exercisesOpened]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.flashcardsFlipped = new Set(data.flashcardsFlipped || []);
+    state.exercisesOpened = new Set(data.exercisesOpened || []);
+    state.practiceAnswers = data.practiceAnswers || {};
+  } catch (e) {}
+}
+
+/* ============ TABS ============ */
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ============ SLIDES ============ */
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progFill = document.getElementById('progFill');
+const slideCounter = document.getElementById('slideCounter');
+
+function showSlide(n) {
+  if (n < 1 || n > state.totalSlides) return;
+  state.currentSlide = n;
+  if (n > state.maxSlideReached) state.maxSlideReached = n;
+  slides.forEach(s => s.classList.toggle('active', +s.dataset.slide === n));
+  const pct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  progFill.style.width = pct + '%';
+  slideCounter.textContent = `Slide ${n} of ${state.totalSlides}`;
+  prevBtn.disabled = n === 1;
+  nextBtn.textContent = n === state.totalSlides ? 'Finish ✓' : 'Next →';
+  updateStats();
+  saveState();
+}
+prevBtn.addEventListener('click', () => showSlide(state.currentSlide - 1));
+nextBtn.addEventListener('click', () => {
+  if (state.currentSlide < state.totalSlides) showSlide(state.currentSlide + 1);
+});
+document.addEventListener('keydown', (e) => {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (!activeTab || activeTab.id !== 'slides') return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prevBtn.click(); }
+});
+
+/* ============ PRACTICE ============ */
+document.querySelectorAll('.practice').forEach(p => {
+  const qid = p.dataset.q;
+  const feedback = p.querySelector('.practice-feedback');
+  if (!feedback) return;
+  const btns = p.querySelectorAll('.practice-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (p.dataset.answered === 'true') return;
+      const correct = btn.dataset.correct === 'true';
+      btns.forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.correct === 'true') b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+      feedback.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+      feedback.textContent = correct
+        ? '✓ Correct!'
+        : '✗ Not quite, the correct answer is highlighted in green.';
+      p.dataset.answered = 'true';
+      state.practiceAnswers[qid] = correct;
+      saveState();
+    });
+  });
+});
+
+/* ============ QUIZ ============ */
+const quizData = [
+  {
+    q: "Which type is best for storing a customer's email address?",
+    options: ["CHAR(10)", "VARCHAR(120)", "TEXT", "INT"],
+    answer: 1,
+    explain: "Emails vary in length, so VARCHAR is right. CHAR would pad short emails wastefully; TEXT is overkill for typical email lengths."
+  },
+  {
+    q: "Which type should you use to store a product price like 19.95?",
+    options: ["FLOAT", "DOUBLE", "DECIMAL(8, 2)", "VARCHAR(10)"],
+    answer: 2,
+    explain: "DECIMAL stores money exactly. FLOAT and DOUBLE are approximate, which can cause rounding surprises. Storing money as text breaks math."
+  },
+  {
+    q: "What does NULL mean in SQL?",
+    options: [
+      "The number zero",
+      "An empty string",
+      "Unknown or not applicable",
+      "A boolean false"
+    ],
+    answer: 2,
+    explain: "NULL is the absence of a value, not zero, not empty, not false."
+  },
+  {
+    q: "Which type would you choose for a student's date of birth?",
+    options: ["VARCHAR(10)", "INT", "DATE", "TIMESTAMP"],
+    answer: 2,
+    explain: "DATE stores a calendar date (year-month-day) without time. Storing dates as text breaks sorting and date arithmetic."
+  },
+  {
+    q: "What's the key difference between CHAR(10) and VARCHAR(10)?",
+    options: [
+      "CHAR allows numbers, VARCHAR allows text",
+      "CHAR always uses 10 characters of space, VARCHAR uses only what's needed",
+      "VARCHAR is older than CHAR",
+      "There is no difference"
+    ],
+    answer: 1,
+    explain: "CHAR is fixed length (always n chars, padded with spaces), VARCHAR is variable length (only stores what you actually put in)."
+  },
+  {
+    q: "You need to store integers up to about 2 billion. Which is the most appropriate type?",
+    options: ["TINYINT", "SMALLINT", "INT", "DECIMAL(20, 0)"],
+    answer: 2,
+    explain: "INT covers about ±2.1 billion. TINYINT and SMALLINT are too small. DECIMAL works but wastes space for whole numbers in this range."
+  },
+  {
+    q: "What's the main difference between DATETIME and TIMESTAMP in MySQL?",
+    options: [
+      "TIMESTAMP only stores the date, DATETIME stores the time",
+      "DATETIME stores exactly what you give it; TIMESTAMP auto-converts to UTC and back",
+      "DATETIME is older and DEPRECATED",
+      "TIMESTAMP can store any string"
+    ],
+    answer: 1,
+    explain: "DATETIME is timezone-naive (stores literally what you put in). TIMESTAMP converts to UTC on save and back to local on read."
+  },
+  {
+    q: "For a long product description (a few paragraphs), the best type is:",
+    options: ["VARCHAR(255)", "CHAR(255)", "TEXT", "INT"],
+    answer: 2,
+    explain: "TEXT is designed for long content. VARCHAR has a row-shared limit; CHAR pads to a fixed length. INT is for numbers."
+  },
+  {
+    q: "A 2-letter country code (like 'BD', 'US', 'IN') is best stored as:",
+    options: ["VARCHAR(2)", "CHAR(2)", "TEXT", "INT"],
+    answer: 1,
+    explain: "It is always exactly 2 characters, so CHAR(2) is the natural fit. VARCHAR(2) works but adds a tiny length-byte overhead for no benefit."
+  },
+  {
+    q: "Which of these is true about FLOAT and DOUBLE?",
+    options: [
+      "They store numbers exactly, like DECIMAL",
+      "They are integer types",
+      "They are approximate, suitable for scientific values, not money",
+      "They can only hold positive numbers"
+    ],
+    answer: 2,
+    explain: "FLOAT and DOUBLE are floating-point types: large range, small storage, but approximate. Use DECIMAL for money or anything that must be exact."
+  },
+  {
+    q: "Which is the correct basic syntax to create a table?",
+    options: [
+      "MAKE TABLE student (id INT, name VARCHAR(100));",
+      "CREATE TABLE student (id INT, name VARCHAR(100));",
+      "NEW TABLE student WITH (id INT, name VARCHAR(100));",
+      "CREATE student TABLE: id INT, name VARCHAR(100);"
+    ],
+    answer: 1,
+    explain: "The basic shape is CREATE TABLE name (col TYPE, col TYPE, ...);"
+  },
+  {
+    q: "You just created a table. Which command shows its columns and types?",
+    options: ["SHOW TABLES;", "DESCRIBE student;", "SELECT * FROM student;", "DROP TABLE student;"],
+    answer: 1,
+    explain: "DESCRIBE student; (or SHOW COLUMNS FROM student;) prints each column with its type, nullability, and default. SHOW TABLES; lists tables; SELECT * shows the data; DROP removes the table."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const msg = document.getElementById('quizMessage');
+  const verdict = document.getElementById('quizVerdict');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent!';
+    msg.textContent = "You've got data types down. Move on to the exercises!";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good work';
+    msg.textContent = "Solid, review the wrong ones and try again if you'd like.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Keep going 💪';
+    msg.textContent = "No worries, review the slides and flashcards, then retake.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+/* ============ FLASHCARDS ============ */
+const flashcards = [
+  { term: "CHAR(n)", def: "Fixed-length character type. Always stores exactly n characters; shorter values are space-padded. Good for codes like 'BD'." },
+  { term: "VARCHAR(n)", def: "Variable-length character type. Stores up to n characters, only as much space as needed. Default choice for most text." },
+  { term: "TEXT", def: "Type for long text content (paragraphs, articles). Use when VARCHAR's per-row limit isn't enough." },
+  { term: "TINYINT", def: "1-byte integer, range -128 to 127 (or 0 to 255 unsigned). Good for ratings, small flags." },
+  { term: "SMALLINT", def: "2-byte integer, range about ±32,000. Good for small counts." },
+  { term: "INT", def: "Standard 4-byte integer, range about ±2.1 billion. Default for IDs, counts, quantities." },
+  { term: "BIGINT", def: "8-byte integer, range about ±9.2 quintillion. Use for huge IDs or big counters." },
+  { term: "DECIMAL(p, s)", def: "Exact decimal number with p total digits and s digits after the decimal point. Use for money or any value that must be exact." },
+  { term: "FLOAT / DOUBLE", def: "Approximate floating-point types. Suitable for scientific values where small rounding is acceptable." },
+  { term: "DATE", def: "Calendar date in YYYY-MM-DD format. No time component. Use for birthdays, admission dates, etc." },
+  { term: "DATETIME", def: "Date plus time, no timezone. Stored as you give it; useful for event times the user picks." },
+  { term: "TIMESTAMP", def: "Date plus time, stored in UTC and converted on display. Useful for system times like created_at, updated_at." },
+  { term: "YEAR", def: "Just a four-digit year (e.g., 2026). Compact when only the year matters." },
+  { term: "TIME", def: "Just a time of day or duration, in HH:MM:SS format." },
+  { term: "NULL", def: "Marker for unknown or not-applicable. Different from 0 or ''. A nullable column says 'this value is allowed to be missing.'" },
+  { term: "CREATE TABLE", def: "DDL statement that defines a new table. Basic shape: CREATE TABLE name (col TYPE, col TYPE, ...);" },
+  { term: "DESCRIBE table;", def: "Shows the columns of a table with their types, nullability, and defaults. Same idea as SHOW COLUMNS FROM table;" },
+  { term: "INSERT INTO", def: "DML statement that adds a row: INSERT INTO table (col1, col2) VALUES (v1, v2);" },
+  { term: "SELECT * FROM table;", def: "Returns every column and every row of a table. Quickest way to see what's inside while you're learning." },
+  { term: "DROP TABLE", def: "Removes a table entirely, both structure and data. Useful for restarting an experiment; no undo." },
+  { term: "NOW() / CURDATE()", def: "Built-in functions returning the current datetime / current date. Handy inside INSERT for created_at columns." }
+];
+const fcGrid = document.getElementById('flashcardsGrid');
+flashcards.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'flashcard';
+  card.dataset.idx = i;
+  card.innerHTML = `
+    <div class="flashcard-inner">
+      <div class="flashcard-front">
+        ${c.term}
+        <span class="hint">click to flip</span>
+      </div>
+      <div class="flashcard-back">${c.def}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
+    if (card.classList.contains('flipped')) state.flashcardsFlipped.add(i);
+    updateStats();
+    saveState();
+  });
+  fcGrid.appendChild(card);
+});
+function restoreFlashcards() {
+  fcGrid.querySelectorAll('.flashcard').forEach(c => {
+    if (state.flashcardsFlipped.has(+c.dataset.idx)) c.classList.add('flipped');
+  });
+}
+
+/* ============ EXERCISES ============ */
+const exercises = [
+  {
+    title: "1. Pick the right type for each column",
+    diff: "easy",
+    prompt: "For each column below, pick a sensible MySQL type and explain in one sentence why: <br>(a) <code>email</code> on a User table <br>(b) <code>price</code> on a Product table <br>(c) <code>date_of_birth</code> on a Patient table <br>(d) <code>country_code</code> like 'BD', 'US', 'IN' <br>(e) <code>description</code>, a long product write-up",
+    hint: "Think length, exactness, and whether the value is text, number, or date.",
+    approach: "(a) <code>VARCHAR(120)</code>, emails vary in length. (b) <code>DECIMAL(10, 2)</code>, money must be exact. (c) <code>DATE</code>, calendar date with no time. (d) <code>CHAR(2)</code>, exactly 2 characters every time. (e) <code>TEXT</code>, can hold long content."
+  },
+  {
+    title: "2. Brainstorm columns for a Library Book",
+    diff: "easy",
+    prompt: "List the facts you'd want to remember about a single book in a library. For each one, propose a MySQL data type. Aim for at least 6 facts.",
+    hint: "Things like title, author, ISBN, year published, number of pages, genre, available copies, etc.",
+    approach: "Example: <code>title VARCHAR(200)</code>, <code>author VARCHAR(120)</code>, <code>isbn CHAR(13)</code>, <code>year_published YEAR</code> (or SMALLINT), <code>pages SMALLINT</code>, <code>genre VARCHAR(40)</code>, <code>copies_available TINYINT</code>, <code>price DECIMAL(7,2)</code>, <code>added_at TIMESTAMP</code>. There are many right answers, the point is matching the value to a sensible type."
+  },
+  {
+    title: "3. CHAR vs VARCHAR space",
+    diff: "easy",
+    prompt: "Suppose you store 1,000 country names that average 8 characters. (a) How many characters of storage does <code>CHAR(50)</code> use across all 1,000 rows? (b) Roughly, how many does <code>VARCHAR(50)</code> use? (c) Which would you pick and why?",
+    hint: "CHAR pads to its declared length; VARCHAR uses only what's needed (plus 1 length byte).",
+    approach: "(a) <code>CHAR(50)</code> uses 50 × 1,000 = 50,000 characters. (b) <code>VARCHAR(50)</code> uses about (8 + 1) × 1,000 = 9,000 bytes. (c) VARCHAR, far less wasted space, and country names truly do vary in length."
+  },
+  {
+    title: "4. NULL is not zero",
+    diff: "easy",
+    prompt: "A Student table has a nullable <code>middle_name</code> column. (a) Give two reasonable values for that column. (b) Why is <code>middle_name = NULL</code> different from <code>middle_name = ''</code> (empty string)? (c) Which makes more sense for a student who has no middle name?",
+    hint: "NULL communicates 'unknown / not applicable'; '' communicates 'we know it, and it's empty'.",
+    approach: "(a) Could be <code>'Karim'</code>, <code>NULL</code>, or <code>''</code>. (b) NULL says 'we don't know or it doesn't apply'; '' says 'we asked and the answer is the empty string'. They look similar but mean different things to anyone reading the data later. (c) Either is defensible, but NULL is usually clearer for 'this person doesn't have a middle name', because you're saying the field is not applicable rather than asserting an empty value."
+  },
+  {
+    title: "5. Refactor an old table's types",
+    diff: "med",
+    prompt: "An older Student table is: <code>student(id INT, name VARCHAR(50), birthday VARCHAR(10), gpa FLOAT, joined VARCHAR(20))</code>. List at least three problems with these type choices and propose better types.",
+    hint: "Look at: name length, birthday type, gpa precision, joined as text.",
+    approach: "(1) <code>name VARCHAR(50)</code> is short for some full names, prefer <code>VARCHAR(100)</code>. (2) <code>birthday VARCHAR(10)</code> should be <code>DATE</code>, so you can sort, compare, and compute ages. (3) <code>gpa FLOAT</code> is approximate, prefer <code>DECIMAL(3,2)</code> for exactness. (4) <code>joined VARCHAR(20)</code> should be <code>DATE</code> or <code>DATETIME</code> for the same reason as birthday."
+  },
+  {
+    title: "6. DATE vs DATETIME vs TIMESTAMP",
+    diff: "med",
+    prompt: "Pick the best temporal type for each scenario and explain in one line: <br>(a) A patient's date of birth <br>(b) A meeting starting at 14:30 on a specific date <br>(c) The moment a row was last updated, useful in any timezone <br>(d) The graduation year of an alumnus",
+    hint: "DATE = date only, DATETIME = date+time naive, TIMESTAMP = date+time UTC-aware, YEAR = just year.",
+    approach: "(a) <code>DATE</code>, no time of day matters for a birthday. (b) <code>DATETIME</code>, the user picks a wall-clock time, no timezone conversion needed. (c) <code>TIMESTAMP</code>, system-generated and timezone-aware. (d) <code>YEAR</code>, only the year matters."
+  },
+  {
+    title: "7. Write your first CREATE TABLE",
+    diff: "easy",
+    prompt: "Write a <code>CREATE TABLE</code> for a <strong>Book</strong> table (no constraints yet, types only). Include: book_id, title, author, year_published, pages, price.",
+    hint: "Pick types from the lecture: INT for ids and counts, VARCHAR for names/titles, YEAR for the year, DECIMAL for price.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>CREATE TABLE book (\n  book_id        INT,\n  title          VARCHAR(200),\n  author         VARCHAR(120),\n  year_published YEAR,\n  pages          SMALLINT,\n  price          DECIMAL(7, 2)\n);</pre>"
+  },
+  {
+    title: "8. Try it on the ISRT MySQL server",
+    diff: "easy",
+    prompt: "Using your Book table from exercise 7: (a) write a <code>DESCRIBE</code> to inspect the structure; (b) write an <code>INSERT</code> that adds one book; (c) write a <code>SELECT</code> that shows all rows; (d) write a <code>DROP TABLE</code> to clean up.",
+    hint: "DESCRIBE table; then INSERT INTO table (cols) VALUES (...); then SELECT * FROM table; then DROP TABLE table;",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>DESCRIBE book;\n\nINSERT INTO book (book_id, title, author, year_published, pages, price)\nVALUES (1, 'The Pragmatic Programmer', 'Andrew Hunt', 1999, 320, 39.99);\n\nSELECT * FROM book;\n\nDROP TABLE book;</pre>"
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+exercises.forEach((ex, i) => {
+  const div = document.createElement('div');
+  div.className = 'exercise';
+  div.dataset.idx = i;
+  div.innerHTML = `
+    <div class="exercise-head">
+      <h4>${ex.title}</h4>
+      <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+    </div>
+    <div class="exercise-prompt">${ex.prompt}</div>
+    <textarea placeholder="Write your answer here..." data-ex="${i}"></textarea>
+    <div class="exercise-actions">
+      <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${i}">💡 Hint</button>
+      <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${i}">👀 Show Suggested Approach</button>
+      <span class="save-indicator" data-ex="${i}"></span>
+    </div>
+    <div class="exercise-hint" data-ex="${i}"><strong>Hint:</strong> ${ex.hint}</div>
+    <div class="exercise-approach" data-ex="${i}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+  `;
+  exContainer.appendChild(div);
+});
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesOpened.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    state.exercisesOpened.add(+idx);
+    updateStats();
+    saveState();
+  });
+});
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+}
+
+/* ============ STATS ============ */
+function updateStats() {
+  const slidePct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  document.getElementById('progStat').textContent = slidePct + '%';
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('flipStat').textContent = state.flashcardsFlipped.size;
+  document.getElementById('exStat').textContent = state.exercisesOpened.size;
+}
+
+/* ============ RESET ============ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Lecture 2? Your slide position, quiz score, flashcards, and exercise answers will be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+/* ============ INIT ============ */
+loadState();
+renderQuiz();
+restoreFlashcards();
+restoreExercises();
+showSlide(state.currentSlide);
+updateStats();
+
+Object.entries(state.practiceAnswers).forEach(([qid, correct]) => {
+  const p = document.querySelector(`.practice[data-q="${qid}"]`);
+  if (!p) return;
+  const fb = p.querySelector('.practice-feedback');
+  if (!fb) return;
+  p.dataset.answered = 'true';
+  p.querySelectorAll('.practice-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  });
+  fb.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+  fb.textContent = correct ? '✓ Correct!' : '✗ The correct answer is highlighted.';
+});
+</script>
+</body>
+</html>
