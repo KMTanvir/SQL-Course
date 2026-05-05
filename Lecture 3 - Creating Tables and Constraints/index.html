@@ -708,7 +708,7 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
 <!-- ============ SLIDES TAB ============ -->
 <section id="slides" class="tab-content active">
   <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
-  <div class="slide-counter" id="slideCounter">Slide 1 of 12</div>
+  <div class="slide-counter" id="slideCounter">Slide 1 of 9</div>
   <div class="card">
     <div id="slidesContainer">
 
@@ -722,8 +722,6 @@ table.data-table .fk { background: #e0e7ff !important; font-weight: 600; color: 
           <li>Use <strong>FOREIGN KEY</strong> to link tables and protect referential integrity</li>
           <li>Apply <code>NOT NULL</code>, <code>UNIQUE</code>, <code>DEFAULT</code>, <code>CHECK</code>, and <code>ENUM</code> to keep bad data out</li>
           <li>Use <code>AUTO_INCREMENT</code> for automatic IDs</li>
-          <li>Change a table after the fact with <code>ALTER TABLE</code></li>
-          <li>Put data in and take it out with <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, and use <code>DROP</code> vs <code>TRUNCATE</code> carefully</li>
         </ul>
         <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
       </div>
@@ -973,143 +971,6 @@ created_at <span class="sql-type">TIMESTAMP</span>   <span class="sql-kw">DEFAUL
 
       <!-- SLIDE 9 -->
       <div class="slide" data-slide="9">
-        <h2>ALTER TABLE, Changing Structure Later</h2>
-        <p>Tables aren't carved in stone. <code>ALTER TABLE</code> lets you add, change, rename, or drop columns and constraints after the table exists.</p>
-
-<pre><code><span class="sql-cm">-- Add a column</span>
-<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">ADD</span> phone <span class="sql-type">VARCHAR</span>(<span class="sql-num">20</span>);
-
-<span class="sql-cm">-- Change a column's type or constraints</span>
-<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">MODIFY</span> phone <span class="sql-type">VARCHAR</span>(<span class="sql-num">25</span>) <span class="sql-kw">NOT NULL</span>;
-
-<span class="sql-cm">-- Rename a column (MySQL 8+)</span>
-<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">RENAME COLUMN</span> phone <span class="sql-kw">TO</span> mobile;
-
-<span class="sql-cm">-- Drop a column</span>
-<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">DROP</span> <span class="sql-kw">COLUMN</span> mobile;
-
-<span class="sql-cm">-- Add a constraint after the fact</span>
-<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">ADD</span> <span class="sql-kw">CONSTRAINT</span> uq_email <span class="sql-kw">UNIQUE</span> (email);</code></pre>
-
-        <div class="warn-box">
-          <strong>Be careful with DROP COLUMN.</strong> It deletes all the data in that column, no undo.
-        </div>
-
-        <div class="practice" data-q="s9-classifier">
-          <h4>🧠 Match each command to its effect</h4>
-          <div class="classifier" id="classifier1">
-            <div class="classifier-cmd" data-answer="ADD">
-              <code>ALTER TABLE student ADD bio TEXT;</code>
-              <div class="classifier-choices">
-                <button class="classifier-choice" data-choice="ADD">Adds a column</button>
-                <button class="classifier-choice" data-choice="DROP">Removes a column</button>
-                <button class="classifier-choice" data-choice="MOD">Modifies a column</button>
-              </div>
-            </div>
-            <div class="classifier-cmd" data-answer="DROP">
-              <code>ALTER TABLE student DROP COLUMN phone;</code>
-              <div class="classifier-choices">
-                <button class="classifier-choice" data-choice="ADD">Adds a column</button>
-                <button class="classifier-choice" data-choice="DROP">Removes a column</button>
-                <button class="classifier-choice" data-choice="MOD">Modifies a column</button>
-              </div>
-            </div>
-            <div class="classifier-cmd" data-answer="MOD">
-              <code>ALTER TABLE student MODIFY name VARCHAR(150);</code>
-              <div class="classifier-choices">
-                <button class="classifier-choice" data-choice="ADD">Adds a column</button>
-                <button class="classifier-choice" data-choice="DROP">Removes a column</button>
-                <button class="classifier-choice" data-choice="MOD">Modifies a column</button>
-              </div>
-            </div>
-            <div class="classifier-cmd" data-answer="ADD">
-              <code>ALTER TABLE student ADD CONSTRAINT uq_email UNIQUE (email);</code>
-              <div class="classifier-choices">
-                <button class="classifier-choice" data-choice="ADD">Adds a column</button>
-                <button class="classifier-choice" data-choice="DROP">Removes a column</button>
-                <button class="classifier-choice" data-choice="MOD">Modifies a column</button>
-              </div>
-            </div>
-          </div>
-          <div class="classifier-score" id="classifier1-score">0 / 4 correct</div>
-        </div>
-      </div>
-
-      <!-- SLIDE 10 -->
-      <div class="slide" data-slide="10">
-        <h2>INSERT, UPDATE, DELETE</h2>
-        <p>Once a table exists, here's how you put data in, change it, and take it out.</p>
-
-        <h3>INSERT, add a row</h3>
-<pre><code><span class="sql-kw">INSERT INTO</span> student (name, email, date_of_birth, major)
-<span class="sql-kw">VALUES</span> (<span class="sql-str">'Maya Hassan'</span>, <span class="sql-str">'maya@isrt.ac.bd'</span>, <span class="sql-str">'2003-08-12'</span>, <span class="sql-str">'Statistics'</span>);</code></pre>
-
-        <h3>INSERT, multiple rows at once</h3>
-<pre><code><span class="sql-kw">INSERT INTO</span> student (name, email)
-<span class="sql-kw">VALUES</span>
-  (<span class="sql-str">'Arif Rahman'</span>, <span class="sql-str">'arif@isrt.ac.bd'</span>),
-  (<span class="sql-str">'Priya Das'</span>,   <span class="sql-str">'priya@isrt.ac.bd'</span>);</code></pre>
-
-        <h3>UPDATE, change rows</h3>
-<pre><code><span class="sql-kw">UPDATE</span> student
-<span class="sql-kw">SET</span> major = <span class="sql-str">'Data Science'</span>
-<span class="sql-kw">WHERE</span> student_id = <span class="sql-num">101</span>;</code></pre>
-
-        <h3>DELETE, remove rows</h3>
-<pre><code><span class="sql-kw">DELETE</span> <span class="sql-kw">FROM</span> student <span class="sql-kw">WHERE</span> student_id = <span class="sql-num">101</span>;</code></pre>
-
-        <div class="warn-box">
-          <strong>Always include a WHERE clause</strong> on <code>UPDATE</code> and <code>DELETE</code>, unless you really mean to change every row. <code>DELETE FROM student;</code> with no WHERE empties the entire table.
-        </div>
-      </div>
-
-      <!-- SLIDE 11 -->
-      <div class="slide" data-slide="11">
-        <h2>DROP TABLE vs TRUNCATE TABLE</h2>
-        <p>Two commands that look similar but do very different things.</p>
-
-        <div class="compare-grid">
-          <div class="compare-card">
-            <h4>DROP TABLE</h4>
-            <p style="font-size: 13.5px;">Deletes the <strong>entire table</strong>, structure and data. The table is gone, you'd have to <code>CREATE TABLE</code> it again.</p>
-<pre style="font-size: 12px; padding: 10px;"><code><span class="sql-kw">DROP TABLE</span> student;</code></pre>
-          </div>
-          <div class="compare-card">
-            <h4>TRUNCATE TABLE</h4>
-            <p style="font-size: 13.5px;">Removes <strong>all rows</strong>, but keeps the table's columns and constraints. Resets AUTO_INCREMENT back to 1.</p>
-<pre style="font-size: 12px; padding: 10px;"><code><span class="sql-kw">TRUNCATE TABLE</span> student;</code></pre>
-          </div>
-        </div>
-
-        <h3>And how does DELETE compare?</h3>
-        <table class="data-table">
-          <thead><tr><th>Command</th><th>Removes data</th><th>Removes table</th><th>Resets AUTO_INCREMENT</th></tr></thead>
-          <tbody>
-            <tr><td><code>DELETE FROM t;</code></td><td>Yes (all rows)</td><td>No</td><td>No</td></tr>
-            <tr><td><code>TRUNCATE TABLE t;</code></td><td>Yes (all rows, fast)</td><td>No</td><td>Yes</td></tr>
-            <tr><td><code>DROP TABLE t;</code></td><td>Yes</td><td>Yes</td><td>Table is gone</td></tr>
-          </tbody>
-        </table>
-
-        <div class="warn-box">
-          <strong>None of these have an undo button.</strong> In real systems, take a backup before any of them.
-        </div>
-
-        <div class="practice" data-q="s11">
-          <h4>🧠 Quick Check</h4>
-          <p class="practice-q">You want to clear all data from a table but keep its structure for fresh inserts. Use:</p>
-          <div class="practice-options">
-            <button class="practice-btn" data-correct="false">DROP TABLE</button>
-            <button class="practice-btn" data-correct="true">TRUNCATE TABLE</button>
-            <button class="practice-btn" data-correct="false">ALTER TABLE</button>
-            <button class="practice-btn" data-correct="false">CREATE TABLE</button>
-          </div>
-          <div class="practice-feedback"></div>
-        </div>
-      </div>
-
-      <!-- SLIDE 12 -->
-      <div class="slide" data-slide="12">
         <h2>You Made It! 🎉</h2>
         <p class="slide-subtitle">Lecture 3 done, you can now design and build real tables that protect their own data.</p>
 
@@ -1120,13 +981,10 @@ created_at <span class="sql-type">TIMESTAMP</span>   <span class="sql-kw">DEFAUL
           <li><strong>FOREIGN KEY</strong> enforces references between tables.</li>
           <li><strong>NOT NULL</strong>, <strong>UNIQUE</strong>, <strong>DEFAULT</strong>, <strong>CHECK</strong>, <strong>ENUM</strong> are how we tell the database what counts as valid data.</li>
           <li><strong>AUTO_INCREMENT</strong> hands out IDs automatically.</li>
-          <li><strong>ALTER TABLE</strong> adds, modifies, renames, or drops columns and constraints later.</li>
-          <li><strong>INSERT</strong>, <strong>UPDATE</strong>, <strong>DELETE</strong> work on rows. Always include WHERE on the latter two.</li>
-          <li><strong>DROP</strong> removes the table entirely, <strong>TRUNCATE</strong> empties it but keeps the structure.</li>
         </ul>
 
         <div class="example-box">
-          <strong>Next lecture:</strong> querying with <code>SELECT</code>, filtering with <code>WHERE</code>, sorting with <code>ORDER BY</code>, and pattern matching, the heart of using a database.
+          <strong>Next lecture (Lecture 4):</strong> Data Manipulation and Basic SELECT, putting rows into tables with <code>INSERT</code>, changing them with <code>UPDATE</code>, removing them with <code>DELETE</code>, plus reshaping tables with <code>ALTER TABLE</code> and the difference between <code>DROP</code> and <code>TRUNCATE</code>. Then the workhorse: <code>SELECT</code>.
         </div>
 
         <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs to keep learning. Your progress is saved. 💾</p>
@@ -1193,11 +1051,11 @@ created_at <span class="sql-type">TIMESTAMP</span>   <span class="sql-kw">DEFAUL
    LECTURE 3, CREATING TABLES AND CONSTRAINTS
    ================================================================ */
 
-const STORAGE_KEY = 'lecture3-progress-v1';
+const STORAGE_KEY = 'lecture3-progress-v2';
 
 const state = {
   currentSlide: 1,
-  totalSlides: 12,
+  totalSlides: 9,
   maxSlideReached: 1,
   quizAnswers: {},
   quizScore: null,
@@ -1400,39 +1258,6 @@ const quizData = [
     explain: "CHECK enforces a per-row rule, e.g. CHECK (gpa BETWEEN 0 AND 4)."
   },
   {
-    q: "Which statement adds a new column to an existing table?",
-    options: [
-      "CREATE COLUMN ... ON student;",
-      "INSERT COLUMN ... INTO student;",
-      "ALTER TABLE student ADD column_name TYPE;",
-      "UPDATE student ADD column_name TYPE;"
-    ],
-    answer: 2,
-    explain: "ALTER TABLE ... ADD adds columns. INSERT/UPDATE work on rows, not on table structure."
-  },
-  {
-    q: "What's wrong with: DELETE FROM student;",
-    options: [
-      "Nothing, it deletes the table",
-      "It deletes every row in the table",
-      "It will throw a syntax error",
-      "It only deletes the first row"
-    ],
-    answer: 1,
-    explain: "Without a WHERE clause, DELETE removes every row. The table structure stays."
-  },
-  {
-    q: "What's the difference between DROP TABLE and TRUNCATE TABLE?",
-    options: [
-      "They are the same thing",
-      "DROP removes the table entirely; TRUNCATE empties it but keeps the structure",
-      "TRUNCATE removes the table entirely; DROP just empties it",
-      "DROP only deletes rows where ID is NULL"
-    ],
-    answer: 1,
-    explain: "DROP removes the whole table (structure and data). TRUNCATE keeps the structure and just deletes all rows quickly."
-  },
-  {
     q: "An Enrollment table has columns student_id and course_id, neither unique on its own. The primary key should be:",
     options: [
       "student_id only",
@@ -1442,6 +1267,34 @@ const quizData = [
     ],
     answer: 2,
     explain: "Together, the pair is unique, that's a compound primary key, declared as PRIMARY KEY (student_id, course_id)."
+  },
+  {
+    q: "Which clause restricts a column to one of a small fixed set of values like 'pending', 'paid', 'shipped'?",
+    options: ["CHECK", "ENUM", "DEFAULT", "FOREIGN KEY"],
+    answer: 1,
+    explain: "ENUM(...) restricts a column to a fixed list. CHECK can also enforce ranges or custom rules, but ENUM is the natural fit for a small named set."
+  },
+  {
+    q: "Which line correctly gives a DATE column today's date as its default?",
+    options: [
+      "hire_date DATE = TODAY",
+      "hire_date DATE DEFAULT (CURRENT_DATE)",
+      "hire_date DATE TODAY()",
+      "hire_date DATE AUTO_INCREMENT"
+    ],
+    answer: 1,
+    explain: "DEFAULT (CURRENT_DATE) tells MySQL to fill in today's date when none is supplied on INSERT."
+  },
+  {
+    q: "Order matters when creating tables with foreign keys. Which is correct?",
+    options: [
+      "Always create the child table first, then the parent",
+      "Create the parent (referenced) table first, then the child (referencing) table",
+      "Order doesn't matter, MySQL figures it out",
+      "Both tables must be created in the same statement"
+    ],
+    answer: 1,
+    explain: "A FOREIGN KEY in the child references the PRIMARY KEY of the parent, so the parent must already exist when the child is created."
   }
 ];
 
@@ -1558,15 +1411,9 @@ const flashcards = [
   { term: "CHECK", def: "Constraint rejecting rows whose values don't satisfy a condition (e.g., gpa BETWEEN 0 AND 4)." },
   { term: "ENUM", def: "Type that restricts a column to a small, fixed list of allowed values (e.g., 'active', 'graduated')." },
   { term: "AUTO_INCREMENT", def: "Modifier on an integer primary key telling MySQL to assign the next number automatically on INSERT." },
-  { term: "ALTER TABLE", def: "DDL statement for changing an existing table: ADD, MODIFY, RENAME COLUMN, DROP COLUMN, or add a CONSTRAINT." },
-  { term: "ADD COLUMN", def: "Form of ALTER TABLE that appends a new column to an existing table." },
-  { term: "MODIFY", def: "Form of ALTER TABLE that changes a column's type or constraints, e.g., MODIFY phone VARCHAR(25) NOT NULL." },
-  { term: "DROP COLUMN", def: "Form of ALTER TABLE that removes a column and all its data. No undo." },
-  { term: "INSERT INTO", def: "DML statement that adds one or more rows to a table." },
-  { term: "UPDATE ... SET ... WHERE", def: "DML statement that changes existing rows that match the WHERE clause." },
-  { term: "DELETE FROM ... WHERE", def: "DML statement that removes rows matching the WHERE clause; without WHERE it removes every row." },
-  { term: "DROP TABLE", def: "Removes a table entirely, both structure and data. There is no undo." },
-  { term: "TRUNCATE TABLE", def: "Empties a table quickly while keeping its structure. Resets AUTO_INCREMENT." }
+  { term: "CONSTRAINT", def: "A rule attached to a column or table (PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, DEFAULT, CHECK). The database enforces it on every INSERT or UPDATE." },
+  { term: "Parent / child table", def: "In a foreign-key relationship, the parent is the referenced table (must exist first); the child holds the FK column referring back to it." },
+  { term: "Referential integrity", def: "The guarantee that every foreign-key value points to a real row in the referenced table. Enforced by the database, not by the application." }
 ];
 const fcGrid = document.getElementById('flashcardsGrid');
 flashcards.forEach((c, i) => {
@@ -1620,28 +1467,14 @@ const exercises = [
     approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>CREATE TABLE enrollment (\n  student_id INT,\n  course_id  VARCHAR(10),\n  grade      VARCHAR(2),\n  PRIMARY KEY (student_id, course_id),\n  FOREIGN KEY (student_id) REFERENCES student(student_id),\n  FOREIGN KEY (course_id)  REFERENCES course(course_id)\n);</pre>"
   },
   {
-    title: "4. Refactor with ALTER TABLE",
-    diff: "med",
-    prompt: "An older Student table is: <code>student(id INT, name VARCHAR(50), birthday VARCHAR(10), gpa FLOAT)</code>. Use <code>ALTER TABLE</code> to: (a) add a PRIMARY KEY on id, (b) widen name to 100, (c) change birthday to DATE, (d) change gpa to DECIMAL(3,2).",
-    hint: "Use ALTER TABLE ... ADD PRIMARY KEY / MODIFY for each column.",
-    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>ALTER TABLE student ADD PRIMARY KEY (id);\nALTER TABLE student MODIFY name VARCHAR(100) NOT NULL;\nALTER TABLE student MODIFY birthday DATE;\nALTER TABLE student MODIFY gpa DECIMAL(3,2);</pre>"
-  },
-  {
-    title: "5. INSERT, UPDATE, DELETE on Employee",
-    diff: "med",
-    prompt: "Using your <code>employee</code> table from exercise 2, write SQL to: <br>(a) insert two employees, <br>(b) raise everyone in department 5 by 10%, <br>(c) delete the employee whose email is 'old@example.com'.",
-    hint: "Use VALUES for INSERT, SET salary = salary * 1.10 for UPDATE, and a precise WHERE for DELETE.",
-    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>INSERT INTO employee (name, email, salary, department_id)\nVALUES ('Maya Hassan', 'maya@isrt.ac.bd', 65000, 5),\n       ('Arif Rahman', 'arif@isrt.ac.bd', 58000, 5);\n\nUPDATE employee\nSET salary = salary * 1.10\nWHERE department_id = 5;\n\nDELETE FROM employee WHERE email = 'old@example.com';</pre>"
-  },
-  {
-    title: "6. CHECK what the database refuses",
+    title: "4. CHECK what the database refuses",
     diff: "hard",
     prompt: "You have: <code>CREATE TABLE rating (id INT PRIMARY KEY, stars TINYINT CHECK (stars BETWEEN 1 AND 5));</code>. List exactly which of these inserts succeed and which fail, and why: <br>(a) <code>INSERT INTO rating VALUES (1, 5);</code> <br>(b) <code>INSERT INTO rating VALUES (2, 0);</code> <br>(c) <code>INSERT INTO rating VALUES (3, 6);</code> <br>(d) <code>INSERT INTO rating VALUES (1, 3);</code>",
     hint: "Two constraints are at play: PRIMARY KEY (uniqueness) and CHECK (range).",
     approach: "(a) Succeeds, stars 5 is in range. (b) Fails the CHECK, 0 is below 1. (c) Fails the CHECK, 6 is above 5. (d) Fails the PRIMARY KEY, id 1 already exists from (a). Net result: only one row in the table, the (1, 5) from (a)."
   },
   {
-    title: "7. Design Customer and Order",
+    title: "5. Design Customer and Order",
     diff: "hard",
     prompt: "Design two related tables for a small shop: <strong>Customer</strong> (id, name, email, phone) and <strong>Order</strong> (order_id, customer_id, order_date, total). Decide types, mark PK and FK, add NOT NULL / UNIQUE / CHECK / DEFAULT where appropriate. Write both <code>CREATE TABLE</code> statements.",
     hint: "Customer.id is the PK, Order.customer_id is the FK pointing to it. Pick a money type for total. 'order' is reserved, wrap it in backticks or rename.",
