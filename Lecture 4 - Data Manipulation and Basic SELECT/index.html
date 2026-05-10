@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 4: Data Manipulation and Basic SELECT</title>
+<style>
+/* ============ BASE ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #dbeafe;
+  --accent: #4f46e5;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* ============ HEADER ============ */
+header.lecture-header {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: white;
+  padding: 32px 28px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+header.lecture-header::before {
+  content: ""; position: absolute; top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08); border-radius: 50%;
+}
+header.lecture-header::after {
+  content: ""; position: absolute; bottom: -30px; right: 80px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.05); border-radius: 50%;
+}
+header.lecture-header .badge {
+  display: inline-block; background: rgba(255,255,255,0.2);
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.5px;
+  position: relative; z-index: 1;
+}
+header.lecture-header h1 {
+  font-size: 28px; margin: 12px 0 8px; font-weight: 700;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor {
+  font-size: 13px; opacity: 0.85;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  max-width: 720px; position: relative; z-index: 1;
+}
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+/* ============ STATS ============ */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px; padding: 14px;
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  background: white; padding: 6px;
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1; min-width: 110px;
+  padding: 11px 16px;
+  background: transparent; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active {
+  background: var(--primary); color: white;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.28);
+}
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ CARD ============ */
+.card { background: var(--card); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 16px; }
+
+/* ============ SLIDES ============ */
+.progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+.slide-counter { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 14px; font-weight: 500; }
+.slide { display: none; min-height: 420px; padding: 4px; animation: slideIn 0.3s ease; }
+.slide.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.slide h2 { font-size: 26px; margin-bottom: 6px; color: var(--primary-dark); font-weight: 700; line-height: 1.25; }
+.slide h3 { font-size: 18px; margin: 22px 0 10px; color: var(--text); font-weight: 600; }
+.slide p { margin-bottom: 12px; color: #334155; }
+.slide ul, .slide ol { margin: 0 0 14px 22px; }
+.slide li { margin-bottom: 6px; color: #334155; }
+.slide .slide-subtitle { color: var(--muted); font-size: 15px; margin-bottom: 18px; font-style: italic; }
+
+/* ============ CONTENT BOXES ============ */
+.example-box { background: var(--primary-light); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.example-box strong { color: var(--primary-dark); }
+.tip-box { background: var(--success-light); border-left: 4px solid var(--success); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.tip-box strong { color: var(--success); }
+.warn-box { background: var(--warning-light); border-left: 4px solid var(--warning); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.warn-box strong { color: var(--warning); }
+
+/* ============ CODE ============ */
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; color: #be185d; }
+pre { background: #1e293b; color: #e2e8f0; padding: 16px 18px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.6; }
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #7dd3fc; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #f9a8d4; }
+.sql-type { color: #fcd34d; font-weight: 600; }
+
+/* ============ DATA TABLES ============ */
+table.data-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
+table.data-table th { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.3px; }
+table.data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); background: white; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #f8fafc; }
+table.data-table tr:hover td { background: var(--primary-light); }
+
+/* ============ SLIDE NAV ============ */
+.slide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+.btn { padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: all var(--transition); font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.28); }
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.key-hint { font-size: 12px; color: var(--muted); }
+
+/* ============ INTERACTIVE PRACTICE ============ */
+.practice { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 18px; margin: 18px 0; }
+.practice h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.practice-q { margin-bottom: 10px; color: var(--text); font-weight: 500; }
+.practice-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.practice-btn { padding: 8px 14px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all var(--transition); color: var(--text); }
+.practice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.practice-btn.correct { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+.practice-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.practice-btn.disabled { pointer-events: none; opacity: 0.75; }
+.practice-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 14px; display: none; animation: fadeIn 0.2s; }
+.practice-feedback.show { display: block; }
+.practice-feedback.right { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+.practice-feedback.wrong { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+/* ============ QUIZ ============ */
+.quiz-intro { background: white; padding: 22px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+.quiz-question { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option { padding: 11px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: white; transition: all var(--transition); font-size: 14px; color: var(--text); text-align: left; font-family: inherit; }
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain { display: none; margin-top: 10px; padding: 10px 14px; background: #f8fafc; border-left: 3px solid var(--primary); border-radius: 4px; font-size: 13px; color: #334155; }
+.quiz-explain.show { display: block; }
+.quiz-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); flex-wrap: wrap; }
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result { display: none; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%); border-radius: var(--radius); text-align: center; margin-top: 16px; box-shadow: var(--shadow); animation: fadeIn 0.4s ease; }
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: var(--warning-light); color: var(--warning); }
+
+/* ============ FLASHCARDS ============ */
+.flashcards-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.flashcards-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.flashcards-header p { color: var(--muted); font-size: 14px; }
+.flashcards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.flashcard { perspective: 1000px; height: 180px; cursor: pointer; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.55s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: var(--shadow); }
+.flashcard-front { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2px solid var(--primary-light); color: var(--primary-dark); font-weight: 600; font-size: 17px; }
+.flashcard-front .hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 8px; font-style: italic; }
+.flashcard-back { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; transform: rotateY(180deg); font-size: 13px; line-height: 1.5; }
+
+/* ============ EXERCISES ============ */
+.exercises-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.exercise { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--warning-light); color: var(--warning); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise textarea { width: 100%; min-height: 90px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; background: #f8fafc; color: var(--text); transition: border-color var(--transition); }
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach { display: none; margin-top: 12px; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13.5px; }
+.exercise-hint { background: var(--warning-light); border-left: 3px solid var(--warning); color: #78350f; }
+.exercise-approach { background: #eff6ff; border-left: 3px solid var(--primary); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* ============ OBJECTIVES ============ */
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li { padding: 8px 0 8px 30px; position: relative; color: #334155; }
+.objectives-list li::before { content: "✓"; position: absolute; left: 0; top: 10px; color: var(--success); font-weight: bold; background: var(--success-light); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+
+/* ============ COMPARE ============ */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.compare-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.compare-card h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; font-weight: 600; }
+.compare-card ul { margin: 0 0 0 18px; }
+
+/* ============ KEYBOARD HINT ============ */
+.kbd { display: inline-block; background: #f1f5f9; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; color: var(--text); }
+
+/* ============ RESET ============ */
+.reset-btn { position: fixed; bottom: 18px; right: 18px; background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 13px; color: var(--muted); cursor: pointer; box-shadow: var(--shadow); font-family: inherit; transition: all var(--transition); z-index: 100; }
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  .compare-grid { grid-template-columns: 1fr; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .slide h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Lecture 4</span>
+  <h1>Data Manipulation and Basic SELECT</h1>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="progStat">0%</div><div class="stat-label">Slides Viewed</div></div>
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Quiz Score</div></div>
+  <div class="stat"><div class="stat-value" id="flipStat">0</div><div class="stat-label">Cards Flipped</div></div>
+  <div class="stat"><div class="stat-value" id="exStat">0</div><div class="stat-label">Exercises Worked</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="slides">📖 Slides</button>
+  <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+  <button class="tab-btn" data-tab="flashcards">🃏 Flashcards</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+</nav>
+
+<main>
+
+<!-- ============ SLIDES TAB ============ -->
+<section id="slides" class="tab-content active">
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  <div class="slide-counter" id="slideCounter">Slide 1 of 11</div>
+  <div class="card">
+    <div id="slidesContainer">
+
+      <!-- SLIDE 1 -->
+      <div class="slide active" data-slide="1">
+        <h2>Welcome to Lecture 4</h2>
+        <h3>What you'll learn today</h3>
+        <ul class="objectives-list">
+          <li>Use <code>INSERT</code> to add one row, many rows, or rows copied from another query</li>
+          <li>Use <code>UPDATE</code> to change values safely (and the dangers of forgetting <code>WHERE</code>)</li>
+          <li>Use <code>DELETE</code> to remove rows</li>
+          <li>Reshape an existing table after the fact with <code>ALTER TABLE</code></li>
+          <li>Compare <code>DROP TABLE</code> vs <code>TRUNCATE TABLE</code> and pick the right one</li>
+          <li>Write your first <code>SELECT</code> queries: pick a table, pick the columns, read rows</li>
+          <li>Use <strong>column projection</strong> to choose just the columns you want</li>
+        </ul>
+        <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="slide" data-slide="2">
+        <h2>INSERT, Putting Data In</h2>
+        <p><code>INSERT INTO</code> adds new rows to a table. You name the table, list the columns, then list the values in the same order.</p>
+
+        <h3>One row at a time</h3>
+<pre><code><span class="sql-kw">INSERT INTO</span> student (student_id, name, email, major, gpa)
+<span class="sql-kw">VALUES</span> (<span class="sql-num">101</span>, <span class="sql-str">'Maya Hassan'</span>, <span class="sql-str">'maya@isrt.ac.bd'</span>, <span class="sql-str">'Statistics'</span>, <span class="sql-num">3.85</span>);</code></pre>
+
+        <h3>Many rows at once</h3>
+<pre><code><span class="sql-kw">INSERT INTO</span> student (student_id, name, email, major)
+<span class="sql-kw">VALUES</span>
+  (<span class="sql-num">102</span>, <span class="sql-str">'Arif Rahman'</span>,  <span class="sql-str">'arif@isrt.ac.bd'</span>,  <span class="sql-str">'Statistics'</span>),
+  (<span class="sql-num">103</span>, <span class="sql-str">'Priya Das'</span>,    <span class="sql-str">'priya@isrt.ac.bd'</span>, <span class="sql-str">'Data Science'</span>),
+  (<span class="sql-num">104</span>, <span class="sql-str">'Tanvir Ahmed'</span>, <span class="sql-str">'tanvir@isrt.ac.bd'</span>,<span class="sql-str">'Statistics'</span>);</code></pre>
+        <p>Multi-row insert is one trip to the database, much faster than four separate inserts.</p>
+
+        <h3>Skipping columns: defaults and AUTO_INCREMENT</h3>
+        <p>You don't have to list every column. Skipped ones get their <code>DEFAULT</code> (or <code>NULL</code> if no default), and <code>AUTO_INCREMENT</code> columns are filled in for you.</p>
+<pre><code><span class="sql-cm">-- book_id is AUTO_INCREMENT, created_at has DEFAULT CURRENT_TIMESTAMP</span>
+<span class="sql-kw">INSERT INTO</span> book (title, author) <span class="sql-kw">VALUES</span> (<span class="sql-str">'Clean Code'</span>, <span class="sql-str">'Robert Martin'</span>);</code></pre>
+
+        <div class="practice" data-q="s2">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">If a column is <code>AUTO_INCREMENT</code> and you don't supply a value in <code>INSERT</code>, what happens?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">The INSERT fails with an error</button>
+            <button class="practice-btn" data-correct="false">The column is set to NULL</button>
+            <button class="practice-btn" data-correct="true">MySQL assigns the next integer value automatically</button>
+            <button class="practice-btn" data-correct="false">The column is set to 0</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide" data-slide="3">
+        <h2>UPDATE, Changing Existing Rows</h2>
+        <p><code>UPDATE</code> modifies rows that match a <code>WHERE</code> clause. Without WHERE, it changes every row in the table.</p>
+
+        <h3>Basic shape</h3>
+<pre><code><span class="sql-kw">UPDATE</span> student
+<span class="sql-kw">SET</span> major = <span class="sql-str">'Data Science'</span>
+<span class="sql-kw">WHERE</span> student_id = <span class="sql-num">101</span>;</code></pre>
+
+        <h3>Updating multiple columns at once</h3>
+<pre><code><span class="sql-kw">UPDATE</span> student
+<span class="sql-kw">SET</span> major = <span class="sql-str">'Data Science'</span>,
+    gpa   = <span class="sql-num">3.92</span>
+<span class="sql-kw">WHERE</span> student_id = <span class="sql-num">101</span>;</code></pre>
+
+        <h3>Using expressions, not just literals</h3>
+<pre><code><span class="sql-cm">-- Give every employee in department 5 a 10% raise</span>
+<span class="sql-kw">UPDATE</span> employee
+<span class="sql-kw">SET</span> salary = salary * <span class="sql-num">1.10</span>
+<span class="sql-kw">WHERE</span> department_id = <span class="sql-num">5</span>;</code></pre>
+
+        <div class="warn-box">
+          <strong>The classic disaster:</strong> <code>UPDATE student SET major = 'CS';</code> with no <code>WHERE</code> clause changes every student's major. Always think: "which rows should this touch?" before pressing run.
+        </div>
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div class="slide" data-slide="4">
+        <h2>DELETE, Removing Rows</h2>
+        <p><code>DELETE FROM</code> removes rows that match a <code>WHERE</code> clause. Same warning as <code>UPDATE</code>: no WHERE means every row.</p>
+
+<pre><code><span class="sql-cm">-- Remove one specific student</span>
+<span class="sql-kw">DELETE</span> <span class="sql-kw">FROM</span> student <span class="sql-kw">WHERE</span> student_id = <span class="sql-num">101</span>;
+
+<span class="sql-cm">-- Remove all rows older than 2020</span>
+<span class="sql-kw">DELETE</span> <span class="sql-kw">FROM</span> log <span class="sql-kw">WHERE</span> created_at &lt; <span class="sql-str">'2020-01-01'</span>;
+
+<span class="sql-cm">-- DANGER: removes EVERY row in the table</span>
+<span class="sql-kw">DELETE</span> <span class="sql-kw">FROM</span> student;</code></pre>
+
+        <div class="tip-box">
+          <strong>Safe habit:</strong> before running a destructive UPDATE or DELETE, run a <code>SELECT</code> with the <em>same</em> WHERE clause to preview the rows you'd touch. Once the preview looks right, swap SELECT for the real verb.
+        </div>
+
+        <div class="practice" data-q="s5">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">You ran <code>DELETE FROM student;</code> by accident. After it succeeds, what do you have?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">The student table is dropped from the database</button>
+            <button class="practice-btn" data-correct="true">An empty student table (structure intact, zero rows)</button>
+            <button class="practice-btn" data-correct="false">Only the first row survived</button>
+            <button class="practice-btn" data-correct="false">An automatic backup is restored</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5 -->
+      <div class="slide" data-slide="5">
+        <h2>ALTER TABLE, Reshaping a Table</h2>
+        <p>Tables aren't carved in stone. <code>ALTER TABLE</code> lets you add, change, rename, or drop columns and constraints after the table exists.</p>
+
+<pre><code><span class="sql-cm">-- Add a column</span>
+<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">ADD</span> phone <span class="sql-type">VARCHAR</span>(<span class="sql-num">20</span>);
+
+<span class="sql-cm">-- Change a column's type or constraints</span>
+<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">MODIFY</span> phone <span class="sql-type">VARCHAR</span>(<span class="sql-num">25</span>) <span class="sql-kw">NOT NULL</span>;
+
+<span class="sql-cm">-- Rename a column (MySQL 8+)</span>
+<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">RENAME COLUMN</span> phone <span class="sql-kw">TO</span> mobile;
+
+<span class="sql-cm">-- Drop a column</span>
+<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">DROP</span> <span class="sql-kw">COLUMN</span> mobile;
+
+<span class="sql-cm">-- Add a constraint after the fact</span>
+<span class="sql-kw">ALTER TABLE</span> student <span class="sql-kw">ADD</span> <span class="sql-kw">CONSTRAINT</span> uq_email <span class="sql-kw">UNIQUE</span> (email);</code></pre>
+
+        <div class="warn-box">
+          <strong>Be careful with DROP COLUMN.</strong> It deletes all the data in that column, no undo.
+        </div>
+
+        <div class="practice" data-q="s6">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">Which command adds a brand new column to an existing table?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">CREATE COLUMN ... ON student;</button>
+            <button class="practice-btn" data-correct="false">INSERT COLUMN ... INTO student;</button>
+            <button class="practice-btn" data-correct="true">ALTER TABLE student ADD column_name TYPE;</button>
+            <button class="practice-btn" data-correct="false">UPDATE student ADD column_name TYPE;</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6 -->
+      <div class="slide" data-slide="6">
+        <h2>DROP TABLE vs TRUNCATE TABLE</h2>
+        <p>Two commands that look similar but do very different things. And both are different from <code>DELETE</code>.</p>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <h4>DROP TABLE</h4>
+            <p style="font-size: 13.5px;">Deletes the <strong>entire table</strong>, structure and data. The table is gone, you'd have to <code>CREATE TABLE</code> it again.</p>
+<pre style="font-size: 12px; padding: 10px;"><code><span class="sql-kw">DROP TABLE</span> student;</code></pre>
+          </div>
+          <div class="compare-card">
+            <h4>TRUNCATE TABLE</h4>
+            <p style="font-size: 13.5px;">Removes <strong>all rows</strong>, but keeps the table's columns and constraints. Resets AUTO_INCREMENT back to 1.</p>
+<pre style="font-size: 12px; padding: 10px;"><code><span class="sql-kw">TRUNCATE TABLE</span> student;</code></pre>
+          </div>
+        </div>
+
+        <h3>The full comparison</h3>
+        <table class="data-table">
+          <thead><tr><th>Command</th><th>Removes data</th><th>Removes table</th><th>Resets AUTO_INCREMENT</th><th>Can use WHERE</th></tr></thead>
+          <tbody>
+            <tr><td><code>DELETE FROM t WHERE ...</code></td><td>Matched rows</td><td>No</td><td>No</td><td>Yes</td></tr>
+            <tr><td><code>DELETE FROM t;</code></td><td>All rows</td><td>No</td><td>No</td><td>No</td></tr>
+            <tr><td><code>TRUNCATE TABLE t;</code></td><td>All rows (fast)</td><td>No</td><td>Yes</td><td>No</td></tr>
+            <tr><td><code>DROP TABLE t;</code></td><td>All rows</td><td>Yes</td><td>(table is gone)</td><td>No</td></tr>
+          </tbody>
+        </table>
+
+        <div class="warn-box">
+          <strong>None of these have an undo button.</strong> In real systems, take a backup before any of them.
+        </div>
+
+        <div class="practice" data-q="s7">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">You want to clear all data from a table but keep its structure for fresh inserts. Use:</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">DROP TABLE</button>
+            <button class="practice-btn" data-correct="true">TRUNCATE TABLE</button>
+            <button class="practice-btn" data-correct="false">ALTER TABLE</button>
+            <button class="practice-btn" data-correct="false">CREATE TABLE</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 -->
+      <div class="slide" data-slide="7">
+        <h2>SELECT, Reading Rows</h2>
+        <p><code>SELECT</code> is the workhorse of SQL. Every report, dashboard, and analysis is built on it.</p>
+
+        <h3>The simplest form</h3>
+<pre><code><span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> student;</code></pre>
+        <p>Reads as: "give me every column (<code>*</code>) for every row of the student table". Useful for a quick look, but in real work you almost always want specific columns.</p>
+
+        <div class="example-box">
+          <strong>Read SELECT inside out:</strong> "Take this <em>table</em>, keep these <em>columns</em>, give me the rows." That's it. Everything else, filtering, sorting, grouping, is a refinement we'll add over the next few lectures.
+        </div>
+      </div>
+
+      <!-- SLIDE 8 -->
+      <div class="slide" data-slide="8">
+        <h2>Column Projection, Picking the Columns You Need</h2>
+        <p>Instead of <code>SELECT *</code>, list the columns you actually want, in the order you want them. This is called <strong>projection</strong>.</p>
+
+<pre><code><span class="sql-cm">-- All columns</span>
+<span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> student;
+
+<span class="sql-cm">-- Just two</span>
+<span class="sql-kw">SELECT</span> name, major <span class="sql-kw">FROM</span> student;
+
+<span class="sql-cm">-- A specific order, regardless of how the table was created</span>
+<span class="sql-kw">SELECT</span> major, name, email <span class="sql-kw">FROM</span> student;</code></pre>
+
+        <h3>Why prefer named columns over <code>*</code></h3>
+        <ul>
+          <li><strong>Clarity:</strong> the reader sees exactly which columns matter.</li>
+          <li><strong>Stability:</strong> if someone adds a column to the table later, your query keeps returning the same shape.</li>
+        </ul>
+
+        <div class="tip-box">
+          <strong>Habit to build:</strong> use <code>SELECT *</code> while exploring; switch to a named column list before saving the query for real use.
+        </div>
+
+        <div class="practice" data-q="s9">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">You want only the <code>name</code> and <code>email</code> columns from the <code>student</code> table, in that order. Which query is correct?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">SELECT student WHERE name, email;</button>
+            <button class="practice-btn" data-correct="false">SELECT * FROM student LIMIT name, email;</button>
+            <button class="practice-btn" data-correct="true">SELECT name, email FROM student;</button>
+            <button class="practice-btn" data-correct="false">FROM student SELECT name AND email;</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9 -->
+      <div class="slide" data-slide="9">
+        <h2>Putting It Together, A Worked Example</h2>
+        <p>One small <code>employee</code> table, exercising what we covered today.</p>
+
+        <h3>Starting state</h3>
+<pre><code><span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> employee (
+  employee_id <span class="sql-type">INT</span> <span class="sql-kw">PRIMARY KEY</span> <span class="sql-kw">AUTO_INCREMENT</span>,
+  name        <span class="sql-type">VARCHAR</span>(<span class="sql-num">100</span>) <span class="sql-kw">NOT NULL</span>,
+  department  <span class="sql-type">VARCHAR</span>(<span class="sql-num">40</span>),
+  salary      <span class="sql-type">DECIMAL</span>(<span class="sql-num">10</span>, <span class="sql-num">2</span>)
+);</code></pre>
+
+        <h3>1. INSERT some rows</h3>
+<pre><code><span class="sql-kw">INSERT INTO</span> employee (name, department, salary) <span class="sql-kw">VALUES</span>
+  (<span class="sql-str">'Maya Hassan'</span>,  <span class="sql-str">'Statistics'</span>,    <span class="sql-num">68000</span>),
+  (<span class="sql-str">'Arif Rahman'</span>,  <span class="sql-str">'Statistics'</span>,    <span class="sql-num">62000</span>),
+  (<span class="sql-str">'Priya Das'</span>,    <span class="sql-str">'Data Science'</span>,  <span class="sql-num">75000</span>),
+  (<span class="sql-str">'Tanvir Ahmed'</span>, <span class="sql-str">'Statistics'</span>,    <span class="sql-num">71000</span>);</code></pre>
+
+        <h3>2. SELECT to look around</h3>
+<pre><code><span class="sql-kw">SELECT</span> name, department, salary <span class="sql-kw">FROM</span> employee;</code></pre>
+
+        <h3>3. ALTER TABLE to add a column</h3>
+<pre><code><span class="sql-kw">ALTER TABLE</span> employee <span class="sql-kw">ADD</span> joined_at <span class="sql-type">DATE</span> <span class="sql-kw">DEFAULT</span> (<span class="sql-kw">CURRENT_DATE</span>);</code></pre>
+
+        <h3>4. UPDATE to change something</h3>
+<pre><code><span class="sql-cm">-- Statistics raise of 8%</span>
+<span class="sql-kw">UPDATE</span> employee
+<span class="sql-kw">SET</span>    salary = salary * <span class="sql-num">1.08</span>
+<span class="sql-kw">WHERE</span>  department = <span class="sql-str">'Statistics'</span>;</code></pre>
+
+        <h3>5. DELETE rows we no longer need</h3>
+<pre><code><span class="sql-cm">-- Tanvir moves on</span>
+<span class="sql-kw">DELETE</span> <span class="sql-kw">FROM</span> employee <span class="sql-kw">WHERE</span> name = <span class="sql-str">'Tanvir Ahmed'</span>;</code></pre>
+
+        <h3>6. Tear it all down (if you're done experimenting)</h3>
+<pre><code><span class="sql-cm">-- Empty the table but keep its structure</span>
+<span class="sql-kw">TRUNCATE TABLE</span> employee;
+
+<span class="sql-cm">-- Or remove it completely</span>
+<span class="sql-kw">DROP TABLE</span> employee;</code></pre>
+      </div>
+
+      <!-- SLIDE 10 -->
+      <div class="slide" data-slide="10">
+        <h2>Recap, What We Covered</h2>
+        <ul>
+          <li><strong>INSERT</strong> adds rows: one row, many rows, or rows produced by another query.</li>
+          <li>Skipping a column on INSERT lets defaults and AUTO_INCREMENT do their work.</li>
+          <li><strong>UPDATE ... SET ... WHERE</strong> changes existing rows. WHERE is what saves you from disaster.</li>
+          <li><strong>DELETE FROM ... WHERE</strong> removes rows. Without WHERE, all rows go.</li>
+          <li><strong>ALTER TABLE</strong> adds, modifies, renames, or drops columns and constraints later.</li>
+          <li><strong>DROP TABLE</strong> removes the table entirely; <strong>TRUNCATE TABLE</strong> empties it but keeps the structure (and resets AUTO_INCREMENT).</li>
+          <li><strong>SELECT col_list FROM table</strong> reads rows. <code>SELECT *</code> is for exploring, named columns are for keeping.</li>
+          <li><strong>Column projection</strong> means listing the columns you want, in the order you want them.</li>
+          <li>Safe habit: preview destructive UPDATE/DELETE with a SELECT using the same WHERE.</li>
+        </ul>
+      </div>
+
+      <!-- SLIDE 11 -->
+      <div class="slide" data-slide="11">
+        <h2>You Made It! 🎉</h2>
+        <p class="slide-subtitle">Lecture 4 done, you can put data in, change it, take it out, reshape tables, and read rows back.</p>
+
+        <h3>Before next class</h3>
+        <ol>
+          <li>Take the <strong>Quiz</strong> to check your understanding.</li>
+          <li>Review the <strong>Flashcards</strong> on INSERT / UPDATE / DELETE / ALTER / DROP / TRUNCATE / SELECT.</li>
+          <li>Try at least 3 of the <strong>Exercises</strong>, write the SQL on the ISRT server and run it.</li>
+        </ol>
+
+        <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs to keep learning. Your progress is saved. 💾</p>
+      </div>
+
+    </div>
+
+    <div class="slide-nav">
+      <button class="btn btn-ghost" id="prevBtn">← Previous</button>
+      <span class="key-hint">Use <span class="kbd">←</span> <span class="kbd">→</span> keys</span>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>📝 Quiz Time</h2>
+    <p>10 questions on data manipulation, ALTER/DROP/TRUNCATE, and SELECT basics. Pick an answer for each, you'll see your score at the end.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 10 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Great work!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/10</span></div>
+    <p id="quizMessage">You've completed the Lecture 4 quiz.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS TAB ============ -->
+<section id="flashcards" class="tab-content">
+  <div class="flashcards-header">
+    <h2>🃏 Key Terms, Flashcards</h2>
+    <p>Click any card to flip it and see the definition.</p>
+  </div>
+  <div class="flashcards-grid" id="flashcardsGrid"></div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>Exercises</h2>
+    <p>Write SQL on paper or in your editor first; run it on the ISRT server when you can.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Lecture 4">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   LECTURE 4, DATA MANIPULATION AND BASIC SELECT
+   ================================================================ */
+
+const STORAGE_KEY = 'lecture4-progress-v3';
+
+const state = {
+  currentSlide: 1,
+  totalSlides: 11,
+  maxSlideReached: 1,
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  flashcardsFlipped: new Set(),
+  exercisesOpened: new Set(),
+  exerciseAnswers: {},
+  practiceAnswers: {}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      flashcardsFlipped: [...state.flashcardsFlipped],
+      exercisesOpened: [...state.exercisesOpened]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.flashcardsFlipped = new Set(data.flashcardsFlipped || []);
+    state.exercisesOpened = new Set(data.exercisesOpened || []);
+    state.practiceAnswers = data.practiceAnswers || {};
+  } catch (e) {}
+}
+
+/* ============ TABS ============ */
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ============ SLIDES ============ */
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progFill = document.getElementById('progFill');
+const slideCounter = document.getElementById('slideCounter');
+
+function showSlide(n) {
+  if (n < 1 || n > state.totalSlides) return;
+  state.currentSlide = n;
+  if (n > state.maxSlideReached) state.maxSlideReached = n;
+  slides.forEach(s => s.classList.toggle('active', +s.dataset.slide === n));
+  const pct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  progFill.style.width = pct + '%';
+  slideCounter.textContent = `Slide ${n} of ${state.totalSlides}`;
+  prevBtn.disabled = n === 1;
+  nextBtn.textContent = n === state.totalSlides ? 'Finish ✓' : 'Next →';
+  updateStats();
+  saveState();
+}
+prevBtn.addEventListener('click', () => showSlide(state.currentSlide - 1));
+nextBtn.addEventListener('click', () => {
+  if (state.currentSlide < state.totalSlides) showSlide(state.currentSlide + 1);
+});
+document.addEventListener('keydown', (e) => {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (!activeTab || activeTab.id !== 'slides') return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prevBtn.click(); }
+});
+
+/* ============ PRACTICE ============ */
+document.querySelectorAll('.practice').forEach(p => {
+  const qid = p.dataset.q;
+  const feedback = p.querySelector('.practice-feedback');
+  if (!feedback) return;
+  const btns = p.querySelectorAll('.practice-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (p.dataset.answered === 'true') return;
+      const correct = btn.dataset.correct === 'true';
+      btns.forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.correct === 'true') b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+      feedback.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+      feedback.textContent = correct
+        ? '✓ Correct!'
+        : '✗ Not quite, the correct answer is highlighted in green.';
+      p.dataset.answered = 'true';
+      state.practiceAnswers[qid] = correct;
+      saveState();
+    });
+  });
+});
+
+/* ============ QUIZ ============ */
+const quizData = [
+  {
+    q: "Which statement adds new rows to a table?",
+    options: [
+      "ADD ROW INTO student VALUES (...);",
+      "INSERT INTO student VALUES (...);",
+      "PUT INTO student VALUES (...);",
+      "WRITE TO student VALUES (...);"
+    ],
+    answer: 1,
+    explain: "INSERT INTO ... VALUES adds rows. The other forms aren't valid SQL."
+  },
+  {
+    q: "What's the result of running UPDATE student SET major = 'CS'; (no WHERE)?",
+    options: [
+      "Only the first student's major changes",
+      "Nothing, MySQL refuses to run it without WHERE",
+      "Every student's major becomes 'CS'",
+      "A syntax error"
+    ],
+    answer: 2,
+    explain: "Without WHERE, UPDATE touches every row. This is the classic newcomer mistake."
+  },
+  {
+    q: "DELETE FROM employee; without a WHERE clause:",
+    options: [
+      "Drops the employee table",
+      "Removes every row but keeps the table",
+      "Deletes only the most recently inserted row",
+      "Errors out for safety"
+    ],
+    answer: 1,
+    explain: "DELETE without WHERE empties the table; the structure stays. To remove the table itself, use DROP TABLE."
+  },
+  {
+    q: "INSERT INTO archive (id, name) SELECT id, name FROM employee WHERE quit = 1; does what?",
+    options: [
+      "Throws a syntax error",
+      "Deletes rows from employee",
+      "Copies matching rows from employee into archive",
+      "Renames employee to archive"
+    ],
+    answer: 2,
+    explain: "INSERT INTO ... SELECT inserts rows produced by the SELECT, useful for archiving or seeding."
+  },
+  {
+    q: "How do you give every employee in department 5 a 10% raise in one statement?",
+    options: [
+      "UPDATE employee SET salary = 110 WHERE department_id = 5;",
+      "UPDATE employee SET salary = salary + 10 WHERE department_id = 5;",
+      "UPDATE employee SET salary = salary * 1.10 WHERE department_id = 5;",
+      "INSERT INTO employee (salary) VALUES (salary * 1.10);"
+    ],
+    answer: 2,
+    explain: "salary * 1.10 multiplies by 1.10, giving a 10% raise to each matching row."
+  },
+  {
+    q: "Which command adds a brand new column to an existing table?",
+    options: [
+      "CREATE COLUMN bio TEXT ON student;",
+      "INSERT COLUMN bio TEXT INTO student;",
+      "ALTER TABLE student ADD bio TEXT;",
+      "UPDATE student ADD bio TEXT;"
+    ],
+    answer: 2,
+    explain: "ALTER TABLE ... ADD adds columns. INSERT and UPDATE work on rows, not on table structure."
+  },
+  {
+    q: "Which command changes a column's type or constraints?",
+    options: [
+      "ALTER TABLE student CHANGE_TYPE name VARCHAR(150);",
+      "ALTER TABLE student MODIFY name VARCHAR(150);",
+      "UPDATE TABLE student SET name = VARCHAR(150);",
+      "REDEFINE student.name AS VARCHAR(150);"
+    ],
+    answer: 1,
+    explain: "ALTER TABLE ... MODIFY col_name new_definition; is the standard form for type or constraint changes."
+  },
+  {
+    q: "What's the difference between DROP TABLE and TRUNCATE TABLE?",
+    options: [
+      "They are the same",
+      "DROP removes the entire table; TRUNCATE keeps the structure but empties it (and resets AUTO_INCREMENT)",
+      "TRUNCATE removes the table; DROP just deletes one row",
+      "DROP only deletes rows where ID is NULL"
+    ],
+    answer: 1,
+    explain: "DROP removes the table altogether (structure + data). TRUNCATE empties it but keeps the structure and resets AUTO_INCREMENT."
+  },
+  {
+    q: "Which SELECT returns only the name and email columns from student?",
+    options: [
+      "SELECT * FROM student LIMIT name, email;",
+      "SELECT name, email FROM student;",
+      "SELECT student.name AND student.email;",
+      "FROM student GET name, email;"
+    ],
+    answer: 1,
+    explain: "Column projection is just listing the columns: SELECT col1, col2 FROM table."
+  },
+  {
+    q: "Which is the safest habit before running an UPDATE or DELETE?",
+    options: [
+      "Run it twice, just in case",
+      "Always run it without WHERE, then add WHERE later",
+      "Run a SELECT with the same WHERE first to see which rows you'd touch",
+      "Disable foreign keys, then run it"
+    ],
+    answer: 2,
+    explain: "Replace UPDATE/DELETE with SELECT to preview the rows that would be affected, then change SELECT to the real verb when you're sure."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const msg = document.getElementById('quizMessage');
+  const verdict = document.getElementById('quizVerdict');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent!';
+    msg.textContent = "You can put data in, change it, take it out, reshape tables, and read them back. Move on to the exercises!";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good work';
+    msg.textContent = "Solid, review the wrong ones and try again if you'd like.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Keep going 💪';
+    msg.textContent = "No worries, review the slides and flashcards, then retake.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+/* ============ FLASHCARDS ============ */
+const flashcards = [
+  { term: "INSERT INTO", def: "DML statement that adds rows to a table: INSERT INTO t (col1, col2) VALUES (v1, v2);" },
+  { term: "VALUES", def: "Clause inside INSERT that lists the row values. Multiple rows can be listed, comma-separated, in one statement." },
+  { term: "INSERT INTO ... SELECT", def: "Adds rows produced by another SELECT query, useful for archiving, seeding, or copying between tables." },
+  { term: "UPDATE", def: "DML statement that changes existing rows: UPDATE t SET col = expr WHERE conditions;" },
+  { term: "SET", def: "Clause inside UPDATE that says which column gets which new value. Multiple assignments are comma-separated." },
+  { term: "DELETE FROM", def: "DML statement that removes rows: DELETE FROM t WHERE conditions; without WHERE it removes every row." },
+  { term: "WHERE", def: "Clause that filters which rows a statement (UPDATE, DELETE, SELECT) applies to." },
+  { term: "ALTER TABLE", def: "DDL statement for changing an existing table: ADD, MODIFY, RENAME COLUMN, DROP COLUMN, or add a CONSTRAINT." },
+  { term: "ADD COLUMN", def: "Form of ALTER TABLE that appends a new column to an existing table." },
+  { term: "MODIFY", def: "Form of ALTER TABLE that changes a column's type or constraints, e.g., MODIFY phone VARCHAR(25) NOT NULL." },
+  { term: "DROP COLUMN", def: "Form of ALTER TABLE that removes a column and all its data. No undo." },
+  { term: "DROP TABLE", def: "Removes a table entirely, both structure and data. There is no undo." },
+  { term: "TRUNCATE TABLE", def: "Empties a table quickly while keeping its structure. Resets AUTO_INCREMENT." },
+  { term: "DELETE vs TRUNCATE vs DROP", def: "DELETE: removes matching rows (use WHERE). TRUNCATE: empties the table fast, resets AUTO_INCREMENT. DROP: removes the table entirely." },
+  { term: "SELECT", def: "DML statement that reads rows from one or more tables. The workhorse of querying." },
+  { term: "FROM", def: "Clause that names the source table (or tables) for a SELECT." },
+  { term: "SELECT * (asterisk)", def: "Returns every column. Useful for exploring; switch to a named column list for production queries." },
+  { term: "Column projection", def: "Listing the specific columns you want in the result, in the order you want them." }
+];
+const fcGrid = document.getElementById('flashcardsGrid');
+flashcards.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'flashcard';
+  card.dataset.idx = i;
+  card.innerHTML = `
+    <div class="flashcard-inner">
+      <div class="flashcard-front">
+        ${c.term}
+        <span class="hint">click to flip</span>
+      </div>
+      <div class="flashcard-back">${c.def}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
+    if (card.classList.contains('flipped')) state.flashcardsFlipped.add(i);
+    updateStats();
+    saveState();
+  });
+  fcGrid.appendChild(card);
+});
+function restoreFlashcards() {
+  fcGrid.querySelectorAll('.flashcard').forEach(c => {
+    if (state.flashcardsFlipped.has(+c.dataset.idx)) c.classList.add('flipped');
+  });
+}
+
+/* ============ EXERCISES ============ */
+const exercises = [
+  {
+    title: "1. Insert a few students",
+    diff: "easy",
+    prompt: "Given <code>student(student_id INT PK AUTO_INCREMENT, name VARCHAR(100), email VARCHAR(120) UNIQUE, major VARCHAR(60), gpa DECIMAL(3,2))</code>, write one INSERT that adds three students at once: Maya Hassan (Statistics, GPA 3.85), Arif Rahman (Statistics, 3.62), Priya Das (Data Science, 3.91). Don't supply student_id, let AUTO_INCREMENT do its work.",
+    hint: "INSERT INTO student (col1, col2, ...) VALUES (...), (...), (...);",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>INSERT INTO student (name, email, major, gpa)\nVALUES\n  ('Maya Hassan',  'maya@isrt.ac.bd',  'Statistics',   3.85),\n  ('Arif Rahman',  'arif@isrt.ac.bd',  'Statistics',   3.62),\n  ('Priya Das',    'priya@isrt.ac.bd', 'Data Science', 3.91);</pre>"
+  },
+  {
+    title: "2. Update with an expression",
+    diff: "easy",
+    prompt: "Every student in the Statistics major has been awarded a 0.05 GPA bonus. Write the UPDATE that adjusts their gpa accordingly.",
+    hint: "Use SET gpa = gpa + 0.05 WHERE major = 'Statistics'.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>UPDATE student\nSET    gpa = gpa + 0.05\nWHERE  major = 'Statistics';</pre>"
+  },
+  {
+    title: "3. Delete safely",
+    diff: "easy",
+    prompt: "Write a DELETE that removes only the student whose email is 'priya@isrt.ac.bd'. Then explain in one line how you'd quickly verify only that one row was affected.",
+    hint: "DELETE FROM student WHERE email = '...';. To verify, run a SELECT with the same WHERE before deleting, and re-run after deleting to confirm zero rows.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- Preview which rows would be touched\nSELECT * FROM student WHERE email = 'priya@isrt.ac.bd';\n\n-- If preview is correct, do the delete\nDELETE FROM student WHERE email = 'priya@isrt.ac.bd';\n\n-- Re-run the SELECT, expect 0 rows</pre>"
+  },
+  {
+    title: "4. Refactor with ALTER TABLE",
+    diff: "med",
+    prompt: "An older Student table is: <code>student(id INT, name VARCHAR(50), birthday VARCHAR(10), gpa FLOAT)</code>. Use <code>ALTER TABLE</code> to: (a) add a PRIMARY KEY on id, (b) widen name to 100 and make it NOT NULL, (c) change birthday to DATE, (d) change gpa to DECIMAL(3,2).",
+    hint: "Use ALTER TABLE ... ADD PRIMARY KEY (id); and ALTER TABLE ... MODIFY ... for each column change.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>ALTER TABLE student ADD PRIMARY KEY (id);\nALTER TABLE student MODIFY name VARCHAR(100) NOT NULL;\nALTER TABLE student MODIFY birthday DATE;\nALTER TABLE student MODIFY gpa DECIMAL(3,2);</pre>"
+  },
+  {
+    title: "5. DROP vs TRUNCATE in practice",
+    diff: "med",
+    prompt: "You have a <code>scratch</code> table you used for testing. Write the SQL for: <br>(a) emptying it but keeping the structure for fresh tests, <br>(b) removing it from the database entirely. Then in one sentence: which one resets AUTO_INCREMENT?",
+    hint: "TRUNCATE TABLE for (a), DROP TABLE for (b). TRUNCATE resets AUTO_INCREMENT.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a) keep the structure, drop all rows\nTRUNCATE TABLE scratch;\n\n-- (b) gone entirely\nDROP TABLE scratch;</pre> TRUNCATE resets AUTO_INCREMENT back to 1; DELETE FROM does not."
+  },
+  {
+    title: "6. Project specific columns",
+    diff: "easy",
+    prompt: "From your <code>employee(employee_id, name, department, salary, hired_at)</code> table, write a SELECT that returns only <strong>name</strong>, <strong>department</strong>, and <strong>salary</strong>, in that order.",
+    hint: "SELECT col1, col2, col3 FROM table.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT name, department, salary FROM employee;</pre>"
+  },
+  {
+    title: "7. Archive completed orders",
+    diff: "hard",
+    prompt: "Two tables: <code>orders(order_id, customer_id, total, status)</code> and <code>order_archive(order_id, customer_id, total)</code>. (a) Write an INSERT that copies every order whose status is 'completed' from orders into order_archive. (b) Then write a DELETE that removes those completed orders from the live orders table.",
+    hint: "INSERT INTO target (cols) SELECT cols FROM source WHERE ...; then DELETE FROM source WHERE ...;",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a) Copy completed orders into the archive\nINSERT INTO order_archive (order_id, customer_id, total)\nSELECT order_id, customer_id, total\nFROM orders\nWHERE status = 'completed';\n\n-- (b) Now remove them from the live orders table\nDELETE FROM orders\nWHERE status = 'completed';</pre> In real systems you'd wrap (a) and (b) in a TRANSACTION so they succeed or fail together. We'll cover transactions later."
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+exercises.forEach((ex, i) => {
+  const div = document.createElement('div');
+  div.className = 'exercise';
+  div.dataset.idx = i;
+  div.innerHTML = `
+    <div class="exercise-head">
+      <h4>${ex.title}</h4>
+      <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+    </div>
+    <div class="exercise-prompt">${ex.prompt}</div>
+    <textarea placeholder="Write your answer here..." data-ex="${i}"></textarea>
+    <div class="exercise-actions">
+      <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${i}">💡 Hint</button>
+      <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${i}">👀 Show Suggested Approach</button>
+      <span class="save-indicator" data-ex="${i}"></span>
+    </div>
+    <div class="exercise-hint" data-ex="${i}"><strong>Hint:</strong> ${ex.hint}</div>
+    <div class="exercise-approach" data-ex="${i}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+  `;
+  exContainer.appendChild(div);
+});
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesOpened.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    state.exercisesOpened.add(+idx);
+    updateStats();
+    saveState();
+  });
+});
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+}
+
+/* ============ STATS ============ */
+function updateStats() {
+  const slidePct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  document.getElementById('progStat').textContent = slidePct + '%';
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('flipStat').textContent = state.flashcardsFlipped.size;
+  document.getElementById('exStat').textContent = state.exercisesOpened.size;
+}
+
+/* ============ RESET ============ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Lecture 4? Your slide position, quiz score, flashcards, and exercise answers will be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+/* ============ INIT ============ */
+loadState();
+renderQuiz();
+restoreFlashcards();
+restoreExercises();
+showSlide(state.currentSlide);
+updateStats();
+
+Object.entries(state.practiceAnswers).forEach(([qid, correct]) => {
+  const p = document.querySelector(`.practice[data-q="${qid}"]`);
+  if (!p) return;
+  const fb = p.querySelector('.practice-feedback');
+  if (!fb) return;
+  p.dataset.answered = 'true';
+  p.querySelectorAll('.practice-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  });
+  fb.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+  fb.textContent = correct ? '✓ Correct!' : '✗ The correct answer is highlighted.';
+});
+</script>
+</body>
+</html>
