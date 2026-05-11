@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise Class 1: Foundations Review</title>
+<style>
+/* ============ BASE ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fffaf3;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --primary: #d97706;
+  --primary-dark: #b45309;
+  --primary-light: #fef3c7;
+  --accent: #c2410c;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --info: #2563eb;
+  --info-light: #dbeafe;
+  --border: #fde68a;
+  --border-soft: #f5e3b8;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* ============ HEADER ============ */
+header.lecture-header {
+  background: linear-gradient(135deg, #d97706 0%, #c2410c 100%);
+  color: white;
+  padding: 32px 28px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+header.lecture-header::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+header.lecture-header::after {
+  content: "";
+  position: absolute;
+  bottom: -30px; right: 80px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+header.lecture-header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  position: relative; z-index: 1;
+}
+header.lecture-header h1 {
+  font-size: 28px;
+  margin: 12px 0 8px;
+  font-weight: 700;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.subtitle {
+  font-size: 15px;
+  opacity: 0.92;
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+/* ============ STATS ============ */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  background: white; padding: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1; min-width: 110px;
+  padding: 11px 16px;
+  background: transparent; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active {
+  background: var(--primary); color: white;
+  box-shadow: 0 2px 8px rgba(217,119,6,0.30);
+}
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ CARD ============ */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.card h2 { font-size: 22px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 700; }
+.card h3 { font-size: 17px; color: var(--text); margin: 18px 0 8px; font-weight: 600; }
+.card p { color: #334155; margin-bottom: 12px; }
+.card ul, .card ol { margin: 0 0 14px 22px; }
+.card li { margin-bottom: 6px; color: #334155; }
+
+/* ============ CONTENT BOXES ============ */
+.example-box {
+  background: var(--info-light);
+  border-left: 4px solid var(--info);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.example-box strong { color: var(--info); }
+.tip-box {
+  background: var(--success-light);
+  border-left: 4px solid var(--success);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.tip-box strong { color: var(--success); }
+.warn-box {
+  background: var(--primary-light);
+  border-left: 4px solid var(--primary);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.warn-box strong { color: var(--primary-dark); }
+
+/* ============ CODE ============ */
+code {
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: #b45309;
+}
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 12px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #fcd34d; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-type { color: #7dd3fc; font-weight: 600; }
+
+/* ============ DATA TABLES ============ */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+table.data-table th {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+table.data-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  background: white;
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #fffaf3; }
+
+/* ============ QUIZ ============ */
+.quiz-intro {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+
+.quiz-question {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option {
+  padding: 11px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  transition: all var(--transition);
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  font-family: inherit;
+}
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #fffaf3;
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  font-size: 13px;
+  color: #334155;
+}
+.quiz-explain.show { display: block; }
+.quiz-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result {
+  display: none;
+  padding: 30px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-top: 16px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.4s ease;
+}
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: #fee2e2; color: var(--danger); }
+
+/* ============ EXERCISES ============ */
+.exercises-header {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.section-header {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  margin: 22px 0 14px;
+  border-left: 4px solid var(--primary);
+}
+.section-header h3 { color: var(--primary-dark); margin: 0 0 4px 0; font-size: 17px; font-weight: 700; }
+.section-header p { color: var(--muted); margin: 0; font-size: 13px; }
+.exercise {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+}
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--primary-light); color: var(--primary-dark); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise-prompt code { background: #fef3c7; }
+.exercise textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fffaf3;
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+}
+.exercise-hint { background: var(--primary-light); border-left: 3px solid var(--primary); color: #78350f; }
+.exercise-approach { background: var(--info-light); border-left: 3px solid var(--info); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.exercise-approach pre { background: #1e293b; color: #e2e8f0; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.done-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--muted);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.done-toggle:hover { border-color: var(--success); color: var(--success); }
+.done-toggle.done { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+
+/* ============ BUTTONS ============ */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(217,119,6,0.30);
+}
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-soft); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* ============ OBJECTIVES ============ */
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li {
+  padding: 8px 0 8px 30px;
+  position: relative;
+  color: #334155;
+}
+.objectives-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0; top: 10px;
+  color: var(--success);
+  font-weight: bold;
+  background: var(--success-light);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* ============ CHALLENGE ============ */
+.challenge-intro {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  border-left: 6px solid var(--primary);
+}
+.challenge-intro h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.challenge-intro p { color: #334155; margin-bottom: 0; }
+.challenge-step {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  border-left: 4px solid var(--primary);
+}
+.challenge-step h4 { font-size: 16px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 700; }
+.challenge-step .step-num {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 13px;
+  margin-right: 8px;
+  line-height: 24px;
+}
+.challenge-step textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fffaf3;
+  color: var(--text);
+}
+.challenge-step textarea:focus { outline: none; border-color: var(--primary); background: white; }
+
+/* ============ RESET ============ */
+.reset-btn {
+  position: fixed;
+  bottom: 18px; right: 18px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-family: inherit;
+  transition: all var(--transition);
+  z-index: 100;
+}
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Class 5 · Exercise 1</span>
+  <h1>Exercise Class 1: Foundations Review</h1>
+  <p class="subtitle">Hands-on practice covering the first four lectures, model a small schema, pick data types, write CREATE TABLE with constraints, and put data in and out with INSERT, UPDATE, DELETE, and SELECT.</p>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Warm-up Score</div></div>
+  <div class="stat"><div class="stat-value" id="exDoneStat">0 / 10</div><div class="stat-label">Exercises Marked Done</div></div>
+  <div class="stat"><div class="stat-value" id="exTouchedStat">0</div><div class="stat-label">Exercises Worked</div></div>
+  <div class="stat"><div class="stat-value" id="challengeStat">0%</div><div class="stat-label">Challenge Progress</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="brief">📋 Brief</button>
+  <button class="tab-btn" data-tab="quiz">🔥 Warm-up Quiz</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+  <button class="tab-btn" data-tab="challenge">🚀 Challenge</button>
+</nav>
+
+<main>
+
+<!-- ============ BRIEF TAB ============ -->
+<section id="brief" class="tab-content active">
+  <div class="card">
+    <h2>Today's Class</h2>
+    <p>Welcome to the first exercise class. The previous four lectures gave you the core building blocks: what databases and tables are, the right type for each column, how to write a <code>CREATE TABLE</code> with real constraints, and how to put rows in, change them, take them out, and read them back. Today you put it all together by hand.</p>
+
+    <h3>What you'll do today</h3>
+    <ul class="objectives-list">
+      <li>Run through a quick <strong>warm-up quiz</strong> to check your recall (10 questions)</li>
+      <li>Work the <strong>main exercises</strong>: brainstorm schemas, pick types, write <code>CREATE TABLE</code>s, and add constraints</li>
+      <li>Tackle a <strong>final challenge</strong>: design a small but complete clinic database from scratch</li>
+    </ul>
+
+    <h3>How to work today</h3>
+    <ol>
+      <li>Open <strong>MySQL Workbench</strong> and connect to the ISRT MySQL server.</li>
+      <li>Try every exercise <em>before</em> looking at the suggested approach. Struggling for a minute is part of learning.</li>
+      <li>When you finish an exercise, click "Mark done" so you can track progress.</li>
+      <li>Your typed answers are saved automatically in your browser, you can come back later.</li>
+    </ol>
+
+    <h3>Topics covered</h3>
+    <p>Everything from Lectures 1 to 4:</p>
+    <ul>
+      <li><strong>Lecture 1:</strong> databases, tables, primary keys, compound keys, foreign keys, DDL vs DML.</li>
+      <li><strong>Lecture 2:</strong> CHAR vs VARCHAR vs TEXT, integer family, DECIMAL vs FLOAT, DATE / DATETIME / TIMESTAMP / YEAR / TIME, the meaning of NULL.</li>
+      <li><strong>Lecture 3:</strong> CREATE TABLE syntax, PRIMARY KEY (single + compound), FOREIGN KEY, NOT NULL, UNIQUE, DEFAULT, CHECK, ENUM, AUTO_INCREMENT.</li>
+      <li><strong>Lecture 4:</strong> INSERT (single, multi-row, INSERT ... SELECT), UPDATE, DELETE, ALTER TABLE, DROP vs TRUNCATE, basic SELECT and column projection.</li>
+    </ul>
+
+    <div class="tip-box">
+      <strong>If you're behind:</strong> open the relevant lecture in another tab. Each section of today's exercises is mapped to specific lecture content, so you can flip back when you need a refresher.
+    </div>
+  </div>
+</section>
+
+<!-- ============ WARM-UP QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>🔥 Warm-up Quiz</h2>
+    <p>10 quick questions across Lectures 1-3. Pick an answer for each, then submit to see your score and explanations.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 10 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Nice warm-up!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/10</span></div>
+    <p id="quizMessage">Onward to the exercises.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>💪 Practice Exercises</h2>
+    <p>Eight exercises grouped into four sections. Try each on your own first, then peek at the suggested approach.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+<!-- ============ CHALLENGE TAB ============ -->
+<section id="challenge" class="tab-content">
+  <div class="challenge-intro">
+    <h2>🚀 Challenge: Design a Small Clinic Database</h2>
+    <p>Your final task. Design a small system for a family clinic, four tables that work together. Walk through each step in order. Your work is saved automatically.</p>
+  </div>
+
+  <div class="card">
+    <h2>The Scenario</h2>
+    <p>A small clinic wants a database to track <strong>patients</strong>, <strong>doctors</strong>, the <strong>appointments</strong> between them, and the <strong>prescriptions</strong> written during each appointment. Your job is to design the tables and write the <code>CREATE TABLE</code> statements.</p>
+
+    <h3>What we need to remember</h3>
+    <ul>
+      <li><strong>Patient:</strong> name, date of birth, phone, gender, address.</li>
+      <li><strong>Doctor:</strong> name, specialty, email, joined date.</li>
+      <li><strong>Appointment:</strong> which patient, which doctor, when, status (scheduled / completed / cancelled), notes.</li>
+      <li><strong>Prescription:</strong> which appointment, medicine name, dosage, duration in days.</li>
+    </ul>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">1</span>Brainstorm columns and types</h4>
+    <p>For each of the four tables, list the columns you need and the type you'd pick for each. Don't worry about constraints yet, just types.</p>
+    <textarea id="ch-step-1" placeholder="Patient table:&#10;  - patient_id : INT&#10;  - name : VARCHAR(100)&#10;  - ...&#10;&#10;Doctor table:&#10;  - ...&#10;&#10;Appointment table:&#10;  - ...&#10;&#10;Prescription table:&#10;  - ..."></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">2</span>Write CREATE TABLE for Patient and Doctor</h4>
+    <p>Now write the actual SQL for the two simpler tables. Add primary keys, NOT NULL where required, UNIQUE on email.</p>
+    <textarea id="ch-step-2" placeholder="CREATE TABLE patient (&#10;  ...&#10;);&#10;&#10;CREATE TABLE doctor (&#10;  ...&#10;);"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">3</span>Write CREATE TABLE for Appointment</h4>
+    <p>This one is trickier, the appointment links a patient and a doctor. You'll need <em>two foreign keys</em>. Use <code>ENUM</code> for status. Add a sensible <code>DEFAULT</code> for status.</p>
+    <textarea id="ch-step-3" placeholder="CREATE TABLE appointment (&#10;  appointment_id INT PRIMARY KEY AUTO_INCREMENT,&#10;  ...&#10;  FOREIGN KEY ... REFERENCES ...,&#10;  FOREIGN KEY ... REFERENCES ...&#10;);"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">4</span>Write CREATE TABLE for Prescription</h4>
+    <p>Each prescription belongs to one appointment. Add a CHECK that <code>duration_days</code> is positive. Decide whether <code>dosage</code> is text or numeric, justify in the textarea.</p>
+    <textarea id="ch-step-4" placeholder="CREATE TABLE prescription (&#10;  ...&#10;);&#10;&#10;-- Why I chose this type for dosage:&#10;-- ..."></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">5</span>Reveal the suggested design</h4>
+    <p>When you're done with steps 1-4, click below to compare your approach with one possible solution. There's no single right answer; what matters is that your tables are well-typed, have appropriate constraints, and link correctly.</p>
+    <button class="btn btn-primary btn-sm" id="revealChallenge">👀 Show suggested design</button>
+    <div id="challengeReveal" style="display: none; margin-top: 16px;">
+<pre><code><span class="sql-cm">-- Possible solution. Yours may differ in column choices and that's fine.</span>
+
+<span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> patient (
+  patient_id    <span class="sql-type">INT</span> <span class="sql-kw">PRIMARY KEY</span> <span class="sql-kw">AUTO_INCREMENT</span>,
+  name          <span class="sql-type">VARCHAR</span>(<span class="sql-num">100</span>) <span class="sql-kw">NOT NULL</span>,
+  date_of_birth <span class="sql-type">DATE</span> <span class="sql-kw">NOT NULL</span>,
+  phone         <span class="sql-type">VARCHAR</span>(<span class="sql-num">20</span>),
+  gender        <span class="sql-kw">ENUM</span>(<span class="sql-str">'F'</span>, <span class="sql-str">'M'</span>, <span class="sql-str">'Other'</span>),
+  address       <span class="sql-type">VARCHAR</span>(<span class="sql-num">200</span>)
+);
+
+<span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> doctor (
+  doctor_id   <span class="sql-type">INT</span> <span class="sql-kw">PRIMARY KEY</span> <span class="sql-kw">AUTO_INCREMENT</span>,
+  name        <span class="sql-type">VARCHAR</span>(<span class="sql-num">100</span>) <span class="sql-kw">NOT NULL</span>,
+  specialty   <span class="sql-type">VARCHAR</span>(<span class="sql-num">60</span>) <span class="sql-kw">NOT NULL</span>,
+  email       <span class="sql-type">VARCHAR</span>(<span class="sql-num">120</span>) <span class="sql-kw">NOT NULL</span> <span class="sql-kw">UNIQUE</span>,
+  joined_date <span class="sql-type">DATE</span> <span class="sql-kw">DEFAULT</span> (<span class="sql-kw">CURRENT_DATE</span>)
+);
+
+<span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> appointment (
+  appointment_id <span class="sql-type">INT</span> <span class="sql-kw">PRIMARY KEY</span> <span class="sql-kw">AUTO_INCREMENT</span>,
+  patient_id     <span class="sql-type">INT</span> <span class="sql-kw">NOT NULL</span>,
+  doctor_id      <span class="sql-type">INT</span> <span class="sql-kw">NOT NULL</span>,
+  appt_time      <span class="sql-type">DATETIME</span> <span class="sql-kw">NOT NULL</span>,
+  status         <span class="sql-kw">ENUM</span>(<span class="sql-str">'scheduled'</span>, <span class="sql-str">'completed'</span>, <span class="sql-str">'cancelled'</span>) <span class="sql-kw">DEFAULT</span> <span class="sql-str">'scheduled'</span>,
+  notes          <span class="sql-type">TEXT</span>,
+  <span class="sql-kw">FOREIGN KEY</span> (patient_id) <span class="sql-kw">REFERENCES</span> patient(patient_id),
+  <span class="sql-kw">FOREIGN KEY</span> (doctor_id)  <span class="sql-kw">REFERENCES</span> doctor(doctor_id)
+);
+
+<span class="sql-kw">CREATE</span> <span class="sql-kw">TABLE</span> prescription (
+  prescription_id <span class="sql-type">INT</span> <span class="sql-kw">PRIMARY KEY</span> <span class="sql-kw">AUTO_INCREMENT</span>,
+  appointment_id  <span class="sql-type">INT</span> <span class="sql-kw">NOT NULL</span>,
+  medicine_name   <span class="sql-type">VARCHAR</span>(<span class="sql-num">120</span>) <span class="sql-kw">NOT NULL</span>,
+  dosage          <span class="sql-type">VARCHAR</span>(<span class="sql-num">60</span>) <span class="sql-kw">NOT NULL</span>,    <span class="sql-cm">-- e.g., '500mg twice daily'</span>
+  duration_days   <span class="sql-type">SMALLINT</span> <span class="sql-kw">CHECK</span> (duration_days &gt; <span class="sql-num">0</span>),
+  <span class="sql-kw">FOREIGN KEY</span> (appointment_id) <span class="sql-kw">REFERENCES</span> appointment(appointment_id)
+);</code></pre>
+      <div class="example-box">
+        <strong>Notes on the choices:</strong>
+        <ul style="margin-top: 8px;">
+          <li><code>gender</code> uses <code>ENUM</code> for the small fixed list. Could also be <code>CHAR(1)</code> or <code>VARCHAR(10)</code>.</li>
+          <li><code>dosage</code> as <code>VARCHAR</code> because real-world dosages are messy text ("1 tablet, 3x daily"). A pure number would lose information.</li>
+          <li><code>appt_time</code> is <code>DATETIME</code> because the user picks a wall-clock time, no timezone math needed for a single clinic.</li>
+          <li>The order of <code>CREATE TABLE</code> statements matters: parent tables first (Patient, Doctor) before tables that reference them (Appointment, then Prescription).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Exercise Class 1">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   EXERCISE CLASS 1, FOUNDATIONS REVIEW
+   ================================================================ */
+
+const STORAGE_KEY = 'exclass1-progress-v2';
+
+const state = {
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  exerciseAnswers: {},
+  exercisesDone: new Set(),
+  exercisesTouched: new Set(),
+  hintsOpen: new Set(),
+  approachesOpen: new Set(),
+  challengeAnswers: {},
+  challengeRevealed: false
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      exercisesDone: [...state.exercisesDone],
+      exercisesTouched: [...state.exercisesTouched],
+      hintsOpen: [...state.hintsOpen],
+      approachesOpen: [...state.approachesOpen]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.exercisesDone = new Set(data.exercisesDone || []);
+    state.exercisesTouched = new Set(data.exercisesTouched || []);
+    state.hintsOpen = new Set(data.hintsOpen || []);
+    state.approachesOpen = new Set(data.approachesOpen || []);
+    state.challengeAnswers = data.challengeAnswers || {};
+  } catch (e) {}
+}
+
+/* ============ TABS ============ */
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ============ QUIZ ============ */
+const quizData = [
+  {
+    q: "What does a primary key guarantee for every row?",
+    options: [
+      "The value can repeat as long as none is NULL",
+      "The value is unique and never NULL",
+      "The value is always numeric",
+      "The value is always sorted"
+    ],
+    answer: 1,
+    explain: "Primary key = unique + never NULL. The type doesn't have to be numeric."
+  },
+  {
+    q: "Which is the best type for a customer's email address?",
+    options: ["CHAR(10)", "VARCHAR(120)", "TEXT", "INT"],
+    answer: 1,
+    explain: "Emails vary in length, VARCHAR is the natural fit. CHAR pads short emails wastefully; TEXT is overkill."
+  },
+  {
+    q: "Use this type to store money exactly:",
+    options: ["FLOAT", "DOUBLE", "DECIMAL(10, 2)", "VARCHAR(20)"],
+    answer: 2,
+    explain: "DECIMAL stores exact decimals. FLOAT/DOUBLE are approximate; storing money as text breaks math."
+  },
+  {
+    q: "Which statement about NULL is TRUE?",
+    options: [
+      "NULL equals 0",
+      "NULL is the empty string ''",
+      "NULL means unknown or not applicable",
+      "NULL equals NULL"
+    ],
+    answer: 2,
+    explain: "NULL is the absence of a value. NULL = NULL is unknown, not true."
+  },
+  {
+    q: "An Enrollment table records (student_id, course_id, grade). Neither column alone is unique. The primary key should be:",
+    options: [
+      "student_id only",
+      "course_id only",
+      "Compound: PRIMARY KEY (student_id, course_id)",
+      "There is no possible primary key"
+    ],
+    answer: 2,
+    explain: "The pair (student_id, course_id) is unique, that's a compound primary key."
+  },
+  {
+    q: "What does FOREIGN KEY (customer_id) REFERENCES customer(customer_id) enforce?",
+    options: [
+      "The column must be NULL",
+      "The column must match an existing customer.customer_id value",
+      "The two tables become the same",
+      "The column is encrypted"
+    ],
+    answer: 1,
+    explain: "Foreign keys enforce referential integrity, the value must point to a real row in the parent table."
+  },
+  {
+    q: "Which constraint forbids duplicate values in a column?",
+    options: ["NOT NULL", "DEFAULT", "UNIQUE", "AUTO_INCREMENT"],
+    answer: 2,
+    explain: "UNIQUE prevents duplicate values. (PRIMARY KEY also enforces uniqueness, plus disallows NULL.)"
+  },
+  {
+    q: "What does AUTO_INCREMENT do?",
+    options: [
+      "Encrypts the column",
+      "Indexes the column for fast lookups",
+      "Picks the next integer value automatically on each INSERT",
+      "Multiplies the column by 2 each row"
+    ],
+    answer: 2,
+    explain: "AUTO_INCREMENT lets MySQL hand out IDs automatically, no need to invent them yourself."
+  },
+  {
+    q: "What's the difference between DROP TABLE and TRUNCATE TABLE?",
+    options: [
+      "They are the same",
+      "DROP removes the entire table; TRUNCATE keeps the structure but empties it",
+      "TRUNCATE removes the table; DROP just deletes one row",
+      "DROP only deletes rows where ID is NULL"
+    ],
+    answer: 1,
+    explain: "DROP removes the table altogether (structure + data). TRUNCATE empties it but keeps the structure and resets AUTO_INCREMENT."
+  },
+  {
+    q: "Pick the correct CREATE TABLE syntax:",
+    options: [
+      "CREATE TABLE student SET id = INT, name = VARCHAR(100);",
+      "CREATE TABLE student WITH id INT, name VARCHAR(100);",
+      "CREATE TABLE student (id INT, name VARCHAR(100));",
+      "MAKE TABLE student (id INT, name VARCHAR(100));"
+    ],
+    answer: 2,
+    explain: "Basic shape: CREATE TABLE name (col TYPE, col TYPE, ...);"
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const verdict = document.getElementById('quizVerdict');
+  const msg = document.getElementById('quizMessage');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent recall!';
+    msg.textContent = "Foundations are solid. Move on to the exercises with confidence.";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good warm-up';
+    msg.textContent = "Review the wrong ones quickly, then jump to the exercises.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Quick review needed';
+    msg.textContent = "Open Lectures 1-3 in another tab and revisit the wrong ones, then come back.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+/* ============ EXERCISES ============ */
+const exerciseGroups = [
+  {
+    section: "Section A · Schema Design",
+    description: "Sketch the tables and columns before writing any SQL. The output is a list, not code.",
+    items: [
+      {
+        title: "1. Library checkout system",
+        diff: "easy",
+        prompt: "Design a small library system to track <strong>members</strong>, <strong>books</strong>, and <strong>loans</strong> (which member borrowed which book and when). For each table, list its columns and the type you'd use. Don't write CREATE TABLE yet, just the bullet list.",
+        hint: "Member needs name, email, phone. Book needs title, author, ISBN, publication year. Loan needs which member, which book, loan_date, return_date.",
+        approach: "Member(member_id INT PK, name VARCHAR(100), email VARCHAR(120), phone VARCHAR(20), joined_at DATE). Book(book_id INT PK, title VARCHAR(200), author VARCHAR(120), isbn CHAR(13), year_published YEAR). Loan(loan_id INT PK, member_id INT FK, book_id INT FK, loan_date DATE, return_date DATE)."
+      },
+      {
+        title: "2. Online shop",
+        diff: "easy",
+        prompt: "Sketch tables for an online shop with: <strong>customers</strong>, <strong>products</strong>, <strong>orders</strong>, and an <strong>order_item</strong> table that records which products are in each order (one order can have many items, one product can appear in many orders).",
+        hint: "Customers and products have their own tables. Order has a customer_id. order_item is the link table between orders and products, it'll need both order_id and product_id, plus quantity and unit_price.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>customer(customer_id INT PK, name VARCHAR(100), email VARCHAR(120) UNIQUE, phone VARCHAR(20))\n\nproduct(product_id INT PK, name VARCHAR(120), price DECIMAL(10,2), stock INT)\n\ncustomer_order(order_id INT PK, customer_id INT FK, order_date DATE,\n               status ENUM('pending','paid','shipped','cancelled'))\n\norder_item(order_id INT, product_id INT, quantity SMALLINT, unit_price DECIMAL(10,2),\n           PRIMARY KEY (order_id, product_id),\n           FOREIGN KEY (order_id)   REFERENCES customer_order(order_id),\n           FOREIGN KEY (product_id) REFERENCES product(product_id))</pre>Note: <code>order</code> is a reserved word in SQL, so we rename to <code>customer_order</code> (cleaner than wrapping in backticks). The order_item table is a classic <em>junction table</em>, two foreign keys plus a compound primary key."
+      }
+    ]
+  },
+  {
+    section: "Section B · Data Types",
+    description: "Practice picking the right type, sometimes there's an obvious winner, sometimes a judgment call.",
+    items: [
+      {
+        title: "3. Pick the type for each column",
+        diff: "easy",
+        prompt: "For each column, name the best MySQL type and one-line reason: <br>(a) <code>employee_id</code> (auto-assigned IDs from 1) <br>(b) <code>salary</code> (e.g., 65000.00) <br>(c) <code>hired_at</code> (date plus time, server-stored) <br>(d) <code>currency_code</code> (always 3 letters: USD, BDT, EUR) <br>(e) <code>bio</code> (paragraphs of free text) <br>(f) <code>is_active</code> (yes / no flag) <br>(g) <code>average_rating</code> (e.g., 4.27)",
+        hint: "Match each value to: integer family / DECIMAL / FLOAT / DATE family / CHAR / VARCHAR / TEXT / TINYINT-as-bool.",
+        approach: "(a) <code>INT AUTO_INCREMENT</code>. (b) <code>DECIMAL(10, 2)</code>, money is exact. (c) <code>TIMESTAMP</code> (or DATETIME if you don't care about timezone). (d) <code>CHAR(3)</code>, exactly 3 letters every row. (e) <code>TEXT</code>, can hold long content. (f) <code>BOOLEAN</code> (alias for TINYINT(1)) or just TINYINT 0/1. (g) <code>DECIMAL(3, 2)</code> to keep ratings exact in 0.00-9.99 range."
+      },
+      {
+        title: "4. Spot the wrong type",
+        diff: "easy",
+        prompt: "An older table is: <code>order_v1(id VARCHAR(20), order_date VARCHAR(20), total FLOAT, status VARCHAR(255))</code>. Which type choice is wrong for which column, and what would you change it to?",
+        hint: "Look at id, date, money, status (small fixed list).",
+        approach: "(1) <code>id</code> as VARCHAR(20) is fine technically, but if it's an auto ID, <code>INT AUTO_INCREMENT</code> is better. (2) <code>order_date</code> should be <code>DATE</code> (or <code>DATETIME</code>), never VARCHAR, otherwise sorting and date math break. (3) <code>total</code> as <code>FLOAT</code> is approximate, change to <code>DECIMAL(10, 2)</code>. (4) <code>status VARCHAR(255)</code> is unbounded, prefer <code>ENUM('pending','paid','shipped','cancelled')</code> for a small fixed list."
+      }
+    ]
+  },
+  {
+    section: "Section C · CREATE TABLE",
+    description: "Translate your designs into real SQL. Add the constraints that make the database refuse bad data.",
+    items: [
+      {
+        title: "5. Country table from scratch",
+        diff: "easy",
+        prompt: "Write a complete <code>CREATE TABLE country</code> with: <code>code</code> (2-letter primary key like 'BD'), <code>name</code> (required, unique), <code>continent</code> (one of: 'Asia', 'Africa', 'Europe', 'NA', 'SA', 'Oceania', 'Antarctica'), <code>population</code> (large positive integer, optional).",
+        hint: "Use CHAR(2) PRIMARY KEY, NOT NULL UNIQUE for name, ENUM for continent, BIGINT with a CHECK for population.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>CREATE TABLE country (\n  code        CHAR(2) PRIMARY KEY,\n  name        VARCHAR(80) NOT NULL UNIQUE,\n  continent   ENUM('Asia','Africa','Europe','NA','SA','Oceania','Antarctica') NOT NULL,\n  population  BIGINT CHECK (population &gt;= 0)\n);</pre>"
+      },
+      {
+        title: "6. Patient table with constraints",
+        diff: "med",
+        prompt: "Write <code>CREATE TABLE patient</code> with: <code>patient_id</code> auto-increment PK, <code>name</code> required (max 100 chars), <code>date_of_birth</code> required, <code>phone</code> optional unique, <code>gender</code> one of 'F'/'M'/'Other', <code>blood_type</code> one of A+/A-/B+/B-/AB+/AB-/O+/O-, <code>created_at</code> automatic timestamp.",
+        hint: "Use AUTO_INCREMENT, NOT NULL, UNIQUE, ENUM, DEFAULT CURRENT_TIMESTAMP.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>CREATE TABLE patient (\n  patient_id    INT PRIMARY KEY AUTO_INCREMENT,\n  name          VARCHAR(100) NOT NULL,\n  date_of_birth DATE NOT NULL,\n  phone         VARCHAR(20) UNIQUE,\n  gender        ENUM('F','M','Other'),\n  blood_type    ENUM('A+','A-','B+','B-','AB+','AB-','O+','O-'),\n  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);</pre>"
+      },
+      {
+        title: "7. Two related tables: Author and Book",
+        diff: "med",
+        prompt: "Write <code>CREATE TABLE</code>s for: <strong>author</strong>(author_id, name, country) and <strong>book</strong>(book_id, title, author_id, year_published, price). The book.author_id must reference an existing author.",
+        hint: "author table first (it's the parent), then book with FOREIGN KEY (author_id) REFERENCES author(author_id).",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>CREATE TABLE author (\n  author_id INT PRIMARY KEY AUTO_INCREMENT,\n  name      VARCHAR(120) NOT NULL,\n  country   VARCHAR(60)\n);\n\nCREATE TABLE book (\n  book_id        INT PRIMARY KEY AUTO_INCREMENT,\n  title          VARCHAR(200) NOT NULL,\n  author_id      INT NOT NULL,\n  year_published YEAR,\n  price          DECIMAL(7, 2) CHECK (price &gt;= 0),\n  FOREIGN KEY (author_id) REFERENCES author(author_id)\n);</pre> Note: the parent table (author) must be created first because book references it."
+      }
+    ]
+  },
+  {
+    section: "Section D · Constraints in Action",
+    description: "Predict what the database will accept or reject, and refactor existing tables.",
+    items: [
+      {
+        title: "8. Predict success or failure",
+        diff: "med",
+        prompt: "Given:<br><pre style='background:#1e293b;color:#e2e8f0;padding:8px;border-radius:6px;font-size:12px;'>CREATE TABLE rating (\n  id     INT PRIMARY KEY AUTO_INCREMENT,\n  movie  VARCHAR(120) NOT NULL,\n  stars  TINYINT CHECK (stars BETWEEN 1 AND 5),\n  review VARCHAR(500) UNIQUE\n);</pre>For each INSERT, say succeeds or fails (and why):<br>(a) <code>INSERT INTO rating(movie, stars, review) VALUES ('Inception', 5, 'Brilliant');</code><br>(b) <code>INSERT INTO rating(movie, stars, review) VALUES (NULL, 4, 'Good');</code><br>(c) <code>INSERT INTO rating(movie, stars, review) VALUES ('Dune', 6, 'Amazing');</code><br>(d) <code>INSERT INTO rating(movie, stars) VALUES ('Tenet', 4);</code><br>(e) <code>INSERT INTO rating(movie, stars, review) VALUES ('Memento', 5, 'Brilliant');</code>",
+        hint: "Check each row against: NOT NULL, the CHECK range, and UNIQUE.",
+        approach: "(a) Succeeds. (b) Fails: movie is NOT NULL. (c) Fails: stars 6 violates the CHECK (1..5). (d) Succeeds: review is nullable, no UNIQUE conflict because NULLs don't conflict. (e) Fails: review 'Brilliant' already exists from row (a), violates UNIQUE."
+      }
+    ]
+  },
+  {
+    section: "Section E · Manipulating Data",
+    description: "Now that the tables are designed, put rows in, change them, take them out, and read them back.",
+    items: [
+      {
+        title: "9. INSERT, UPDATE, DELETE on Employee",
+        diff: "med",
+        prompt: "Using your <code>employee</code> table from earlier, write SQL to: <br>(a) insert two employees in one statement, <br>(b) raise everyone in department 5 by 10%, <br>(c) delete the employee whose email is 'old@example.com'.",
+        hint: "Multi-row INSERT uses VALUES (...), (...). UPDATE uses SET salary = salary * 1.10 with a WHERE. DELETE uses a precise WHERE.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>INSERT INTO employee (name, email, salary, department_id)\nVALUES ('Maya Hassan', 'maya@isrt.ac.bd', 65000, 5),\n       ('Arif Rahman', 'arif@isrt.ac.bd', 58000, 5);\n\nUPDATE employee\nSET salary = salary * 1.10\nWHERE department_id = 5;\n\nDELETE FROM employee WHERE email = 'old@example.com';</pre>"
+      },
+      {
+        title: "10. SELECT what you need, then archive then truncate",
+        diff: "hard",
+        prompt: "Two tables: <code>orders(order_id, customer_id, total, status)</code> and <code>order_archive(order_id, customer_id, total)</code>. <br>(a) Write a SELECT that returns just <strong>order_id</strong>, <strong>customer_id</strong>, and <strong>total</strong> from orders, for completed orders. <br>(b) Write an INSERT INTO order_archive that uses that SELECT to copy those rows. <br>(c) Once archived, write the SQL to empty the orders table while keeping its structure (and resetting AUTO_INCREMENT).",
+        hint: "Projection with WHERE for the SELECT, then INSERT INTO ... SELECT, then TRUNCATE TABLE for the cleanup.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a) Preview the rows we'd archive\nSELECT order_id, customer_id, total\nFROM orders\nWHERE status = 'completed';\n\n-- (b) Archive them\nINSERT INTO order_archive (order_id, customer_id, total)\nSELECT order_id, customer_id, total\nFROM orders\nWHERE status = 'completed';\n\n-- (c) Empty the table fast, keep structure, reset AUTO_INCREMENT\nTRUNCATE TABLE orders;</pre>"
+      }
+    ]
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+let globalExIdx = 0;
+const exerciseFlatIndex = [];
+
+exerciseGroups.forEach(group => {
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'section-header';
+  sectionEl.innerHTML = `<h3>${group.section}</h3><p>${group.description}</p>`;
+  exContainer.appendChild(sectionEl);
+
+  group.items.forEach(ex => {
+    const idx = globalExIdx++;
+    exerciseFlatIndex.push(ex);
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <div class="exercise-head">
+        <h4>${ex.title}</h4>
+        <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+      </div>
+      <div class="exercise-prompt">${ex.prompt}</div>
+      <textarea placeholder="Write your answer here..." data-ex="${idx}"></textarea>
+      <div class="exercise-actions">
+        <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${idx}">💡 Hint</button>
+        <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${idx}">👀 Show Approach</button>
+        <button class="done-toggle" data-ex="${idx}">○ Mark done</button>
+        <span class="save-indicator" data-ex="${idx}"></span>
+      </div>
+      <div class="exercise-hint" data-ex="${idx}"><strong>Hint:</strong> ${ex.hint}</div>
+      <div class="exercise-approach" data-ex="${idx}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+    `;
+    exContainer.appendChild(div);
+  });
+});
+
+const totalExercises = exerciseFlatIndex.length;
+document.getElementById('exDoneStat').textContent = `0 / ${totalExercises}`;
+
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesTouched.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = +btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    if (action === 'hint') {
+      if (target.classList.contains('show')) state.hintsOpen.add(idx);
+      else state.hintsOpen.delete(idx);
+    } else {
+      if (target.classList.contains('show')) state.approachesOpen.add(idx);
+      else state.approachesOpen.delete(idx);
+    }
+    state.exercisesTouched.add(idx);
+    updateStats();
+    saveState();
+  });
+});
+
+exContainer.querySelectorAll('.done-toggle').forEach(btn => {
+  const idx = +btn.dataset.ex;
+  btn.addEventListener('click', () => {
+    if (state.exercisesDone.has(idx)) {
+      state.exercisesDone.delete(idx);
+      btn.classList.remove('done');
+      btn.textContent = '○ Mark done';
+    } else {
+      state.exercisesDone.add(idx);
+      btn.classList.add('done');
+      btn.textContent = '✓ Done';
+    }
+    updateStats();
+    saveState();
+  });
+});
+
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+  state.exercisesDone.forEach(idx => {
+    const btn = exContainer.querySelector(`.done-toggle[data-ex="${idx}"]`);
+    if (btn) { btn.classList.add('done'); btn.textContent = '✓ Done'; }
+  });
+  state.hintsOpen.forEach(idx => {
+    const el = exContainer.querySelector(`.exercise-hint[data-ex="${idx}"]`);
+    if (el) el.classList.add('show');
+  });
+  state.approachesOpen.forEach(idx => {
+    const el = exContainer.querySelector(`.exercise-approach[data-ex="${idx}"]`);
+    if (el) el.classList.add('show');
+  });
+}
+
+/* ============ CHALLENGE ============ */
+const challengeTextareas = document.querySelectorAll('.challenge-step textarea');
+challengeTextareas.forEach(ta => {
+  const id = ta.id;
+  ta.addEventListener('input', () => {
+    state.challengeAnswers[id] = ta.value;
+    updateStats();
+    saveState();
+  });
+});
+
+document.getElementById('revealChallenge').addEventListener('click', () => {
+  const reveal = document.getElementById('challengeReveal');
+  const isOpen = reveal.style.display !== 'none';
+  reveal.style.display = isOpen ? 'none' : 'block';
+  state.challengeRevealed = !isOpen;
+  document.getElementById('revealChallenge').textContent = isOpen ? '👀 Show suggested design' : '🙈 Hide suggested design';
+  saveState();
+});
+
+function restoreChallenge() {
+  Object.entries(state.challengeAnswers).forEach(([id, val]) => {
+    const ta = document.getElementById(id);
+    if (ta) ta.value = val;
+  });
+  if (state.challengeRevealed) {
+    document.getElementById('challengeReveal').style.display = 'block';
+    document.getElementById('revealChallenge').textContent = '🙈 Hide suggested design';
+  }
+}
+
+/* ============ STATS ============ */
+function updateStats() {
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('exDoneStat').textContent = `${state.exercisesDone.size} / ${totalExercises}`;
+  document.getElementById('exTouchedStat').textContent = state.exercisesTouched.size;
+  const filled = challengeTextareas.length === 0 ? 0 :
+    Array.from(challengeTextareas).filter(ta => (ta.value || '').trim().length > 0).length;
+  const pct = challengeTextareas.length === 0 ? 0 :
+    Math.round((filled / challengeTextareas.length) * 100);
+  document.getElementById('challengeStat').textContent = pct + '%';
+}
+
+/* ============ RESET ============ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Exercise Class 1? Your quiz answers, written exercises, and challenge work will all be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+/* ============ INIT ============ */
+loadState();
+renderQuiz();
+restoreExercises();
+restoreChallenge();
+updateStats();
+</script>
+</body>
+</html>
