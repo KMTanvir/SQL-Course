@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 6: Sorting, Patterns, and LIMIT</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #dbeafe;
+  --accent: #4f46e5; --success: #059669; --success-light: #d1fae5;
+  --danger: #dc2626; --danger-light: #fee2e2; --warning: #d97706; --warning-light: #fef3c7;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px; --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+header.lecture-header { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; padding: 32px 28px; border-radius: var(--radius); margin-bottom: 20px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+header.lecture-header::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+header.lecture-header::after { content: ""; position: absolute; bottom: -30px; right: 80px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+header.lecture-header .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; position: relative; z-index: 1; }
+header.lecture-header h1 { font-size: 28px; margin: 12px 0 8px; font-weight: 700; position: relative; z-index: 1; }
+header.lecture-header p.instructor { font-size: 13px; opacity: 0.85; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); max-width: 720px; position: relative; z-index: 1; }
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 14px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+.tabs { display: flex; gap: 4px; background: white; padding: 6px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; flex-wrap: wrap; }
+.tab-btn { flex: 1; min-width: 110px; padding: 11px 16px; background: transparent; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all var(--transition); font-family: inherit; }
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.28); }
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.card { background: var(--card); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 16px; }
+
+.progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+.slide-counter { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 14px; font-weight: 500; }
+.slide { display: none; min-height: 420px; padding: 4px; animation: slideIn 0.3s ease; }
+.slide.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.slide h2 { font-size: 26px; margin-bottom: 6px; color: var(--primary-dark); font-weight: 700; line-height: 1.25; }
+.slide h3 { font-size: 18px; margin: 22px 0 10px; color: var(--text); font-weight: 600; }
+.slide p { margin-bottom: 12px; color: #334155; }
+.slide ul, .slide ol { margin: 0 0 14px 22px; }
+.slide li { margin-bottom: 6px; color: #334155; }
+.slide .slide-subtitle { color: var(--muted); font-size: 15px; margin-bottom: 18px; font-style: italic; }
+
+.example-box { background: var(--primary-light); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.example-box strong { color: var(--primary-dark); }
+.tip-box { background: var(--success-light); border-left: 4px solid var(--success); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.tip-box strong { color: var(--success); }
+.warn-box { background: var(--warning-light); border-left: 4px solid var(--warning); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.warn-box strong { color: var(--warning); }
+
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; color: #be185d; }
+pre { background: #1e293b; color: #e2e8f0; padding: 16px 18px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.6; }
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #7dd3fc; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #f9a8d4; }
+.sql-type { color: #fcd34d; font-weight: 600; }
+
+table.data-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
+table.data-table th { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.3px; }
+table.data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); background: white; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #f8fafc; }
+table.data-table tr:hover td { background: var(--primary-light); }
+table.data-table .hl { background: #fef3c7 !important; }
+
+.slide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+.btn { padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: all var(--transition); font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.28); }
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.key-hint { font-size: 12px; color: var(--muted); }
+
+.practice { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 18px; margin: 18px 0; }
+.practice h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.practice-q { margin-bottom: 10px; color: var(--text); font-weight: 500; }
+.practice-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.practice-btn { padding: 8px 14px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all var(--transition); color: var(--text); }
+.practice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.practice-btn.correct { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+.practice-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.practice-btn.disabled { pointer-events: none; opacity: 0.75; }
+.practice-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 14px; display: none; animation: fadeIn 0.2s; }
+.practice-feedback.show { display: block; }
+.practice-feedback.right { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+.practice-feedback.wrong { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+.quiz-intro { background: white; padding: 22px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+.quiz-question { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option { padding: 11px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: white; transition: all var(--transition); font-size: 14px; color: var(--text); text-align: left; font-family: inherit; }
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain { display: none; margin-top: 10px; padding: 10px 14px; background: #f8fafc; border-left: 3px solid var(--primary); border-radius: 4px; font-size: 13px; color: #334155; }
+.quiz-explain.show { display: block; }
+.quiz-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); flex-wrap: wrap; }
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result { display: none; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%); border-radius: var(--radius); text-align: center; margin-top: 16px; box-shadow: var(--shadow); animation: fadeIn 0.4s ease; }
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: var(--warning-light); color: var(--warning); }
+
+.flashcards-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.flashcards-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.flashcards-header p { color: var(--muted); font-size: 14px; }
+.flashcards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.flashcard { perspective: 1000px; height: 180px; cursor: pointer; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.55s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: var(--shadow); }
+.flashcard-front { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2px solid var(--primary-light); color: var(--primary-dark); font-weight: 600; font-size: 17px; }
+.flashcard-front .hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 8px; font-style: italic; }
+.flashcard-back { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; transform: rotateY(180deg); font-size: 13px; line-height: 1.5; }
+
+.exercises-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.exercise { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--warning-light); color: var(--warning); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise textarea { width: 100%; min-height: 90px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; background: #f8fafc; color: var(--text); transition: border-color var(--transition); }
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach { display: none; margin-top: 12px; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13.5px; }
+.exercise-hint { background: var(--warning-light); border-left: 3px solid var(--warning); color: #78350f; }
+.exercise-approach { background: #eff6ff; border-left: 3px solid var(--primary); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li { padding: 8px 0 8px 30px; position: relative; color: #334155; }
+.objectives-list li::before { content: "✓"; position: absolute; left: 0; top: 10px; color: var(--success); font-weight: bold; background: var(--success-light); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.compare-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.compare-card h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; font-weight: 600; }
+.compare-card ul { margin: 0 0 0 18px; }
+
+.kbd { display: inline-block; background: #f1f5f9; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; color: var(--text); }
+
+.reset-btn { position: fixed; bottom: 18px; right: 18px; background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 13px; color: var(--muted); cursor: pointer; box-shadow: var(--shadow); font-family: inherit; transition: all var(--transition); z-index: 100; }
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  .compare-grid { grid-template-columns: 1fr; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .slide h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Lecture 6</span>
+  <h1>Sorting, Patterns, and LIMIT</h1>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="progStat">0%</div><div class="stat-label">Slides Viewed</div></div>
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Quiz Score</div></div>
+  <div class="stat"><div class="stat-value" id="flipStat">0</div><div class="stat-label">Cards Flipped</div></div>
+  <div class="stat"><div class="stat-value" id="exStat">0</div><div class="stat-label">Exercises Worked</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="slides">📖 Slides</button>
+  <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+  <button class="tab-btn" data-tab="flashcards">🃏 Flashcards</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+</nav>
+
+<main>
+
+<!-- ============ SLIDES TAB ============ -->
+<section id="slides" class="tab-content active">
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  <div class="slide-counter" id="slideCounter">Slide 1 of 15</div>
+  <div class="card">
+    <div id="slidesContainer">
+
+      <!-- SLIDE 1 -->
+      <div class="slide active" data-slide="1">
+        <h2>Welcome to Lecture 6</h2>
+        <h3>What you'll learn today</h3>
+        <ul class="objectives-list">
+          <li>Sort results with <code>ORDER BY</code>, ASC by default, DESC for descending</li>
+          <li>Sort by multiple columns, an expression, a function call, or a column alias</li>
+          <li>Cap the result size with <code>LIMIT n</code></li>
+          <li>Page through results with <code>LIMIT n OFFSET m</code></li>
+          <li>Use the shorthand filter operators <code>BETWEEN</code>, <code>IN</code>, and <code>IS NULL</code> / <code>IS NOT NULL</code></li>
+          <li>Match text patterns with <code>LIKE</code>, using the <code>%</code> and <code>_</code> wildcards</li>
+          <li>Use <code>NOT LIKE</code>, and escape literal <code>%</code> or <code>_</code> when you need them in the pattern</li>
+        </ul>
+        <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="slide" data-slide="2">
+        <h2>ORDER BY, Sorting the Result</h2>
+        <p>Without <code>ORDER BY</code>, the database is free to return rows in any order. If you need a specific order in the output, you have to ask for it.</p>
+
+        <h3>Basic shape</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> title;</code></pre>
+        <p>Default is ascending (A to Z, smallest to largest, earliest to latest). It is the same as writing <code>ORDER BY title ASC</code>.</p>
+
+        <h3>Sorts work on any orderable type</h3>
+        <ul>
+          <li>Strings → alphabetical (with the column's collation rules).</li>
+          <li>Numbers → numerical, smallest first.</li>
+          <li>Dates and datetimes → earliest first.</li>
+          <li>NULLs → MySQL puts them first by default in ASC, last in DESC.</li>
+        </ul>
+
+        <div class="example-box">
+          <strong>Mental model:</strong> SELECT decides <em>which</em> rows and columns. WHERE filters which rows. ORDER BY decides what <em>sequence</em> those rows come back in.
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide" data-slide="3">
+        <h2>ASC and DESC</h2>
+        <p>Add <code>DESC</code> after the column name to sort in descending order.</p>
+
+<pre><code><span class="sql-cm">-- Most expensive films first</span>
+<span class="sql-kw">SELECT</span> title, rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> rental_rate <span class="sql-kw">DESC</span>;
+
+<span class="sql-cm">-- Newest customers first (most recent create_date on top)</span>
+<span class="sql-kw">SELECT</span> first_name, last_name, create_date
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">ORDER BY</span> create_date <span class="sql-kw">DESC</span>;</code></pre>
+
+        <h3>You can mix ASC and DESC per column</h3>
+<pre><code><span class="sql-kw">SELECT</span> first_name, last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">ORDER BY</span> last_name <span class="sql-kw">ASC</span>, first_name <span class="sql-kw">DESC</span>;</code></pre>
+        <p>Last name ascending, but within the same last name, first names come back in reverse alphabetical order.</p>
+
+        <div class="practice" data-q="s3">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">If a query has no <code>ORDER BY</code> clause, what order do the rows come back in?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">Always the order they were inserted</button>
+            <button class="practice-btn" data-correct="false">Always sorted by the primary key</button>
+            <button class="practice-btn" data-correct="true">No guaranteed order, the database may return them in any sequence</button>
+            <button class="practice-btn" data-correct="false">Sorted alphabetically by the first column</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div class="slide" data-slide="4">
+        <h2>ORDER BY Multiple Columns</h2>
+        <p>List several columns, separated by commas. The database sorts by the first, and only uses later columns to break ties.</p>
+
+<pre><code><span class="sql-cm">-- Customers alphabetized by surname, then first name</span>
+<span class="sql-kw">SELECT</span> first_name, last_name, email
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">ORDER BY</span> last_name, first_name;</code></pre>
+
+        <h3>Sample result</h3>
+        <table class="data-table">
+          <thead><tr><th>first_name</th><th>last_name</th><th>email</th></tr></thead>
+          <tbody>
+            <tr><td>JAMIE</td><td>ANDERSON</td><td>jamie.anderson@sakilacustomer.org</td></tr>
+            <tr><td>WILLIAM</td><td>ANDERSON</td><td>william.anderson@sakilacustomer.org</td></tr>
+            <tr><td>HENRY</td><td>BAKER</td><td>henry.baker@sakilacustomer.org</td></tr>
+            <tr><td>JOSE</td><td>BAKER</td><td>jose.baker@sakilacustomer.org</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Each column has its own direction</h3>
+<pre><code><span class="sql-cm">-- Highest rental_rate first; for ties, alphabetical by title</span>
+<span class="sql-kw">SELECT</span> title, rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> rental_rate <span class="sql-kw">DESC</span>, title <span class="sql-kw">ASC</span>;</code></pre>
+
+        <div class="tip-box">
+          <strong>Why a tiebreaker matters:</strong> if two rows are equal on the first sort column, MySQL is free to put either one first. A second sort column makes the order predictable from run to run.
+        </div>
+      </div>
+
+      <!-- SLIDE 5 -->
+      <div class="slide" data-slide="5">
+        <h2>Sort by Expression or Alias</h2>
+        <p>The <code>ORDER BY</code> column doesn't have to be a plain column from the table. It can be an expression, a function call, or an alias defined in your SELECT list.</p>
+
+        <h3>By an expression</h3>
+<pre><code><span class="sql-cm">-- Sort by total potential rental income</span>
+<span class="sql-kw">SELECT</span> title, rental_rate, rental_duration
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> rental_rate * rental_duration <span class="sql-kw">DESC</span>;</code></pre>
+
+        <h3>By a function</h3>
+<pre><code><span class="sql-cm">-- Sort films by the length of their title</span>
+<span class="sql-kw">SELECT</span> title, <span class="sql-func">LENGTH</span>(title) <span class="sql-kw">AS</span> title_len
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> <span class="sql-func">LENGTH</span>(title) <span class="sql-kw">DESC</span>;</code></pre>
+
+        <h3>By an alias from SELECT</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, rental_rate * <span class="sql-num">12</span> <span class="sql-kw">AS</span> annual
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> annual <span class="sql-kw">DESC</span>;</code></pre>
+        <p>Aliases in <code>ORDER BY</code> are convenient because you don't repeat the expression.</p>
+
+        <h3>By column position number, possible but discouraged</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, rental_rate <span class="sql-kw">FROM</span> film <span class="sql-kw">ORDER BY</span> <span class="sql-num">2</span> <span class="sql-kw">DESC</span>;
+<span class="sql-cm">-- "2" means the 2nd column in the SELECT list (rental_rate). Less readable, avoid.</span></code></pre>
+      </div>
+
+      <!-- SLIDE 6 -->
+      <div class="slide" data-slide="6">
+        <h2>LIMIT, Capping the Result Size</h2>
+        <p><code>LIMIT n</code> tells the database to return at most n rows. Useful when you only want to see a sample, or the "top few" of something.</p>
+
+<pre><code><span class="sql-cm">-- Show just the first 5 films found</span>
+<span class="sql-kw">SELECT</span> film_id, title <span class="sql-kw">FROM</span> film <span class="sql-kw">LIMIT</span> <span class="sql-num">5</span>;</code></pre>
+
+        <h3>LIMIT + ORDER BY = top-N queries</h3>
+<pre><code><span class="sql-cm">-- Top 5 most expensive films to rent</span>
+<span class="sql-kw">SELECT</span> title, rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> rental_rate <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">5</span>;
+
+<span class="sql-cm">-- 10 longest films in the catalog</span>
+<span class="sql-kw">SELECT</span> title, length
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">ORDER BY</span> length <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">10</span>;</code></pre>
+
+        <div class="warn-box">
+          <strong>LIMIT without ORDER BY is unpredictable.</strong> Asking for "5 rows" without specifying an order means you might get any 5 rows, and the result can change run to run. Always pair LIMIT with ORDER BY when the order matters.
+        </div>
+
+        <div class="practice" data-q="s6">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">Which query returns the 3 cheapest films?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">SELECT title FROM film LIMIT 3;</button>
+            <button class="practice-btn" data-correct="false">SELECT title FROM film ORDER BY rental_rate DESC LIMIT 3;</button>
+            <button class="practice-btn" data-correct="true">SELECT title FROM film ORDER BY rental_rate ASC LIMIT 3;</button>
+            <button class="practice-btn" data-correct="false">SELECT title FROM film WHERE rental_rate &lt; 3;</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 -->
+      <div class="slide" data-slide="7">
+        <h2>LIMIT with OFFSET, Pagination</h2>
+        <p>To "skip" some rows before returning, add an offset. There are two equivalent syntaxes.</p>
+
+<pre><code><span class="sql-cm">-- Form 1: LIMIT count OFFSET skip</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">ORDER BY</span> title <span class="sql-kw">LIMIT</span> <span class="sql-num">10</span> <span class="sql-kw">OFFSET</span> <span class="sql-num">20</span>;
+
+<span class="sql-cm">-- Form 2: LIMIT skip, count   (older shorthand; means the same thing)</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">ORDER BY</span> title <span class="sql-kw">LIMIT</span> <span class="sql-num">20</span>, <span class="sql-num">10</span>;</code></pre>
+
+        <p>Both queries skip the first 20 rows and then return the next 10.</p>
+
+        <h3>Pagination, page by page</h3>
+        <p>Suppose your app shows 10 films per page, ordered alphabetically.</p>
+<pre><code><span class="sql-cm">-- Page 1 (rows 1-10)</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">ORDER BY</span> title <span class="sql-kw">LIMIT</span> <span class="sql-num">10</span> <span class="sql-kw">OFFSET</span> <span class="sql-num">0</span>;
+
+<span class="sql-cm">-- Page 2 (rows 11-20)</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">ORDER BY</span> title <span class="sql-kw">LIMIT</span> <span class="sql-num">10</span> <span class="sql-kw">OFFSET</span> <span class="sql-num">10</span>;
+
+<span class="sql-cm">-- Page p (rows (p-1)*10 + 1 .. p*10)</span>
+<span class="sql-cm">-- offset = (p - 1) * page_size</span></code></pre>
+
+        <div class="tip-box">
+          <strong>Always pair pagination with ORDER BY.</strong> Without a consistent order, the same row can appear on different pages, or disappear entirely between requests.
+        </div>
+      </div>
+
+      <!-- SLIDE 8 -->
+      <div class="slide" data-slide="8">
+        <h2>BETWEEN, A Cleaner Range Filter</h2>
+        <p><code>BETWEEN a AND b</code> is shorthand for <code>&gt;= a AND &lt;= b</code>. It is <strong>inclusive</strong> on both ends.</p>
+
+<pre><code><span class="sql-cm">-- These two are equivalent</span>
+<span class="sql-kw">SELECT</span> title, length <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> length <span class="sql-kw">BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">120</span>;
+<span class="sql-kw">SELECT</span> title, length <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> length &gt;= <span class="sql-num">90</span> <span class="sql-kw">AND</span> length &lt;= <span class="sql-num">120</span>;</code></pre>
+
+        <h3>Works on numbers, dates, and strings</h3>
+<pre><code><span class="sql-cm">-- Payments between $5.00 and $7.00</span>
+<span class="sql-kw">SELECT</span> payment_id, amount
+<span class="sql-kw">FROM</span> payment
+<span class="sql-kw">WHERE</span> amount <span class="sql-kw">BETWEEN</span> <span class="sql-num">5.00</span> <span class="sql-kw">AND</span> <span class="sql-num">7.00</span>;
+
+<span class="sql-cm">-- Customers with customer_id between 10 and 50</span>
+<span class="sql-kw">SELECT</span> customer_id, first_name, last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> customer_id <span class="sql-kw">BETWEEN</span> <span class="sql-num">10</span> <span class="sql-kw">AND</span> <span class="sql-num">50</span>;
+
+<span class="sql-cm">-- Rentals during a specific week</span>
+<span class="sql-kw">SELECT</span> rental_id, rental_date
+<span class="sql-kw">FROM</span> rental
+<span class="sql-kw">WHERE</span> rental_date <span class="sql-kw">BETWEEN</span> <span class="sql-str">'2005-06-14'</span> <span class="sql-kw">AND</span> <span class="sql-str">'2005-06-20'</span>;</code></pre>
+
+        <h3>NOT BETWEEN excludes the range</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length <span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> length <span class="sql-kw">NOT BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">120</span>;
+<span class="sql-cm">-- Returns films shorter than 90 OR longer than 120 minutes</span></code></pre>
+
+        <div class="tip-box">
+          <strong>Watch the inclusive ends.</strong> <code>BETWEEN 90 AND 120</code> matches 90, 120, and everything in between. If you wanted "strictly less than 120", use <code>&gt;= 90 AND &lt; 120</code> instead.
+        </div>
+      </div>
+
+      <!-- SLIDE 9 -->
+      <div class="slide" data-slide="9">
+        <h2>IN, Match Any Value in a List</h2>
+        <p><code>IN (val1, val2, ...)</code> is shorthand for "= val1 OR = val2 OR ...". Cleaner and easier to read.</p>
+
+<pre><code><span class="sql-cm">-- Long form with OR</span>
+<span class="sql-kw">SELECT</span> title, rating <span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating = <span class="sql-str">'G'</span>
+   <span class="sql-kw">OR</span>  rating = <span class="sql-str">'PG'</span>
+   <span class="sql-kw">OR</span>  rating = <span class="sql-str">'PG-13'</span>;
+
+<span class="sql-cm">-- Same thing, with IN</span>
+<span class="sql-kw">SELECT</span> title, rating <span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'G'</span>, <span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>);</code></pre>
+
+        <h3>Works for numbers too</h3>
+<pre><code><span class="sql-cm">-- Films from a few specific languages</span>
+<span class="sql-kw">SELECT</span> title, language_id
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> language_id <span class="sql-kw">IN</span> (<span class="sql-num">1</span>, <span class="sql-num">2</span>, <span class="sql-num">3</span>);
+
+<span class="sql-cm">-- Customers belonging to store 1 or 2</span>
+<span class="sql-kw">SELECT</span> customer_id, first_name, store_id
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> store_id <span class="sql-kw">IN</span> (<span class="sql-num">1</span>, <span class="sql-num">2</span>);</code></pre>
+
+        <h3>NOT IN excludes the list</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, rating <span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">NOT IN</span> (<span class="sql-str">'R'</span>, <span class="sql-str">'NC-17'</span>);</code></pre>
+
+        <div class="warn-box">
+          <strong>Watch out for NOT IN with NULLs.</strong> If the list contains NULL, <code>NOT IN</code> returns no rows because comparisons with NULL are "unknown". A safe rule: never put NULL in an IN list.
+        </div>
+      </div>
+
+      <!-- SLIDE 10 -->
+      <div class="slide" data-slide="10">
+        <h2>IS NULL and IS NOT NULL</h2>
+        <p>Recall from Lecture 2: NULL means "unknown / not applicable". Comparing it with <code>=</code> always returns "unknown", never true. Use <code>IS NULL</code> or <code>IS NOT NULL</code> to test for NULL.</p>
+
+        <div class="example-box">
+          <strong>Sakila context:</strong> in the <code>rental</code> table, <code>return_date</code> is NULL while a film is still rented out and gets filled in when the customer returns it. So "rentals not yet returned" is exactly the <code>IS NULL</code> check.
+        </div>
+
+<pre><code><span class="sql-cm">-- WRONG: returns no rows even when return_date really IS NULL</span>
+<span class="sql-kw">SELECT</span> rental_id <span class="sql-kw">FROM</span> rental <span class="sql-kw">WHERE</span> return_date = <span class="sql-kw">NULL</span>;
+
+<span class="sql-cm">-- Correct: rentals not yet returned</span>
+<span class="sql-kw">SELECT</span> rental_id, customer_id, rental_date
+<span class="sql-kw">FROM</span> rental
+<span class="sql-kw">WHERE</span> return_date <span class="sql-kw">IS</span> <span class="sql-kw">NULL</span>;
+
+<span class="sql-cm">-- Correct: rentals that HAVE been returned</span>
+<span class="sql-kw">SELECT</span> rental_id, customer_id, rental_date, return_date
+<span class="sql-kw">FROM</span> rental
+<span class="sql-kw">WHERE</span> return_date <span class="sql-kw">IS NOT NULL</span>;</code></pre>
+
+        <h3>NULL also affects other operators</h3>
+        <table class="data-table">
+          <thead><tr><th>Expression</th><th>When return_date is NULL</th></tr></thead>
+          <tbody>
+            <tr><td><code>return_date = '2005-06-15'</code></td><td>UNKNOWN, no match</td></tr>
+            <tr><td><code>return_date != '2005-06-15'</code></td><td>UNKNOWN, no match</td></tr>
+            <tr><td><code>return_date IS NULL</code></td><td>TRUE, match</td></tr>
+            <tr><td><code>return_date IS NOT NULL</code></td><td>FALSE, no match</td></tr>
+          </tbody>
+        </table>
+
+        <div class="practice" data-q="s10">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">Which is the correct way to find rentals that haven't been returned yet?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">WHERE return_date = NULL</button>
+            <button class="practice-btn" data-correct="false">WHERE return_date == NULL</button>
+            <button class="practice-btn" data-correct="true">WHERE return_date IS NULL</button>
+            <button class="practice-btn" data-correct="false">WHERE return_date = ''</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 11 -->
+      <div class="slide" data-slide="11">
+        <h2>LIKE, Pattern Matching</h2>
+        <p>So far we've matched exact values. <code>LIKE</code> matches a <strong>pattern</strong>, with two wildcards:</p>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <h4><code>%</code> (percent sign)</h4>
+            <p style="font-size: 13.5px;">Matches <strong>zero or more</strong> characters of any kind.</p>
+            <ul style="font-size: 13.5px;">
+              <li><code>'A%'</code> matches anything starting with A</li>
+              <li><code>'%man'</code> matches anything ending with man</li>
+              <li><code>'%er%'</code> matches anything containing 'er'</li>
+            </ul>
+          </div>
+          <div class="compare-card">
+            <h4><code>_</code> (underscore)</h4>
+            <p style="font-size: 13.5px;">Matches <strong>exactly one</strong> character.</p>
+            <ul style="font-size: 13.5px;">
+              <li><code>'_at'</code> matches "cat", "bat", "hat"</li>
+              <li><code>'A___'</code> matches any 4-char string starting with A</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Sakila examples</h3>
+<pre><code><span class="sql-cm">-- Customers whose first name starts with 'A'</span>
+<span class="sql-kw">SELECT</span> first_name, last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> first_name <span class="sql-kw">LIKE</span> <span class="sql-str">'A%'</span>;
+
+<span class="sql-cm">-- Films with titles ending in 'MAN'</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> title <span class="sql-kw">LIKE</span> <span class="sql-str">'%MAN'</span>;
+
+<span class="sql-cm">-- Addresses containing 'Street'</span>
+<span class="sql-kw">SELECT</span> address <span class="sql-kw">FROM</span> address <span class="sql-kw">WHERE</span> address <span class="sql-kw">LIKE</span> <span class="sql-str">'%Street%'</span>;</code></pre>
+
+        <div class="warn-box">
+          <strong>Wildcards only work with LIKE.</strong> <code>WHERE first_name = 'A%'</code> looks for the literal value "A%", not names starting with A. Use <code>LIKE</code> when you want pattern matching.
+        </div>
+      </div>
+
+      <!-- SLIDE 12 -->
+      <div class="slide" data-slide="12">
+        <h2>The _ Wildcard, One Character Each</h2>
+        <p>Each underscore matches exactly one character, no more, no less.</p>
+
+<pre><code><span class="sql-cm">-- Customers whose last_name is exactly 5 characters long</span>
+<span class="sql-kw">SELECT</span> first_name, last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> last_name <span class="sql-kw">LIKE</span> <span class="sql-str">'_____'</span>;
+
+<span class="sql-cm">-- Films whose title is 4 characters and starts with 'A'</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> title <span class="sql-kw">LIKE</span> <span class="sql-str">'A___'</span>;
+
+<span class="sql-cm">-- Last names where the second letter is 'A'</span>
+<span class="sql-kw">SELECT</span> last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> last_name <span class="sql-kw">LIKE</span> <span class="sql-str">'_A%'</span>;</code></pre>
+
+        <h3>Combining % and _</h3>
+<pre><code><span class="sql-cm">-- Titles where the third character is 'X', any length after that</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> title <span class="sql-kw">LIKE</span> <span class="sql-str">'__X%'</span>;</code></pre>
+
+        <table class="data-table">
+          <thead><tr><th>Pattern</th><th>Matches</th><th>Doesn't match</th></tr></thead>
+          <tbody>
+            <tr><td><code>'a%'</code></td><td>"apple", "a", "abc"</td><td>"banana"</td></tr>
+            <tr><td><code>'%a'</code></td><td>"banana", "data", "a"</td><td>"apple"</td></tr>
+            <tr><td><code>'_a'</code></td><td>"ba", "ca", "ma"</td><td>"a" (too short), "baa"</td></tr>
+            <tr><td><code>'a_'</code></td><td>"ab", "az"</td><td>"a", "abc"</td></tr>
+            <tr><td><code>'_a%'</code></td><td>"bat", "cat", "data"</td><td>"apple" (no leading char before 'a')</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SLIDE 13 -->
+      <div class="slide" data-slide="13">
+        <h2>NOT LIKE, Case, and Escaping</h2>
+
+        <h3>NOT LIKE excludes the pattern</h3>
+<pre><code><span class="sql-cm">-- Films whose title does NOT start with 'A'</span>
+<span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> title <span class="sql-kw">NOT LIKE</span> <span class="sql-str">'A%'</span>;</code></pre>
+
+        <h3>Case sensitivity</h3>
+        <p>By default, MySQL's <code>LIKE</code> is <strong>case-insensitive</strong> (assuming the standard collation). So <code>'A%'</code> matches both "Apple" and "apple".</p>
+<pre><code><span class="sql-cm">-- These both match "Apple" and "apple" on the default collation</span>
+<span class="sql-kw">SELECT</span> first_name <span class="sql-kw">FROM</span> customer <span class="sql-kw">WHERE</span> first_name <span class="sql-kw">LIKE</span> <span class="sql-str">'a%'</span>;
+<span class="sql-kw">SELECT</span> first_name <span class="sql-kw">FROM</span> customer <span class="sql-kw">WHERE</span> first_name <span class="sql-kw">LIKE</span> <span class="sql-str">'A%'</span>;</code></pre>
+        <p>If you need strict case-sensitive matching, force binary comparison with <code>BINARY</code>:</p>
+<pre><code><span class="sql-kw">SELECT</span> first_name <span class="sql-kw">FROM</span> customer <span class="sql-kw">WHERE</span> first_name <span class="sql-kw">LIKE</span> <span class="sql-kw">BINARY</span> <span class="sql-str">'A%'</span>;</code></pre>
+
+        <h3>Escaping literal % or _</h3>
+        <p>What if you actually want to find a value containing a literal percent sign or underscore? Use a backslash to escape, or define your own with <code>ESCAPE</code>:</p>
+<pre><code><span class="sql-cm">-- Find prices containing a percent sign in their text</span>
+<span class="sql-kw">SELECT</span> note <span class="sql-kw">FROM</span> sale <span class="sql-kw">WHERE</span> note <span class="sql-kw">LIKE</span> <span class="sql-str">'%\%%'</span>;
+<span class="sql-cm">-- Looking for "%". The middle \% is a literal percent sign.</span>
+
+<span class="sql-cm">-- Underscores in product codes (e.g., "A_B")</span>
+<span class="sql-kw">SELECT</span> code <span class="sql-kw">FROM</span> product <span class="sql-kw">WHERE</span> code <span class="sql-kw">LIKE</span> <span class="sql-str">'A\_B'</span>;</code></pre>
+
+        <div class="practice" data-q="s10">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">Which pattern finds customer last names that are exactly 4 characters long and start with 'B'?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">LIKE 'B%'</button>
+            <button class="practice-btn" data-correct="false">LIKE 'B%%%'</button>
+            <button class="practice-btn" data-correct="true">LIKE 'B___'</button>
+            <button class="practice-btn" data-correct="false">LIKE 'B_4'</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 14 -->
+      <div class="slide" data-slide="14">
+        <h2>Putting It Together, A Worked Query</h2>
+
+        <div class="example-box">
+          <strong>Question:</strong> "From the film catalog, list the 10 longest family-friendly films, rated G, PG, or PG-13, with length between 90 and 180 minutes and a title containing 'LOVE', showing title, length, and rating, sorted by length descending and title ascending."
+        </div>
+
+        <h3>Step 1, plain SELECT</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length, rating <span class="sql-kw">FROM</span> film;</code></pre>
+
+        <h3>Step 2, filter by rating with IN, and by range with BETWEEN</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length, rating
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'G'</span>, <span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>)
+  <span class="sql-kw">AND</span>   length <span class="sql-kw">BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">180</span>;</code></pre>
+
+        <h3>Step 3, also match a title pattern with LIKE</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length, rating
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'G'</span>, <span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>)
+  <span class="sql-kw">AND</span>   length <span class="sql-kw">BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">180</span>
+  <span class="sql-kw">AND</span>   title <span class="sql-kw">LIKE</span> <span class="sql-str">'%LOVE%'</span>;</code></pre>
+
+        <h3>Step 4, sort longest first, then alphabetical for ties</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length, rating
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'G'</span>, <span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>)
+  <span class="sql-kw">AND</span>   length <span class="sql-kw">BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">180</span>
+  <span class="sql-kw">AND</span>   title <span class="sql-kw">LIKE</span> <span class="sql-str">'%LOVE%'</span>
+<span class="sql-kw">ORDER BY</span> length <span class="sql-kw">DESC</span>, title <span class="sql-kw">ASC</span>;</code></pre>
+
+        <h3>Step 5, keep only the top 10</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length, rating
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'G'</span>, <span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>)
+  <span class="sql-kw">AND</span>   length <span class="sql-kw">BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">180</span>
+  <span class="sql-kw">AND</span>   title <span class="sql-kw">LIKE</span> <span class="sql-str">'%LOVE%'</span>
+<span class="sql-kw">ORDER BY</span> length <span class="sql-kw">DESC</span>, title <span class="sql-kw">ASC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">10</span>;</code></pre>
+
+        <p>That's the full toolkit at work: <code>IN</code>, <code>BETWEEN</code>, <code>LIKE</code> in the filter; <code>ORDER BY</code> for sorting; <code>LIMIT</code> to cap.</p>
+
+        <div class="tip-box">
+          <strong>Order of clauses in MySQL:</strong> <code>SELECT ... FROM ... WHERE ... ORDER BY ... LIMIT ...</code>. You can't reorder these. ORDER BY always comes before LIMIT.
+        </div>
+      </div>
+
+      <!-- SLIDE 15 -->
+      <div class="slide" data-slide="15">
+        <h2>You Made It! 🎉</h2>
+        <p class="slide-subtitle">Lecture 6 done, you can now sort, sample, paginate, and pattern-match.</p>
+
+        <h3>Recap, what we covered</h3>
+        <ul>
+          <li><code>ORDER BY col</code> sorts the result. Default is <code>ASC</code>; use <code>DESC</code> for descending.</li>
+          <li>You can sort by multiple columns; later columns break ties from earlier ones.</li>
+          <li>You can sort by an expression, a function call, or a column alias from SELECT.</li>
+          <li><code>LIMIT n</code> caps the result at n rows. Always pair with <code>ORDER BY</code> when order matters.</li>
+          <li><code>LIMIT n OFFSET m</code> (or <code>LIMIT m, n</code>) skips m rows then returns n, the basis of pagination.</li>
+          <li><code>BETWEEN a AND b</code> for inclusive ranges. <code>IN (...)</code> for "any of these". <code>IS NULL</code> / <code>IS NOT NULL</code> for missing values.</li>
+          <li><code>LIKE</code> matches patterns with <code>%</code> (zero or more chars) and <code>_</code> (exactly one char).</li>
+          <li>MySQL <code>LIKE</code> is case-insensitive by default; use <code>BINARY</code> for strict case matching.</li>
+          <li>Escape literal <code>%</code> or <code>_</code> with a backslash, or with a custom <code>ESCAPE</code> char.</li>
+          <li>Clause order is fixed: <code>SELECT ... FROM ... WHERE ... ORDER BY ... LIMIT ...</code>.</li>
+        </ul>
+
+        <h3>Before next class</h3>
+        <ol>
+          <li>Take the <strong>Quiz</strong> to check your understanding.</li>
+          <li>Review the <strong>Flashcards</strong> on ORDER BY, LIMIT/OFFSET, and the LIKE wildcards.</li>
+          <li>Try at least 3 of the <strong>Exercises</strong> on the ISRT Sakila database.</li>
+        </ol>
+
+        <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs to keep learning. Your progress is saved. 💾</p>
+      </div>
+
+    </div>
+
+    <div class="slide-nav">
+      <button class="btn btn-ghost" id="prevBtn">← Previous</button>
+      <span class="key-hint">Use <span class="kbd">←</span> <span class="kbd">→</span> keys</span>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>📝 Quiz Time</h2>
+    <p>13 questions on sorting, LIMIT/OFFSET, shortcut operators, and LIKE patterns, all on Sakila tables.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 13 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Great work!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/13</span></div>
+    <p id="quizMessage">You've completed the Lecture 6 quiz.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS TAB ============ -->
+<section id="flashcards" class="tab-content">
+  <div class="flashcards-header">
+    <h2>🃏 Key Terms, Flashcards</h2>
+    <p>Click any card to flip it and see the definition.</p>
+  </div>
+  <div class="flashcards-grid" id="flashcardsGrid"></div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>Exercises</h2>
+    <p>All exercises run against the Sakila database. Write the SQL on paper or in your editor first; run it on the ISRT Sakila when you can.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Lecture 6">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   LECTURE 6, SORTING, PATTERNS, AND LIMIT  (Sakila edition)
+   ================================================================ */
+
+const STORAGE_KEY = 'lecture6-progress-v2';
+
+const state = {
+  currentSlide: 1,
+  totalSlides: 15,
+  maxSlideReached: 1,
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  flashcardsFlipped: new Set(),
+  exercisesOpened: new Set(),
+  exerciseAnswers: {},
+  practiceAnswers: {}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      flashcardsFlipped: [...state.flashcardsFlipped],
+      exercisesOpened: [...state.exercisesOpened]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.flashcardsFlipped = new Set(data.flashcardsFlipped || []);
+    state.exercisesOpened = new Set(data.exercisesOpened || []);
+    state.practiceAnswers = data.practiceAnswers || {};
+  } catch (e) {}
+}
+
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progFill = document.getElementById('progFill');
+const slideCounter = document.getElementById('slideCounter');
+
+function showSlide(n) {
+  if (n < 1 || n > state.totalSlides) return;
+  state.currentSlide = n;
+  if (n > state.maxSlideReached) state.maxSlideReached = n;
+  slides.forEach(s => s.classList.toggle('active', +s.dataset.slide === n));
+  const pct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  progFill.style.width = pct + '%';
+  slideCounter.textContent = `Slide ${n} of ${state.totalSlides}`;
+  prevBtn.disabled = n === 1;
+  nextBtn.textContent = n === state.totalSlides ? 'Finish ✓' : 'Next →';
+  updateStats();
+  saveState();
+}
+prevBtn.addEventListener('click', () => showSlide(state.currentSlide - 1));
+nextBtn.addEventListener('click', () => {
+  if (state.currentSlide < state.totalSlides) showSlide(state.currentSlide + 1);
+});
+document.addEventListener('keydown', (e) => {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (!activeTab || activeTab.id !== 'slides') return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prevBtn.click(); }
+});
+
+document.querySelectorAll('.practice').forEach(p => {
+  const qid = p.dataset.q;
+  const feedback = p.querySelector('.practice-feedback');
+  if (!feedback) return;
+  const btns = p.querySelectorAll('.practice-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (p.dataset.answered === 'true') return;
+      const correct = btn.dataset.correct === 'true';
+      btns.forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.correct === 'true') b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+      feedback.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+      feedback.textContent = correct
+        ? '✓ Correct!'
+        : '✗ Not quite, the correct answer is highlighted in green.';
+      p.dataset.answered = 'true';
+      state.practiceAnswers[qid] = correct;
+      saveState();
+    });
+  });
+});
+
+const quizData = [
+  {
+    q: "Without an ORDER BY clause, the rows of a SELECT come back:",
+    options: [
+      "Always in insertion order",
+      "Always sorted by the primary key",
+      "In no guaranteed order",
+      "Always alphabetical on the first column"
+    ],
+    answer: 2,
+    explain: "Without ORDER BY, the database is free to return rows in any sequence. Always add ORDER BY when order matters."
+  },
+  {
+    q: "What is the default sort direction in ORDER BY?",
+    options: ["DESC (largest first)", "ASC (smallest first)", "Random", "Insertion order"],
+    answer: 1,
+    explain: "ASC is the default. ORDER BY col ASC and ORDER BY col are equivalent."
+  },
+  {
+    q: "Which query returns the 5 most expensive films first?",
+    options: [
+      "SELECT title, rental_rate FROM film LIMIT 5;",
+      "SELECT title, rental_rate FROM film ORDER BY rental_rate ASC LIMIT 5;",
+      "SELECT title, rental_rate FROM film ORDER BY rental_rate DESC LIMIT 5;",
+      "SELECT TOP 5 title, rental_rate FROM film;"
+    ],
+    answer: 2,
+    explain: "DESC puts the largest values first; LIMIT 5 caps the result at 5 rows. MySQL doesn't have TOP (that's SQL Server)."
+  },
+  {
+    q: "In SELECT title, rental_rate FROM film ORDER BY rental_rate DESC, title ASC; how are ties on rental_rate broken?",
+    options: [
+      "Randomly",
+      "By insertion order",
+      "Alphabetically by title (A first)",
+      "Reverse alphabetically by title (Z first)"
+    ],
+    answer: 2,
+    explain: "The second column is the tiebreaker. title ASC orders alphabetically (A first)."
+  },
+  {
+    q: "Which of these gives you 'page 3' of a 10-per-page list?",
+    options: [
+      "LIMIT 10 OFFSET 3",
+      "LIMIT 30 OFFSET 10",
+      "LIMIT 10 OFFSET 20",
+      "LIMIT 3, 10"
+    ],
+    answer: 2,
+    explain: "Page 3 = rows 21-30, so skip 20 and take 10. (LIMIT 3, 10 would skip 3 and take 10, which is page 1.4, not page 3.)"
+  },
+  {
+    q: "WHERE length BETWEEN 90 AND 120 is equivalent to:",
+    options: [
+      "WHERE length > 90 AND length < 120",
+      "WHERE length >= 90 AND length <= 120",
+      "WHERE length = 90 OR length = 120",
+      "WHERE length BETWEEN 90 OR 120"
+    ],
+    answer: 1,
+    explain: "BETWEEN is INCLUSIVE on both ends; same as >= a AND <= b."
+  },
+  {
+    q: "Which is the cleanest way to find films whose rating is one of three values?",
+    options: [
+      "WHERE rating = 'G, PG, PG-13'",
+      "WHERE rating BETWEEN 'G' AND 'PG-13'",
+      "WHERE rating IN ('G', 'PG', 'PG-13')",
+      "WHERE rating MATCHES ('G', 'PG', 'PG-13')"
+    ],
+    answer: 2,
+    explain: "IN (val1, val2, ...) is shorthand for OR-ing several = checks together. The other forms are not valid SQL."
+  },
+  {
+    q: "Which finds rentals that haven't been returned yet?",
+    options: [
+      "WHERE return_date = NULL",
+      "WHERE return_date == NULL",
+      "WHERE return_date IS NULL",
+      "WHERE return_date = ''"
+    ],
+    answer: 2,
+    explain: "Compare to NULL only with IS NULL / IS NOT NULL. Using = NULL always returns 'unknown' and matches no rows."
+  },
+  {
+    q: "Which pattern matches first names that start with 'J' and have at least one more character?",
+    options: ["LIKE 'J'", "LIKE 'J_'", "LIKE 'J%'", "LIKE '%J%'"],
+    answer: 2,
+    explain: "'J%' matches anything beginning with J followed by zero or more characters. 'J_' would match exactly 2-character names starting with J."
+  },
+  {
+    q: "Which query finds film titles containing the substring 'LOVE' anywhere?",
+    options: [
+      "WHERE title = 'LOVE'",
+      "WHERE title LIKE 'LOVE'",
+      "WHERE title LIKE '%LOVE%'",
+      "WHERE title CONTAINS 'LOVE'"
+    ],
+    answer: 2,
+    explain: "%LOVE% matches LOVE preceded and followed by any characters. Without the leading and trailing %, you'd be looking for the exact value 'LOVE'."
+  },
+  {
+    q: "Which pattern matches exactly 5-character names starting with 'A'?",
+    options: ["LIKE 'A%'", "LIKE 'A_'", "LIKE 'A____'", "LIKE 'A%%%%'"],
+    answer: 2,
+    explain: "Four underscores after A means exactly 4 more characters, total 5. % allows any number of additional characters, so 'A%' or 'A%%%%' don't constrain length."
+  },
+  {
+    q: "What does this return: SELECT title FROM film WHERE title NOT LIKE 'A%' ORDER BY title LIMIT 3;",
+    options: [
+      "3 films whose title starts with 'A'",
+      "3 films whose title does NOT start with 'A', alphabetically",
+      "All films sorted by title with no A's",
+      "A syntax error"
+    ],
+    answer: 1,
+    explain: "NOT LIKE 'A%' excludes titles starting with A; ORDER BY title sorts alphabetically; LIMIT 3 keeps the first 3."
+  },
+  {
+    q: "What is the correct order of these clauses in a SELECT?",
+    options: [
+      "SELECT ... LIMIT ... WHERE ... ORDER BY ... FROM ...",
+      "SELECT ... FROM ... WHERE ... ORDER BY ... LIMIT ...",
+      "FROM ... WHERE ... SELECT ... ORDER BY ... LIMIT ...",
+      "SELECT ... ORDER BY ... FROM ... WHERE ... LIMIT ..."
+    ],
+    answer: 1,
+    explain: "SELECT, FROM, WHERE, ORDER BY, LIMIT, in that order. ORDER BY always comes before LIMIT."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const msg = document.getElementById('quizMessage');
+  const verdict = document.getElementById('quizVerdict');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent!';
+    msg.textContent = "You've got sorting, paging, and patterns down. Move on to the exercises!";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good work';
+    msg.textContent = "Solid, review the wrong ones and try again if you'd like.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Keep going 💪';
+    msg.textContent = "No worries, review the slides and flashcards, then retake.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+const flashcards = [
+  { term: "ORDER BY", def: "Clause that sorts the result rows. Default direction is ASC. Comes after WHERE, before LIMIT." },
+  { term: "ASC / DESC", def: "Sort direction modifiers in ORDER BY. ASC is ascending (default); DESC is descending. Each column gets its own direction." },
+  { term: "Multi-column ORDER BY", def: "ORDER BY col1, col2, ... The database sorts by col1 first; later columns break ties from earlier ones." },
+  { term: "Sort by expression", def: "ORDER BY rental_rate * 12. Lets you sort by computed values, function calls, or column aliases from SELECT." },
+  { term: "Sort by column number", def: "ORDER BY 2 means 'the 2nd column in the SELECT list'. Legal but fragile; prefer named columns or aliases." },
+  { term: "NULLs in ORDER BY", def: "By default MySQL puts NULLs first in ASC and last in DESC. Other databases differ; check the docs if it matters." },
+  { term: "LIMIT n", def: "Returns at most n rows. Combine with ORDER BY to get the top n or bottom n." },
+  { term: "LIMIT n OFFSET m", def: "Skips m rows, then returns up to n. The basis of pagination. Equivalent to LIMIT m, n in MySQL's shorthand." },
+  { term: "Pagination formula", def: "For page p with page_size rows: LIMIT page_size OFFSET (p-1)*page_size. Always pair with a stable ORDER BY." },
+  { term: "BETWEEN a AND b", def: "Inclusive range filter; same as >= a AND <= b. Works on numbers, strings, dates. NOT BETWEEN excludes the range." },
+  { term: "IN (...)", def: "Matches if the column equals any value in the list. Cleaner than chaining many = OR = checks. NOT IN excludes them." },
+  { term: "IS NULL / IS NOT NULL", def: "The only correct way to test for NULL. Comparing with = NULL always returns 'unknown' and matches no rows." },
+  { term: "LIKE", def: "Operator that compares a string against a pattern. Use it instead of = when you need wildcards." },
+  { term: "% wildcard", def: "Matches zero or more characters of any kind in a LIKE pattern. 'A%' starts with A; '%A' ends with A; '%A%' contains A." },
+  { term: "_ wildcard", def: "Matches exactly one character of any kind. 'A___' matches A followed by exactly 3 more characters." },
+  { term: "NOT LIKE", def: "Inverts LIKE: matches rows whose value does NOT fit the pattern." },
+  { term: "Case sensitivity of LIKE", def: "By default MySQL's LIKE is case-insensitive (with the standard collation). Use LIKE BINARY 'A%' to force case-sensitive matching." },
+  { term: "Escape literal % or _", def: "Use a backslash: LIKE '50\\%' to find the literal text '50%'. Or define a custom escape: LIKE '50!%' ESCAPE '!'." }
+];
+const fcGrid = document.getElementById('flashcardsGrid');
+flashcards.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'flashcard';
+  card.dataset.idx = i;
+  card.innerHTML = `
+    <div class="flashcard-inner">
+      <div class="flashcard-front">
+        ${c.term}
+        <span class="hint">click to flip</span>
+      </div>
+      <div class="flashcard-back">${c.def}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
+    if (card.classList.contains('flipped')) state.flashcardsFlipped.add(i);
+    updateStats();
+    saveState();
+  });
+  fcGrid.appendChild(card);
+});
+function restoreFlashcards() {
+  fcGrid.querySelectorAll('.flashcard').forEach(c => {
+    if (state.flashcardsFlipped.has(+c.dataset.idx)) c.classList.add('flipped');
+  });
+}
+
+const exercises = [
+  {
+    title: "1. Basic ORDER BY",
+    diff: "easy",
+    prompt: "From <code>sakila.actor</code>, list the actor_id, first_name, and last_name of every actor, sorted by last_name (A to Z).",
+    hint: "Use ORDER BY last_name. Default is ASC, you don't need to write it.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT actor_id, first_name, last_name\nFROM actor\nORDER BY last_name;</pre>"
+  },
+  {
+    title: "2. Tiebreaker sort",
+    diff: "easy",
+    prompt: "From <code>actor</code>, list the actor_id, first_name, and last_name, sorted by last_name ascending, and for ties by first_name ascending.",
+    hint: "Comma-separate the two columns inside ORDER BY.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT actor_id, first_name, last_name\nFROM actor\nORDER BY last_name, first_name;</pre>"
+  },
+  {
+    title: "3. Top-N with LIMIT",
+    diff: "easy",
+    prompt: "From <code>film</code>, list the title and length of the 10 longest films.",
+    hint: "ORDER BY length DESC LIMIT 10.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM film\nORDER BY length DESC\nLIMIT 10;</pre>"
+  },
+  {
+    title: "4. Pagination",
+    diff: "med",
+    prompt: "From <code>customer</code>, ordered by customer_id, write the SQL for: <br>(a) page 1 of 25 customers per page, <br>(b) page 3 of 25 customers per page.",
+    hint: "Page p = skip (p-1)*25, take 25. Use LIMIT count OFFSET skip.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a) page 1\nSELECT customer_id, first_name, last_name\nFROM customer\nORDER BY customer_id\nLIMIT 25 OFFSET 0;\n\n-- (b) page 3\nSELECT customer_id, first_name, last_name\nFROM customer\nORDER BY customer_id\nLIMIT 25 OFFSET 50;</pre>"
+  },
+  {
+    title: "5. BETWEEN on payments and rentals",
+    diff: "med",
+    prompt: "Write two SELECT queries: <br>(a) From <code>payment(payment_id, customer_id, amount, payment_date)</code>, all payments where amount is between 5.00 and 7.00. <br>(b) From <code>rental(rental_id, rental_date, customer_id)</code>, all rentals from June 14, 2005 to June 20, 2005.",
+    hint: "BETWEEN works on numbers, dates, and strings. Date format is 'YYYY-MM-DD'.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a)\nSELECT payment_id, amount\nFROM payment\nWHERE amount BETWEEN 5.00 AND 7.00;\n\n-- (b)\nSELECT rental_id, rental_date, customer_id\nFROM rental\nWHERE rental_date BETWEEN '2005-06-14' AND '2005-06-20';</pre>"
+  },
+  {
+    title: "6. IN and IS NULL",
+    diff: "med",
+    prompt: "Write two SELECT queries: <br>(a) From <code>film</code>, all films whose rating is one of 'G', 'PG', or 'PG-13'. <br>(b) From <code>rental</code>, all rentals that have NOT yet been returned (return_date IS NULL).",
+    hint: "IN for the rating list, IS NULL for the returned-yet check.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a)\nSELECT title, rating\nFROM film\nWHERE rating IN ('G', 'PG', 'PG-13');\n\n-- (b)\nSELECT rental_id, customer_id, rental_date\nFROM rental\nWHERE return_date IS NULL;</pre>"
+  },
+  {
+    title: "7. Pattern matching with LIKE %sub%",
+    diff: "med",
+    prompt: "Write three queries on Sakila: <br>(a) actor last_names containing 'son' anywhere. <br>(b) film titles ending in 'MAN'. <br>(c) address rows where address contains 'Street'.",
+    hint: "Use %sub% for 'contains', sub% for 'starts with', %sub for 'ends with'.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a)\nSELECT first_name, last_name FROM actor WHERE last_name LIKE '%son%';\n\n-- (b)\nSELECT title FROM film WHERE title LIKE '%MAN';\n\n-- (c)\nSELECT address FROM address WHERE address LIKE '%Street%';</pre>"
+  },
+  {
+    title: "8. Underscore wildcard",
+    diff: "med",
+    prompt: "From <code>customer</code>, find all customers whose first_name is exactly 4 characters long and starts with 'J'. Sort the result alphabetically.",
+    hint: "Pattern: J followed by exactly 3 more characters → 'J___'.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT first_name, last_name\nFROM customer\nWHERE first_name LIKE 'J___'\nORDER BY first_name;</pre>"
+  },
+  {
+    title: "9. Realistic top-N query, with everything",
+    diff: "hard",
+    prompt: "From <code>film</code>, list the title, length, and rating of the 10 longest films that are rated G, PG, or PG-13 (use IN), have length between 90 and 180 minutes (use BETWEEN), and whose title contains the word 'LOVE' (use LIKE). Sort by length descending, then title ascending.",
+    hint: "Combine IN for the rating, BETWEEN for the length, LIKE for the title pattern, ORDER BY for the sort, LIMIT 10 to cap.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length, rating\nFROM film\nWHERE rating IN ('G', 'PG', 'PG-13')\n  AND length BETWEEN 90 AND 180\n  AND title LIKE '%LOVE%'\nORDER BY length DESC, title ASC\nLIMIT 10;</pre>"
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+exercises.forEach((ex, i) => {
+  const div = document.createElement('div');
+  div.className = 'exercise';
+  div.dataset.idx = i;
+  div.innerHTML = `
+    <div class="exercise-head">
+      <h4>${ex.title}</h4>
+      <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+    </div>
+    <div class="exercise-prompt">${ex.prompt}</div>
+    <textarea placeholder="Write your answer here..." data-ex="${i}"></textarea>
+    <div class="exercise-actions">
+      <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${i}">💡 Hint</button>
+      <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${i}">👀 Show Suggested Approach</button>
+      <span class="save-indicator" data-ex="${i}"></span>
+    </div>
+    <div class="exercise-hint" data-ex="${i}"><strong>Hint:</strong> ${ex.hint}</div>
+    <div class="exercise-approach" data-ex="${i}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+  `;
+  exContainer.appendChild(div);
+});
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesOpened.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    state.exercisesOpened.add(+idx);
+    updateStats();
+    saveState();
+  });
+});
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+}
+
+function updateStats() {
+  const slidePct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  document.getElementById('progStat').textContent = slidePct + '%';
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('flipStat').textContent = state.flashcardsFlipped.size;
+  document.getElementById('exStat').textContent = state.exercisesOpened.size;
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Lecture 6? Your slide position, quiz score, flashcards, and exercise answers will be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+loadState();
+renderQuiz();
+restoreFlashcards();
+restoreExercises();
+showSlide(state.currentSlide);
+updateStats();
+
+Object.entries(state.practiceAnswers).forEach(([qid, correct]) => {
+  const p = document.querySelector(`.practice[data-q="${qid}"]`);
+  if (!p) return;
+  const fb = p.querySelector('.practice-feedback');
+  if (!fb) return;
+  p.dataset.answered = 'true';
+  p.querySelectorAll('.practice-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  });
+  fb.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+  fb.textContent = correct ? '✓ Correct!' : '✗ The correct answer is highlighted.';
+});
+</script>
+</body>
+</html>

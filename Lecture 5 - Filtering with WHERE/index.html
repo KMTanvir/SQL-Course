@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 5: Filtering with WHERE</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #dbeafe;
+  --accent: #4f46e5; --success: #059669; --success-light: #d1fae5;
+  --danger: #dc2626; --danger-light: #fee2e2; --warning: #d97706; --warning-light: #fef3c7;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px; --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+header.lecture-header { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; padding: 32px 28px; border-radius: var(--radius); margin-bottom: 20px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+header.lecture-header::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+header.lecture-header::after { content: ""; position: absolute; bottom: -30px; right: 80px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+header.lecture-header .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; position: relative; z-index: 1; }
+header.lecture-header h1 { font-size: 28px; margin: 12px 0 8px; font-weight: 700; position: relative; z-index: 1; }
+header.lecture-header p.instructor { font-size: 13px; opacity: 0.85; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); max-width: 720px; position: relative; z-index: 1; }
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 14px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+.tabs { display: flex; gap: 4px; background: white; padding: 6px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; flex-wrap: wrap; }
+.tab-btn { flex: 1; min-width: 110px; padding: 11px 16px; background: transparent; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all var(--transition); font-family: inherit; }
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.28); }
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.card { background: var(--card); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 16px; }
+
+.progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+.slide-counter { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 14px; font-weight: 500; }
+.slide { display: none; min-height: 420px; padding: 4px; animation: slideIn 0.3s ease; }
+.slide.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.slide h2 { font-size: 26px; margin-bottom: 6px; color: var(--primary-dark); font-weight: 700; line-height: 1.25; }
+.slide h3 { font-size: 18px; margin: 22px 0 10px; color: var(--text); font-weight: 600; }
+.slide p { margin-bottom: 12px; color: #334155; }
+.slide ul, .slide ol { margin: 0 0 14px 22px; }
+.slide li { margin-bottom: 6px; color: #334155; }
+.slide .slide-subtitle { color: var(--muted); font-size: 15px; margin-bottom: 18px; font-style: italic; }
+
+.example-box { background: var(--primary-light); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.example-box strong { color: var(--primary-dark); }
+.tip-box { background: var(--success-light); border-left: 4px solid var(--success); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.tip-box strong { color: var(--success); }
+.warn-box { background: var(--warning-light); border-left: 4px solid var(--warning); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.warn-box strong { color: var(--warning); }
+.sakila-box { background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 14px 18px; border-radius: var(--radius-sm); margin: 14px 0; font-size: 13.5px; }
+.sakila-box strong { color: #6d28d9; }
+
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; color: #be185d; }
+pre { background: #1e293b; color: #e2e8f0; padding: 16px 18px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.6; }
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #7dd3fc; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #f9a8d4; }
+.sql-type { color: #fcd34d; font-weight: 600; }
+
+table.data-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
+table.data-table th { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.3px; }
+table.data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); background: white; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #f8fafc; }
+table.data-table tr:hover td { background: var(--primary-light); }
+table.data-table .hl { background: #fef3c7 !important; }
+
+.slide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+.btn { padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: all var(--transition); font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.28); }
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.key-hint { font-size: 12px; color: var(--muted); }
+
+.practice { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 18px; margin: 18px 0; }
+.practice h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.practice-q { margin-bottom: 10px; color: var(--text); font-weight: 500; }
+.practice-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.practice-btn { padding: 8px 14px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all var(--transition); color: var(--text); }
+.practice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.practice-btn.correct { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+.practice-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.practice-btn.disabled { pointer-events: none; opacity: 0.75; }
+.practice-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 14px; display: none; animation: fadeIn 0.2s; }
+.practice-feedback.show { display: block; }
+.practice-feedback.right { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+.practice-feedback.wrong { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+.quiz-intro { background: white; padding: 22px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+.quiz-question { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option { padding: 11px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: white; transition: all var(--transition); font-size: 14px; color: var(--text); text-align: left; font-family: inherit; }
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain { display: none; margin-top: 10px; padding: 10px 14px; background: #f8fafc; border-left: 3px solid var(--primary); border-radius: 4px; font-size: 13px; color: #334155; }
+.quiz-explain.show { display: block; }
+.quiz-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); flex-wrap: wrap; }
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result { display: none; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%); border-radius: var(--radius); text-align: center; margin-top: 16px; box-shadow: var(--shadow); animation: fadeIn 0.4s ease; }
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: var(--warning-light); color: var(--warning); }
+
+.flashcards-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.flashcards-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.flashcards-header p { color: var(--muted); font-size: 14px; }
+.flashcards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.flashcard { perspective: 1000px; height: 180px; cursor: pointer; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.55s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: var(--shadow); }
+.flashcard-front { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2px solid var(--primary-light); color: var(--primary-dark); font-weight: 600; font-size: 17px; }
+.flashcard-front .hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 8px; font-style: italic; }
+.flashcard-back { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; transform: rotateY(180deg); font-size: 13px; line-height: 1.5; }
+
+.exercises-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.exercise { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--warning-light); color: var(--warning); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise textarea { width: 100%; min-height: 90px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; background: #f8fafc; color: var(--text); transition: border-color var(--transition); }
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach { display: none; margin-top: 12px; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13.5px; }
+.exercise-hint { background: var(--warning-light); border-left: 3px solid var(--warning); color: #78350f; }
+.exercise-approach { background: #eff6ff; border-left: 3px solid var(--primary); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li { padding: 8px 0 8px 30px; position: relative; color: #334155; }
+.objectives-list li::before { content: "✓"; position: absolute; left: 0; top: 10px; color: var(--success); font-weight: bold; background: var(--success-light); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.compare-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.compare-card h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; font-weight: 600; }
+.compare-card ul { margin: 0 0 0 18px; }
+
+.op-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 14px 0; }
+.op-card { background: white; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius-sm); padding: 10px 14px; }
+.op-card .op-sym { font-family: 'Consolas', monospace; font-size: 16px; font-weight: 700; color: var(--primary-dark); }
+.op-card .op-desc { font-size: 12.5px; color: #334155; margin-top: 4px; }
+
+.kbd { display: inline-block; background: #f1f5f9; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; color: var(--text); }
+
+.reset-btn { position: fixed; bottom: 18px; right: 18px; background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 13px; color: var(--muted); cursor: pointer; box-shadow: var(--shadow); font-family: inherit; transition: all var(--transition); z-index: 100; }
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  .compare-grid { grid-template-columns: 1fr; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .slide h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Lecture 5</span>
+  <h1>Filtering with WHERE</h1>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="progStat">0%</div><div class="stat-label">Slides Viewed</div></div>
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Quiz Score</div></div>
+  <div class="stat"><div class="stat-value" id="flipStat">0</div><div class="stat-label">Cards Flipped</div></div>
+  <div class="stat"><div class="stat-value" id="exStat">0</div><div class="stat-label">Exercises Worked</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="slides">📖 Slides</button>
+  <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+  <button class="tab-btn" data-tab="flashcards">🃏 Flashcards</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+</nav>
+
+<main>
+
+<!-- ============ SLIDES TAB ============ -->
+<section id="slides" class="tab-content active">
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  <div class="slide-counter" id="slideCounter">Slide 1 of 10</div>
+  <div class="card">
+    <div id="slidesContainer">
+
+      <!-- SLIDE 1 -->
+      <div class="slide active" data-slide="1">
+        <h2>Welcome to Lecture 5</h2>
+        <h3>What you'll learn today</h3>
+        <ul class="objectives-list">
+          <li>Use <code>AS</code> to give columns friendlier names in the result</li>
+          <li>Add <strong>computed columns</strong> with math, string functions, and date functions</li>
+          <li>Use built-in functions like <code>CONCAT</code>, <code>UPPER</code>, <code>LOWER</code>, <code>LENGTH</code>, <code>ROUND</code>, <code>CEIL</code>, <code>FLOOR</code>, <code>YEAR</code>, <code>MONTH</code>, <code>DAY</code></li>
+          <li>Use <code>DISTINCT</code> to remove duplicate rows from a result</li>
+          <li>Filter rows with <strong><code>WHERE</code></strong> using comparison operators</li>
+          <li>Combine conditions with <code>AND</code>, <code>OR</code>, <code>NOT</code></li>
+        </ul>
+        <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="slide" data-slide="2">
+        <h2>The Sakila Database</h2>
+        <p class="slide-subtitle">Our practice playground for the rest of the course.</p>
+
+        <p><strong>Sakila</strong> is a public sample database from MySQL that models a chain of DVD rental stores. We'll use it for every example from this lecture onwards because it has realistic data: <strong>1000 films</strong>, <strong>600 customers</strong>, <strong>16,044 rentals</strong>, and <strong>16,049 payments</strong>, spread across two stores.</p>
+
+        <h3>The full schema, 16 tables grouped by purpose</h3>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <h4>🎬 Film catalog</h4>
+            <ul style="font-size: 13.5px;">
+              <li><code>film</code>, the movies (title, length, rating, rental_rate, ...)</li>
+              <li><code>actor</code>, the people who appear in films</li>
+              <li><code>film_actor</code>, links actors to films (many-to-many)</li>
+              <li><code>category</code>, genres like Action, Comedy, Drama</li>
+              <li><code>film_category</code>, links films to categories</li>
+              <li><code>language</code>, languages a film is available in</li>
+            </ul>
+          </div>
+          <div class="compare-card">
+            <h4>👤 Customers and places</h4>
+            <ul style="font-size: 13.5px;">
+              <li><code>customer</code>, registered renters</li>
+              <li><code>address</code>, street-level details</li>
+              <li><code>city</code>, city names linked to countries</li>
+              <li><code>country</code>, country names</li>
+            </ul>
+          </div>
+          <div class="compare-card">
+            <h4>🏬 Stores and staff</h4>
+            <ul style="font-size: 13.5px;">
+              <li><code>store</code>, physical store locations</li>
+              <li><code>staff</code>, employees at each store</li>
+            </ul>
+          </div>
+          <div class="compare-card">
+            <h4>💳 Transactions</h4>
+            <ul style="font-size: 13.5px;">
+              <li><code>inventory</code>, individual DVD copies per store</li>
+              <li><code>rental</code>, who borrowed which copy, when, and when they returned it</li>
+              <li><code>payment</code>, what the customer paid for the rental</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="example-box">
+          <strong>Tables we'll use most today:</strong> <code>language</code>, <code>film</code>, <code>customer</code>, <code>rental</code>, <code>payment</code>. The others appear in later lectures (joins, aggregations, etc.).
+        </div>
+
+        <div class="tip-box">
+          <strong>To follow along:</strong> on the ISRT MySQL server, run <code>USE sakila;</code> once at the start of your session. Every <code>SELECT</code> after that targets the Sakila tables by default.
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide" data-slide="3">
+        <h2>AS, Renaming Columns in the Output</h2>
+        <p>Use <code>AS</code> to give a column a friendlier name <em>in the result</em>. The underlying table is untouched.</p>
+
+<pre><code><span class="sql-kw">SELECT</span> language_id <span class="sql-kw">AS</span> id,
+       name        <span class="sql-kw">AS</span> language_name,
+       last_update <span class="sql-kw">AS</span> updated_at
+<span class="sql-kw">FROM</span> sakila.language;</code></pre>
+
+        <h3>The result table looks like this</h3>
+        <table class="data-table">
+          <thead><tr><th>id</th><th>language_name</th><th>updated_at</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>English</td><td>2006-02-15 05:02:19</td></tr>
+            <tr><td>2</td><td>Italian</td><td>2006-02-15 05:02:19</td></tr>
+            <tr><td>3</td><td>Japanese</td><td>2006-02-15 05:02:19</td></tr>
+          </tbody>
+        </table>
+
+        <h3>The keyword <code>AS</code> is optional, but recommended</h3>
+<pre><code><span class="sql-kw">SELECT</span> language_id id, name language_name <span class="sql-kw">FROM</span> language;
+<span class="sql-cm">-- Same result, but harder to read. Prefer the explicit AS.</span></code></pre>
+
+        <h3>Aliases with spaces or special characters</h3>
+<pre><code><span class="sql-kw">SELECT</span> name <span class="sql-kw">AS</span> <span class="sql-str">"Language Name"</span>, last_update <span class="sql-kw">AS</span> <span class="sql-str">"Last Updated"</span>
+<span class="sql-kw">FROM</span> language;</code></pre>
+        <p>Quote the alias when it has spaces. Without quotes, MySQL would think "Language" and "Name" are two separate things.</p>
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div class="slide" data-slide="4">
+        <h2>Computed Columns</h2>
+        <p>The select list isn't limited to plain columns. You can include <em>expressions</em>, math, function calls, and the result has one column for each one.</p>
+
+        <h3>Math on film prices</h3>
+<pre><code><span class="sql-kw">SELECT</span> title,
+       rental_rate,
+       rental_rate * <span class="sql-num">1.10</span>             <span class="sql-kw">AS</span> new_rental_rate,
+       replacement_cost - rental_rate <span class="sql-kw">AS</span> margin
+<span class="sql-kw">FROM</span> film;</code></pre>
+
+        <h3>Even pure literals</h3>
+<pre><code><span class="sql-kw">SELECT</span> title,
+       <span class="sql-str">'Sakila Inc.'</span> <span class="sql-kw">AS</span> store,
+       <span class="sql-num">2026</span>          <span class="sql-kw">AS</span> catalog_year
+<span class="sql-kw">FROM</span> film;</code></pre>
+        <p>Every row gets the same literal value. Useful for tagging or combining results from different sources.</p>
+
+        <div class="tip-box">
+          <strong>Always alias computed columns.</strong> Without <code>AS</code>, MySQL gives the column a name like <code>rental_rate * 1.10</code>, which is awkward to use in tools, exports, and reports.
+        </div>
+
+        <div class="practice" data-q="s3">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q">What does <code>SELECT rental_rate AS price FROM film;</code> do?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">Renames the rental_rate column inside the table permanently</button>
+            <button class="practice-btn" data-correct="true">Renames the column in the result only; the table is unchanged</button>
+            <button class="practice-btn" data-correct="false">Casts rental_rate to a different type</button>
+            <button class="practice-btn" data-correct="false">Filters rows where rental_rate equals price</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5 -->
+      <div class="slide" data-slide="5">
+        <h2>Built-in Functions</h2>
+        <p>SQL ships with many ready-made functions. Here are the ones you'll meet most often. We'll use the Sakila tables for concrete examples.</p>
+
+        <h3>String functions, on customer names</h3>
+<pre><code><span class="sql-kw">SELECT</span> first_name,
+       last_name,
+       <span class="sql-func">CONCAT</span>(first_name, <span class="sql-str">' '</span>, last_name) <span class="sql-kw">AS</span> full_name,
+       <span class="sql-func">UPPER</span>(first_name)                  <span class="sql-kw">AS</span> first_upper,
+       <span class="sql-func">LOWER</span>(email)                       <span class="sql-kw">AS</span> email_lower,
+       <span class="sql-func">LENGTH</span>(last_name)                  <span class="sql-kw">AS</span> last_name_length
+<span class="sql-kw">FROM</span> customer;</code></pre>
+
+        <h3>Numeric functions, on payment amounts</h3>
+<pre><code><span class="sql-kw">SELECT</span> payment_id,
+       amount,
+       <span class="sql-func">ROUND</span>(amount, <span class="sql-num">0</span>)   <span class="sql-kw">AS</span> rounded_amount,
+       <span class="sql-func">CEIL</span>(amount)       <span class="sql-kw">AS</span> rounded_up,
+       <span class="sql-func">FLOOR</span>(amount)      <span class="sql-kw">AS</span> rounded_down,
+       <span class="sql-func">ABS</span>(amount - <span class="sql-num">5.00</span>) <span class="sql-kw">AS</span> distance_from_5
+<span class="sql-kw">FROM</span> payment;</code></pre>
+
+        <h3>Date functions, on rental dates</h3>
+<pre><code><span class="sql-kw">SELECT</span> rental_id,
+       rental_date,
+       <span class="sql-func">YEAR</span>(rental_date)  <span class="sql-kw">AS</span> rental_year,
+       <span class="sql-func">MONTH</span>(rental_date) <span class="sql-kw">AS</span> rental_month,
+       <span class="sql-func">DAY</span>(rental_date)   <span class="sql-kw">AS</span> rental_day
+<span class="sql-kw">FROM</span> rental;</code></pre>
+
+        <div class="tip-box">
+          <strong>Many more functions exist.</strong> SQL has dozens of built-in functions for strings, numbers, dates, NULL handling, and more. We'll cover the ones you'll meet most often. For the rest, see the <em>MySQL Built-in Functions Reference</em> shared with the class as a take-home cheat sheet.
+        </div>
+      </div>
+
+      <!-- SLIDE 6 -->
+      <div class="slide" data-slide="6">
+        <h2>DISTINCT, Removing Duplicates</h2>
+        <p>Sometimes a query naturally returns repeats. <code>DISTINCT</code> collapses identical rows into one.</p>
+
+        <h3>Without DISTINCT</h3>
+<pre><code><span class="sql-kw">SELECT</span> rating <span class="sql-kw">FROM</span> film;</code></pre>
+        <table class="data-table">
+          <thead><tr><th>rating</th></tr></thead>
+          <tbody>
+            <tr><td>PG</td></tr>
+            <tr><td>G</td></tr>
+            <tr><td>NC-17</td></tr>
+            <tr><td>PG</td></tr>
+            <tr><td>R</td></tr>
+            <tr><td>PG-13</td></tr>
+            <tr><td>... (1000 rows total)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>With DISTINCT</h3>
+<pre><code><span class="sql-kw">SELECT</span> <span class="sql-kw">DISTINCT</span> rating <span class="sql-kw">FROM</span> film;</code></pre>
+        <table class="data-table">
+          <thead><tr><th>rating</th></tr></thead>
+          <tbody>
+            <tr><td>PG</td></tr>
+            <tr><td>G</td></tr>
+            <tr><td>NC-17</td></tr>
+            <tr><td>PG-13</td></tr>
+            <tr><td>R</td></tr>
+          </tbody>
+        </table>
+
+        <h3>DISTINCT applies to the whole row</h3>
+<pre><code><span class="sql-kw">SELECT</span> <span class="sql-kw">DISTINCT</span> rating, rental_duration <span class="sql-kw">FROM</span> film;</code></pre>
+        <p>This returns each unique <strong>combination</strong> of rating + rental_duration. Two films with the same rating but different durations stay as two rows.</p>
+
+        <div class="practice" data-q="s5">
+          <h4>🧠 Quick Check</h4>
+          <p class="practice-q"><code>SELECT DISTINCT rating, rental_duration FROM film;</code> returns each pair only once. If three films have <em>rating = 'PG'</em> and <em>rental_duration = 5</em>, how many rows appear in the result for that pair?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">Three, one for each film</button>
+            <button class="practice-btn" data-correct="true">One, the duplicates are collapsed</button>
+            <button class="practice-btn" data-correct="false">Zero, DISTINCT throws duplicates away entirely</button>
+            <button class="practice-btn" data-correct="false">It depends on the order in the table</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 -->
+      <div class="slide" data-slide="7">
+        <h2>WHERE, Filtering Rows</h2>
+        <p>Up to now, <code>SELECT</code> returned every row. <code>WHERE</code> restricts it to rows that satisfy a condition.</p>
+
+        <h3>Basic shape</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, rating, rental_duration
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating = <span class="sql-str">'G'</span>;</code></pre>
+
+        <h3>Comparison operators</h3>
+        <div class="op-grid">
+          <div class="op-card"><div class="op-sym">=</div><div class="op-desc">Equal to</div></div>
+          <div class="op-card"><div class="op-sym">!=  or  &lt;&gt;</div><div class="op-desc">Not equal to</div></div>
+          <div class="op-card"><div class="op-sym">&lt;</div><div class="op-desc">Less than</div></div>
+          <div class="op-card"><div class="op-sym">&gt;</div><div class="op-desc">Greater than</div></div>
+          <div class="op-card"><div class="op-sym">&lt;=</div><div class="op-desc">Less than or equal</div></div>
+          <div class="op-card"><div class="op-sym">&gt;=</div><div class="op-desc">Greater than or equal</div></div>
+        </div>
+
+        <h3>Examples on Sakila</h3>
+<pre><code><span class="sql-cm">-- Films priced at $4.99 or more to rent</span>
+<span class="sql-kw">SELECT</span> title, rental_rate <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> rental_rate &gt;= <span class="sql-num">4.99</span>;
+
+<span class="sql-cm">-- Films longer than 2 hours</span>
+<span class="sql-kw">SELECT</span> title, length <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> length &gt; <span class="sql-num">120</span>;
+
+<span class="sql-cm">-- Films NOT rated R</span>
+<span class="sql-kw">SELECT</span> title, rating <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> rating &lt;&gt; <span class="sql-str">'R'</span>;
+
+<span class="sql-cm">-- Customers created from 2006 onwards</span>
+<span class="sql-kw">SELECT</span> first_name, last_name, create_date
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> create_date &gt;= <span class="sql-str">'2006-01-01'</span>;</code></pre>
+
+        <div class="example-box">
+          <strong>How to read it:</strong> "From the film table, give me title, rating, rental_duration, but only the rows where rating = 'G'."
+        </div>
+      </div>
+
+      <!-- SLIDE 8 -->
+      <div class="slide" data-slide="8">
+        <h2>Combining Conditions: AND, OR, NOT</h2>
+
+        <h3>AND, both conditions must be true</h3>
+<pre><code><span class="sql-cm">-- Films rated G that can be rented for at least a week</span>
+<span class="sql-kw">SELECT</span> title, rating, rental_duration
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating = <span class="sql-str">'G'</span>
+  <span class="sql-kw">AND</span>   rental_duration &gt;= <span class="sql-num">7</span>;</code></pre>
+
+        <h3>OR, either condition is enough</h3>
+<pre><code><span class="sql-cm">-- Family-friendly films: rated G OR PG</span>
+<span class="sql-kw">SELECT</span> title, rating
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating = <span class="sql-str">'G'</span>
+   <span class="sql-kw">OR</span>  rating = <span class="sql-str">'PG'</span>;</code></pre>
+
+        <h3>NOT, flips a condition</h3>
+<pre><code><span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">WHERE</span> <span class="sql-kw">NOT</span> (rating = <span class="sql-str">'R'</span>);
+<span class="sql-cm">-- Same as: WHERE rating != 'R' (or <> 'R')</span></code></pre>
+
+        <h3>Use parentheses to control precedence</h3>
+<pre><code><span class="sql-cm">-- "Films rated G AND with rental_duration >= 7,</span>
+<span class="sql-cm">--  OR films rated PG-13 AND with rental_duration <= 3"</span>
+<span class="sql-kw">SELECT</span> title, rating, rental_duration
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> (rating = <span class="sql-str">'G'</span>     <span class="sql-kw">AND</span> rental_duration &gt;= <span class="sql-num">7</span>)
+   <span class="sql-kw">OR</span>  (rating = <span class="sql-str">'PG-13'</span> <span class="sql-kw">AND</span> rental_duration &lt;= <span class="sql-num">3</span>);</code></pre>
+
+        <div class="warn-box">
+          <strong>Habit to build:</strong> when mixing AND and OR, always use parentheses. AND binds tighter than OR by default, so without parentheses the meaning can be different from what you intended.
+        </div>
+      </div>
+
+      <!-- SLIDE 9 -->
+      <div class="slide" data-slide="9">
+        <h2>Putting It Together, A Worked Query</h2>
+        <p>One realistic Sakila question, broken down piece by piece.</p>
+
+        <div class="example-box">
+          <strong>Question:</strong> "From the film catalog, list each <em>distinct</em> film title with its rating, length in minutes, and a proposed new rental rate (current rate × 1.10), but only for family-friendly films, rated G or PG, that are at least 90 minutes long."
+        </div>
+
+        <h3>Step 1, plain SELECT</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, rating, length, rental_rate
+<span class="sql-kw">FROM</span> film;</code></pre>
+
+        <h3>Step 2, computed column with AS</h3>
+<pre><code><span class="sql-kw">SELECT</span> title,
+       rating,
+       length             <span class="sql-kw">AS</span> duration_minutes,
+       rental_rate * <span class="sql-num">1.10</span> <span class="sql-kw">AS</span> new_rental_rate
+<span class="sql-kw">FROM</span> film;</code></pre>
+
+        <h3>Step 3, add filters with WHERE / AND / OR</h3>
+<pre><code><span class="sql-kw">SELECT</span> <span class="sql-kw">DISTINCT</span>
+       title,
+       rating,
+       length             <span class="sql-kw">AS</span> duration_minutes,
+       rental_rate * <span class="sql-num">1.10</span> <span class="sql-kw">AS</span> new_rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> (rating = <span class="sql-str">'G'</span> <span class="sql-kw">OR</span> rating = <span class="sql-str">'PG'</span>)
+  <span class="sql-kw">AND</span>   length &gt;= <span class="sql-num">90</span>;</code></pre>
+        <p>That's a real-world query. In Lecture 6, we'll add <code>ORDER BY</code> to sort the result, <code>LIMIT</code> to keep only the top few, and shortcut operators like <code>BETWEEN</code>, <code>IN</code>, and <code>IS NULL</code> to write filters more concisely.</p>
+
+        <div class="tip-box">
+          <strong>Build queries one piece at a time.</strong> Start with <code>SELECT * FROM table;</code>, then narrow columns, then add WHERE one condition at a time, running after each change to see the effect. Mistakes show up early, while the query is small.
+        </div>
+      </div>
+
+      <!-- SLIDE 10 -->
+      <div class="slide" data-slide="10">
+        <h2>You Made It! 🎉</h2>
+        <p class="slide-subtitle">Lecture 5 done, your <code>SELECT</code> can now project, compute, deduplicate, and filter.</p>
+
+        <h3>Recap, what we covered</h3>
+        <ul>
+          <li><code>AS</code> renames columns in the result; quote aliases with spaces.</li>
+          <li>Computed columns let you do math, build strings, or call functions right inside the SELECT list. Always alias them.</li>
+          <li>Common functions: <code>CONCAT</code>, <code>UPPER</code>, <code>LOWER</code>, <code>LENGTH</code>, <code>ROUND</code>, <code>CEIL</code>, <code>FLOOR</code>, <code>ABS</code>, <code>YEAR</code>, <code>MONTH</code>, <code>DAY</code>.</li>
+          <li><code>DISTINCT</code> collapses duplicate rows; with multiple columns it considers the whole row.</li>
+          <li><code>WHERE</code> filters rows. Comparison operators: <code>=</code>, <code>!=</code> (or <code>&lt;&gt;</code>), <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>.</li>
+          <li>Combine conditions with <code>AND</code>, <code>OR</code>, <code>NOT</code>. Use parentheses when mixing.</li>
+        </ul>
+
+        <h3>Before next class</h3>
+        <ol>
+          <li>Take the <strong>Quiz</strong> to check your understanding.</li>
+          <li>Review the <strong>Flashcards</strong> on AS, DISTINCT, and the WHERE operators.</li>
+          <li>Try at least 3 of the <strong>Exercises</strong>, write the SQL on the ISRT Sakila database and run it.</li>
+        </ol>
+
+        <div class="example-box">
+          <strong>Next lecture (Lecture 6):</strong> sorting with <code>ORDER BY</code>, capping results with <code>LIMIT</code>, the shorthand operators <code>BETWEEN</code> / <code>IN</code> / <code>IS NULL</code>, and pattern matching with <code>LIKE</code>.
+        </div>
+
+        <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs to keep learning. Your progress is saved. 💾</p>
+      </div>
+
+    </div>
+
+    <div class="slide-nav">
+      <button class="btn btn-ghost" id="prevBtn">← Previous</button>
+      <span class="key-hint">Use <span class="kbd">←</span> <span class="kbd">→</span> keys</span>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>📝 Quiz Time</h2>
+    <p>10 questions on filtering, projection, computed columns, and DISTINCT, all on Sakila tables.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 10 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Great work!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/10</span></div>
+    <p id="quizMessage">You've completed the Lecture 5 quiz.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS TAB ============ -->
+<section id="flashcards" class="tab-content">
+  <div class="flashcards-header">
+    <h2>🃏 Key Terms, Flashcards</h2>
+    <p>Click any card to flip it and see the definition.</p>
+  </div>
+  <div class="flashcards-grid" id="flashcardsGrid"></div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>Exercises</h2>
+    <p>All exercises run against the Sakila database. Write the SQL on paper or in your editor first; run it on the ISRT Sakila when you can.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Lecture 5">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   LECTURE 5, FILTERING WITH WHERE  (Sakila edition)
+   ================================================================ */
+
+const STORAGE_KEY = 'lecture5-progress-v4';
+
+const state = {
+  currentSlide: 1,
+  totalSlides: 10,
+  maxSlideReached: 1,
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  flashcardsFlipped: new Set(),
+  exercisesOpened: new Set(),
+  exerciseAnswers: {},
+  practiceAnswers: {}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      flashcardsFlipped: [...state.flashcardsFlipped],
+      exercisesOpened: [...state.exercisesOpened]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.flashcardsFlipped = new Set(data.flashcardsFlipped || []);
+    state.exercisesOpened = new Set(data.exercisesOpened || []);
+    state.practiceAnswers = data.practiceAnswers || {};
+  } catch (e) {}
+}
+
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progFill = document.getElementById('progFill');
+const slideCounter = document.getElementById('slideCounter');
+
+function showSlide(n) {
+  if (n < 1 || n > state.totalSlides) return;
+  state.currentSlide = n;
+  if (n > state.maxSlideReached) state.maxSlideReached = n;
+  slides.forEach(s => s.classList.toggle('active', +s.dataset.slide === n));
+  const pct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  progFill.style.width = pct + '%';
+  slideCounter.textContent = `Slide ${n} of ${state.totalSlides}`;
+  prevBtn.disabled = n === 1;
+  nextBtn.textContent = n === state.totalSlides ? 'Finish ✓' : 'Next →';
+  updateStats();
+  saveState();
+}
+prevBtn.addEventListener('click', () => showSlide(state.currentSlide - 1));
+nextBtn.addEventListener('click', () => {
+  if (state.currentSlide < state.totalSlides) showSlide(state.currentSlide + 1);
+});
+document.addEventListener('keydown', (e) => {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (!activeTab || activeTab.id !== 'slides') return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prevBtn.click(); }
+});
+
+document.querySelectorAll('.practice').forEach(p => {
+  const qid = p.dataset.q;
+  const feedback = p.querySelector('.practice-feedback');
+  if (!feedback) return;
+  const btns = p.querySelectorAll('.practice-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (p.dataset.answered === 'true') return;
+      const correct = btn.dataset.correct === 'true';
+      btns.forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.correct === 'true') b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+      feedback.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+      feedback.textContent = correct
+        ? '✓ Correct!'
+        : '✗ Not quite, the correct answer is highlighted in green.';
+      p.dataset.answered = 'true';
+      state.practiceAnswers[qid] = correct;
+      saveState();
+    });
+  });
+});
+
+const quizData = [
+  {
+    q: "What does SELECT rental_rate AS price FROM film; do?",
+    options: [
+      "Renames the column inside the table permanently",
+      "Renames the column in the result only",
+      "Casts rental_rate to a different type",
+      "Filters rows where rental_rate equals price"
+    ],
+    answer: 1,
+    explain: "AS gives the column a friendlier name in the result; the underlying film table is unchanged."
+  },
+  {
+    q: "Which is a computed column with an alias?",
+    options: [
+      "SELECT title FROM film;",
+      "SELECT * FROM film WHERE rating = 'G';",
+      "SELECT rental_rate * 1.10 AS new_rate FROM film;",
+      "SELECT DISTINCT rating FROM film;"
+    ],
+    answer: 2,
+    explain: "rental_rate * 1.10 is an expression, not a stored column; AS new_rate gives the result column a name."
+  },
+  {
+    q: "Which function joins two strings together?",
+    options: ["UPPER()", "LENGTH()", "CONCAT()", "ROUND()"],
+    answer: 2,
+    explain: "CONCAT(first_name, ' ', last_name) joins strings end-to-end. UPPER changes case, LENGTH counts chars, ROUND is for numbers."
+  },
+  {
+    q: "What does SELECT DISTINCT rating FROM film; return?",
+    options: [
+      "Every rating value, with duplicates",
+      "Only rows where rating IS NOT NULL",
+      "Each unique rating once",
+      "The first rating in the table"
+    ],
+    answer: 2,
+    explain: "DISTINCT collapses identical rows into one, so each distinct rating appears once (G, PG, PG-13, R, NC-17)."
+  },
+  {
+    q: "Which clause filters which rows a SELECT returns?",
+    options: ["FROM", "AS", "WHERE", "DISTINCT"],
+    answer: 2,
+    explain: "WHERE applies a condition; only rows that satisfy it appear in the result."
+  },
+  {
+    q: "Which operator returns rows where a value is NOT equal to something?",
+    options: [
+      "= or ==",
+      "!= or <>",
+      "NOT EQUAL",
+      "<-->"
+    ],
+    answer: 1,
+    explain: "SQL uses != or its older form <> for 'not equal'. = is for equality; == is not valid SQL."
+  },
+  {
+    q: "Which query finds films priced at $4.99 or more to rent?",
+    options: [
+      "WHERE rental_rate > 4.99",
+      "WHERE rental_rate >= 4.99",
+      "WHERE rental_rate <= 4.99",
+      "WHERE rental_rate = '4.99 or more'"
+    ],
+    answer: 1,
+    explain: ">= includes the value 4.99 itself; > would exclude it. The last option isn't valid SQL."
+  },
+  {
+    q: "WHERE rating = 'G' AND rental_duration >= 7 returns rows that:",
+    options: [
+      "Are rated G or have rental_duration >= 7",
+      "Are rated G AND have rental_duration >= 7",
+      "Are rated G if rental_duration >= 7",
+      "Have rental_duration >= 7"
+    ],
+    answer: 1,
+    explain: "AND requires BOTH conditions to be true for the row to match."
+  },
+  {
+    q: "When mixing AND and OR in a film query, what's the safe habit?",
+    options: [
+      "Write OR before AND in the WHERE clause",
+      "Use parentheses to group the conditions explicitly",
+      "Avoid OR entirely",
+      "Always place AND first alphabetically"
+    ],
+    answer: 1,
+    explain: "AND binds tighter than OR. Parentheses make precedence explicit and prevent surprises."
+  },
+  {
+    q: "Which Sakila table column is most useful as a built-in DAY() example?",
+    options: [
+      "film.rental_rate",
+      "rental.rental_date",
+      "customer.first_name",
+      "language.language_id"
+    ],
+    answer: 1,
+    explain: "DAY(rental.rental_date) returns the day-of-month from a DATE/DATETIME column. The others aren't dates."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const msg = document.getElementById('quizMessage');
+  const verdict = document.getElementById('quizVerdict');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent!';
+    msg.textContent = "Filtering is in your toolkit. Move on to the exercises!";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good work';
+    msg.textContent = "Solid, review the wrong ones and try again if you'd like.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Keep going 💪';
+    msg.textContent = "No worries, review the slides and flashcards, then retake.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+const flashcards = [
+  { term: "AS (alias)", def: "Renames a column in the SELECT result. The underlying table is unchanged. Quote aliases with spaces: AS \"New Rate\"." },
+  { term: "Computed column", def: "An expression in the SELECT list (math, function call, literal). Always alias with AS for a clean name." },
+  { term: "CONCAT()", def: "String function that joins values: CONCAT(first_name, ' ', last_name) returns 'Maya Hassan'." },
+  { term: "UPPER() / LOWER()", def: "Convert a string to all upper or lower case in the result. Useful for case-insensitive comparisons." },
+  { term: "LENGTH()", def: "Returns the number of bytes in a string. For most ASCII text this matches the number of characters." },
+  { term: "ROUND(x, n)", def: "Rounds a number to n decimal places. ROUND(amount, 0) rounds to a whole value." },
+  { term: "CEIL() / FLOOR()", def: "Numeric rounding: CEIL rounds UP to the next whole number; FLOOR rounds DOWN. ABS() returns the absolute value." },
+  { term: "YEAR() / MONTH() / DAY()", def: "Extract parts of a date: YEAR(rental_date) returns the year, MONTH the month number, DAY the day-of-month." },
+  { term: "DISTINCT", def: "Removes duplicate rows from a result. With multiple columns, considers the whole row when deciding what's a duplicate." },
+  { term: "WHERE", def: "Clause that filters which rows a SELECT returns. Goes after FROM, before ORDER BY." },
+  { term: "Comparison operators", def: "= (equal), != or <> (not equal), <, >, <=, >= for ordering. Work on numbers, strings (alphabetical), and dates." },
+  { term: "AND", def: "Both conditions must be true for the row to match." },
+  { term: "OR", def: "Either condition is enough for the row to match." },
+  { term: "NOT", def: "Flips a condition: NOT (rating = 'R') is equivalent to rating != 'R'." },
+  { term: "Precedence: AND before OR", def: "AND binds tighter than OR. Without parentheses, A OR B AND C reads as A OR (B AND C). Use parentheses to make grouping explicit." }
+];
+const fcGrid = document.getElementById('flashcardsGrid');
+flashcards.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'flashcard';
+  card.dataset.idx = i;
+  card.innerHTML = `
+    <div class="flashcard-inner">
+      <div class="flashcard-front">
+        ${c.term}
+        <span class="hint">click to flip</span>
+      </div>
+      <div class="flashcard-back">${c.def}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
+    if (card.classList.contains('flipped')) state.flashcardsFlipped.add(i);
+    updateStats();
+    saveState();
+  });
+  fcGrid.appendChild(card);
+});
+function restoreFlashcards() {
+  fcGrid.querySelectorAll('.flashcard').forEach(c => {
+    if (state.flashcardsFlipped.has(+c.dataset.idx)) c.classList.add('flipped');
+  });
+}
+
+const exercises = [
+  {
+    title: "1. Aliases and a computed column on film",
+    diff: "easy",
+    prompt: "From <code>sakila.film(film_id, title, rental_rate, rental_duration, length)</code>, write a SELECT that returns: title as 'Film Title', rental_rate as 'Daily Rate', and rental_rate × rental_duration as 'Total Cost'.",
+    hint: "Use AS \"...\" with quotes for aliases that contain spaces. Multiply rental_rate by rental_duration for the total.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT\n  title                       AS \"Film Title\",\n  rental_rate                 AS \"Daily Rate\",\n  rental_rate * rental_duration AS \"Total Cost\"\nFROM film;</pre>"
+  },
+  {
+    title: "2. Build full names and use string functions on customer",
+    diff: "easy",
+    prompt: "From <code>sakila.customer(customer_id, first_name, last_name, email)</code>, write a SELECT that returns: full_name (first + last), email lowercased, and the length of the full name.",
+    hint: "CONCAT for joining, LOWER for case, LENGTH for the count. Alias each.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT\n  CONCAT(first_name, ' ', last_name)        AS full_name,\n  LOWER(email)                              AS email_lower,\n  LENGTH(CONCAT(first_name, ' ', last_name)) AS name_length\nFROM customer;</pre>"
+  },
+  {
+    title: "3. DISTINCT ratings and (rating, rental_duration)",
+    diff: "easy",
+    prompt: "From the <code>film</code> table, write two queries: <br>(a) the list of unique ratings, <br>(b) each unique combination of (rating, rental_duration).",
+    hint: "SELECT DISTINCT col FROM table. With multiple columns, DISTINCT applies to the whole row.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>-- (a)\nSELECT DISTINCT rating FROM film;\n\n-- (b)\nSELECT DISTINCT rating, rental_duration FROM film;</pre>"
+  },
+  {
+    title: "4. Comparison + AND/OR on film",
+    diff: "med",
+    prompt: "From <code>film</code>, write a SELECT that returns title and length for: films rated G with length more than 100 minutes, OR films rated PG-13 with length more than 150 minutes.",
+    hint: "Two grouped conditions joined by OR. Use parentheses to keep the AND groups explicit.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM film\nWHERE (rating = 'G'     AND length > 100)\n   OR (rating = 'PG-13' AND length > 150);</pre>"
+  },
+  {
+    title: "5. Multiple comparison operators",
+    diff: "med",
+    prompt: "From <code>film(title, rating, length, rental_rate)</code>, write a SELECT that returns title, rating, and length for films where: rating is NOT 'R' AND length is greater than 100 AND rental_rate is less than 4.00.",
+    hint: "Three conditions joined with AND. Use != or &lt;&gt; for 'not equal'.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rating, length\nFROM film\nWHERE rating != 'R'\n  AND length &gt; 100\n  AND rental_rate &lt; 4.00;</pre>"
+  },
+  {
+    title: "6. Parenthesized OR groups",
+    diff: "med",
+    prompt: "From <code>film</code>, write a SELECT that returns title and rental_duration for: films rated G with rental_duration of 7 or more, OR films rated PG-13 with rental_duration of 3 or less.",
+    hint: "Two AND-grouped conditions joined by OR. Use parentheses to keep groups explicit.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_duration\nFROM film\nWHERE (rating = 'G'     AND rental_duration &gt;= 7)\n   OR (rating = 'PG-13' AND rental_duration &lt;= 3);</pre>"
+  },
+  {
+    title: "7. The realistic Sakila query, end to end",
+    diff: "hard",
+    prompt: "From <code>film(film_id, title, rating, length, rental_rate, rental_duration)</code>, write a SELECT that returns:<br>(a) title (aliased as Film),<br>(b) length aliased as duration_minutes,<br>(c) rental_rate × 1.10 aliased as new_rental_rate,<br>only for distinct rows where rating is 'G' OR 'PG' AND length is at least 90 minutes.",
+    hint: "Combine SELECT DISTINCT, AS, multiplication, OR for the rating, AND for the length. Use parentheses around the OR.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT\n  title              AS Film,\n  length             AS duration_minutes,\n  rental_rate * 1.10 AS new_rental_rate\nFROM film\nWHERE (rating = 'G' OR rating = 'PG')\n  AND length &gt;= 90;</pre>"
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+exercises.forEach((ex, i) => {
+  const div = document.createElement('div');
+  div.className = 'exercise';
+  div.dataset.idx = i;
+  div.innerHTML = `
+    <div class="exercise-head">
+      <h4>${ex.title}</h4>
+      <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+    </div>
+    <div class="exercise-prompt">${ex.prompt}</div>
+    <textarea placeholder="Write your answer here..." data-ex="${i}"></textarea>
+    <div class="exercise-actions">
+      <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${i}">💡 Hint</button>
+      <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${i}">👀 Show Suggested Approach</button>
+      <span class="save-indicator" data-ex="${i}"></span>
+    </div>
+    <div class="exercise-hint" data-ex="${i}"><strong>Hint:</strong> ${ex.hint}</div>
+    <div class="exercise-approach" data-ex="${i}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+  `;
+  exContainer.appendChild(div);
+});
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesOpened.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    state.exercisesOpened.add(+idx);
+    updateStats();
+    saveState();
+  });
+});
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+}
+
+function updateStats() {
+  const slidePct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  document.getElementById('progStat').textContent = slidePct + '%';
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('flipStat').textContent = state.flashcardsFlipped.size;
+  document.getElementById('exStat').textContent = state.exercisesOpened.size;
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Lecture 5? Your slide position, quiz score, flashcards, and exercise answers will be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+loadState();
+renderQuiz();
+restoreFlashcards();
+restoreExercises();
+showSlide(state.currentSlide);
+updateStats();
+
+Object.entries(state.practiceAnswers).forEach(([qid, correct]) => {
+  const p = document.querySelector(`.practice[data-q="${qid}"]`);
+  if (!p) return;
+  const fb = p.querySelector('.practice-feedback');
+  if (!fb) return;
+  p.dataset.answered = 'true';
+  p.querySelectorAll('.practice-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  });
+  fb.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+  fb.textContent = correct ? '✓ Correct!' : '✗ The correct answer is highlighted.';
+});
+</script>
+</body>
+</html>
