@@ -764,7 +764,7 @@ body {
         <span class="status-badge badge-checking">Checking…</span>
       </div>
       <h3 class="lecture-title">Final Exercise Class — Comprehensive Review</h3>
-      <p class="lecture-desc">A capstone session that pulls the whole course together — schema design, queries, analysis, and advanced features — in one integrated exercise set.</p>
+      <p class="lecture-desc">A capstone session that pulls the whole course together, schema design, queries, analysis, and advanced features, in one integrated exercise set.</p>
       <div class="lecture-tags">
         <span class="tag">Capstone</span>
         <span class="tag">Full-Course</span>
@@ -775,6 +775,38 @@ body {
         <span class="action">Start exercises →</span>
       </div>
     </div>
+
+  </div>
+
+  <!-- ===== RESOURCES ===== -->
+  <h2 class="section-title" style="margin-top: 36px;">Resources · Take-home References</h2>
+  <p style="color: var(--muted); font-size: 14px; margin: -6px 0 14px;">
+    Self-serve references you can browse outside class. Not covered in lectures, but worth knowing.
+  </p>
+  <div class="lecture-grid">
+
+    <a class="lecture-card resource-card"
+       href="Resources/MySQL Built-in Functions Reference.html"
+       target="_blank" rel="noopener"
+       style="text-decoration: none; color: inherit; cursor: pointer; border-top-color: #7c3aed;">
+      <div class="card-head">
+        <span class="lecture-num" style="background: #ede9fe; color: #6d28d9;">📚 Reference</span>
+        <span class="status-badge" style="background: var(--success-light); color: var(--success);">Available</span>
+      </div>
+      <h3 class="lecture-title">MySQL Built-in Functions Reference</h3>
+      <p class="lecture-desc">A cheat sheet covering 60+ MySQL functions across string, numeric, date/time, NULL handling, conditional, type conversion, aggregate, and session categories. Each entry has a signature, a one-line description, and a Sakila example.</p>
+      <div class="lecture-tags">
+        <span class="tag">String</span>
+        <span class="tag">Numeric</span>
+        <span class="tag">Date / Time</span>
+        <span class="tag">NULL handling</span>
+        <span class="tag">Aggregates</span>
+      </div>
+      <div class="card-foot">
+        <span class="duration">📖 Self-paced</span>
+        <span class="action">Open reference →</span>
+      </div>
+    </a>
 
   </div>
 
@@ -872,14 +904,15 @@ function updateCounters(availableCount, totalCount) {
 }
 
 async function init() {
-  const allCards = document.querySelectorAll('.lecture-card');
+  // Only count class cards (lecture + exercise), not resource references.
+  const allCards = document.querySelectorAll('.lecture-card:not(.resource-card)');
   const totalCards = allCards.length; // 15
 
   // Class 1 (intro) has no data-url; it happened in person, count it as available.
   const introCount = document.querySelectorAll('.lecture-card[data-type="intro"]').length;
 
-  // Probe every card with a data-url; counters update once all probes settle.
-  const probeCards = document.querySelectorAll('.lecture-card[data-url]');
+  // Probe every class card with a data-url; counters update once all probes settle.
+  const probeCards = document.querySelectorAll('.lecture-card:not(.resource-card)[data-url]');
   const results = await Promise.all(Array.from(probeCards).map(probeCard));
   const probedAvailable = results.filter(Boolean).length;
 

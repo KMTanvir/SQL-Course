@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL Built-in Functions Reference</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #dbeafe;
+  --accent: #4f46e5; --purple: #7c3aed; --purple-light: #f5f3ff;
+  --success: #059669; --success-light: #d1fae5;
+  --warning: #d97706; --warning-light: #fef3c7;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px; --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+header.ref-header { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; padding: 32px 28px; border-radius: var(--radius); margin-bottom: 20px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+header.ref-header::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+header.ref-header::after { content: ""; position: absolute; bottom: -30px; right: 80px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+header.ref-header .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; position: relative; z-index: 1; }
+header.ref-header h1 { font-size: 28px; margin: 12px 0 8px; font-weight: 700; position: relative; z-index: 1; }
+header.ref-header p.subtitle { font-size: 15px; opacity: 0.92; max-width: 720px; position: relative; z-index: 1; }
+header.ref-header p.instructor { font-size: 13px; opacity: 0.85; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); max-width: 720px; position: relative; z-index: 1; }
+header.ref-header p.instructor strong { font-weight: 700; }
+
+.intro-card { background: var(--purple-light); border-left: 4px solid var(--purple); padding: 16px 20px; border-radius: var(--radius-sm); margin-bottom: 18px; }
+.intro-card strong { color: var(--purple); }
+.intro-card p { font-size: 14px; color: #334155; margin-bottom: 6px; }
+.intro-card p:last-child { margin-bottom: 0; }
+
+.toc { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 22px; margin-bottom: 22px; }
+.toc h2 { font-size: 16px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 600; }
+.toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.toc-grid a { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg); border-radius: 6px; color: var(--text); text-decoration: none; font-size: 13.5px; transition: all var(--transition); border: 1px solid var(--border); }
+.toc-grid a:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); }
+.toc-grid a .ico { font-size: 16px; }
+.toc-grid a .ct { margin-left: auto; font-size: 11px; color: var(--muted); background: white; padding: 1px 7px; border-radius: 10px; }
+
+section.category { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 18px; scroll-margin-top: 14px; }
+section.category h2 { color: var(--primary-dark); font-size: 20px; font-weight: 700; padding-bottom: 8px; margin-bottom: 14px; border-bottom: 2px solid var(--primary-light); display: flex; align-items: center; gap: 10px; }
+section.category h2 .ico { font-size: 22px; }
+section.category > p { color: var(--muted); margin-bottom: 14px; font-size: 14px; }
+
+.fn-grid { display: grid; gap: 14px; }
+.fn { background: #fbfcfe; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius-sm); padding: 14px 16px; }
+.fn-sig { font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+.fn-desc { font-size: 13.5px; color: #334155; margin: 6px 0 8px; }
+.fn-ex { background: #1e293b; color: #e2e8f0; padding: 10px 14px; border-radius: 6px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+.fn-ex .sql-kw { color: #7dd3fc; font-weight: 600; }
+.fn-ex .sql-str { color: #fdba74; }
+.fn-ex .sql-num { color: #86efac; }
+.fn-ex .sql-cm { color: #94a3b8; font-style: italic; }
+.fn-ex .sql-func { color: #f9a8d4; }
+.fn-out { font-size: 12px; color: var(--muted); margin-top: 5px; font-style: italic; }
+
+code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12.5px; color: #be185d; }
+
+.cover-note { background: var(--success-light); border-left: 4px solid var(--success); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 13px; }
+.cover-note strong { color: var(--success); }
+
+.back-link { display: inline-block; margin-top: 10px; padding: 8px 14px; color: var(--muted); text-decoration: none; font-size: 13px; }
+.back-link:hover { color: var(--primary); }
+
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 60px; }
+  header.ref-header { padding: 22px 18px; }
+  header.ref-header h1 { font-size: 22px; }
+  section.category { padding: 18px 16px; }
+  .toc-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="ref-header">
+  <span class="badge">ISRT • SQL Course • Take-home Reference</span>
+  <h1>MySQL Built-in Functions Reference</h1>
+  <p class="subtitle">A compact cheat sheet of MySQL functions you'll meet in the wild. Most won't be covered in class, this is for your future self when you need them.</p>
+  <p class="instructor">Compiled by: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<div class="intro-card">
+  <p><strong>How to use:</strong> Browse by category in the table of contents. Every entry has the signature, a one-line description, and a short example using the Sakila sample database, so you can paste and adapt.</p>
+  <p><strong>Already covered in Lecture 5:</strong> <code>CONCAT</code>, <code>UPPER</code>, <code>LOWER</code>, <code>LENGTH</code>, <code>ROUND</code>, <code>CEIL</code>, <code>FLOOR</code>, <code>ABS</code>, <code>YEAR</code>, <code>MONTH</code>, <code>DAY</code>. Those are listed below too for completeness.</p>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <div class="toc-grid">
+    <a href="#string"><span class="ico">🔤</span><span>String functions</span><span class="ct">15</span></a>
+    <a href="#numeric"><span class="ico">🔢</span><span>Numeric functions</span><span class="ct">14</span></a>
+    <a href="#datetime"><span class="ico">📅</span><span>Date and time functions</span><span class="ct">18</span></a>
+    <a href="#null"><span class="ico">∅</span><span>NULL handling and conditionals</span><span class="ct">5</span></a>
+    <a href="#cast"><span class="ico">🔄</span><span>Type conversion</span><span class="ct">2</span></a>
+    <a href="#aggregate"><span class="ico">∑</span><span>Aggregate functions (preview)</span><span class="ct">5</span></a>
+    <a href="#info"><span class="ico">ℹ️</span><span>Session and system info</span><span class="ct">4</span></a>
+  </div>
+</div>
+
+<!-- ================= STRING ================= -->
+<section class="category" id="string">
+  <h2><span class="ico">🔤</span>String functions</h2>
+  <p>For trimming, splitting, padding, searching, and reshaping text values.</p>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">CONCAT(s1, s2, ...)</div>
+      <div class="fn-desc">Joins all arguments end-to-end. NULL anywhere → result is NULL.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CONCAT</span>(first_name, <span class="sql-str">' '</span>, last_name) <span class="sql-kw">AS</span> full_name <span class="sql-kw">FROM</span> customer;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">CONCAT_WS(separator, s1, s2, ...)</div>
+      <div class="fn-desc">Concat With Separator. Joins arguments with a chosen separator and skips NULLs.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CONCAT_WS</span>(<span class="sql-str">', '</span>, first_name, last_name, email) <span class="sql-kw">FROM</span> customer;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">UPPER(s) / LOWER(s)</div>
+      <div class="fn-desc">Converts the string to upper / lower case. Useful for case-insensitive matching and display.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">UPPER</span>(first_name), <span class="sql-func">LOWER</span>(email) <span class="sql-kw">FROM</span> customer;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">LENGTH(s) / CHAR_LENGTH(s)</div>
+      <div class="fn-desc">LENGTH returns bytes, CHAR_LENGTH returns characters. For pure ASCII text the two match; for multi-byte text use CHAR_LENGTH.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> title, <span class="sql-func">CHAR_LENGTH</span>(title) <span class="sql-kw">AS</span> chars <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">TRIM(s) / LTRIM(s) / RTRIM(s)</div>
+      <div class="fn-desc">Removes leading and/or trailing whitespace.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">TRIM</span>(<span class="sql-str">'   hello   '</span>);  <span class="sql-cm">-- 'hello'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">SUBSTRING(s, start, length)</div>
+      <div class="fn-desc">Extracts a substring. Position is 1-based.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">SUBSTRING</span>(title, <span class="sql-num">1</span>, <span class="sql-num">10</span>) <span class="sql-kw">FROM</span> film;  <span class="sql-cm">-- first 10 chars</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">LEFT(s, n) / RIGHT(s, n)</div>
+      <div class="fn-desc">First (or last) n characters of the string.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">LEFT</span>(title, <span class="sql-num">5</span>), <span class="sql-func">RIGHT</span>(title, <span class="sql-num">3</span>) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">REPLACE(s, from, to)</div>
+      <div class="fn-desc">Replaces every occurrence of <code>from</code> with <code>to</code>. Case-sensitive.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">REPLACE</span>(email, <span class="sql-str">'@sakilastaff.com'</span>, <span class="sql-str">'@isrt.ac.bd'</span>) <span class="sql-kw">FROM</span> staff;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">INSTR(s, sub) / LOCATE(sub, s)</div>
+      <div class="fn-desc">Returns the position of <code>sub</code> inside <code>s</code> (1-based), or 0 if not found.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> title, <span class="sql-func">INSTR</span>(title, <span class="sql-str">'MAN'</span>) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">LPAD(s, len, pad) / RPAD(s, len, pad)</div>
+      <div class="fn-desc">Pads the string on the left or right with the pad characters until it reaches the desired length.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">LPAD</span>(customer_id, <span class="sql-num">5</span>, <span class="sql-str">'0'</span>) <span class="sql-kw">FROM</span> customer;  <span class="sql-cm">-- '00007'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">REPEAT(s, n)</div>
+      <div class="fn-desc">Repeats the string n times.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">REPEAT</span>(<span class="sql-str">'-'</span>, <span class="sql-num">10</span>);  <span class="sql-cm">-- '----------'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">REVERSE(s)</div>
+      <div class="fn-desc">Reverses the characters of a string.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">REVERSE</span>(<span class="sql-str">'sakila'</span>);  <span class="sql-cm">-- 'alikas'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">FORMAT(num, decimals)</div>
+      <div class="fn-desc">Formats a number as a string with comma thousands separators and the given decimals.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">FORMAT</span>(<span class="sql-num">1234567.891</span>, <span class="sql-num">2</span>);  <span class="sql-cm">-- '1,234,567.89'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">SUBSTRING_INDEX(s, delim, count)</div>
+      <div class="fn-desc">Returns the substring before the <em>count</em>-th occurrence of <code>delim</code>. Negative count counts from the end.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">SUBSTRING_INDEX</span>(email, <span class="sql-str">'@'</span>, <span class="sql-num">1</span>) <span class="sql-kw">FROM</span> customer;  <span class="sql-cm">-- the username</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">SPACE(n)</div>
+      <div class="fn-desc">Returns a string of n spaces. Mostly used inside CONCAT for alignment.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CONCAT</span>(first_name, <span class="sql-func">SPACE</span>(<span class="sql-num">2</span>), last_name) <span class="sql-kw">FROM</span> customer;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NUMERIC ================= -->
+<section class="category" id="numeric">
+  <h2><span class="ico">🔢</span>Numeric functions</h2>
+  <p>Rounding, math, randomness, and a few helpers.</p>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">ROUND(x, n)</div>
+      <div class="fn-desc">Rounds x to n decimal places (n defaults to 0). Half-values round to even in some MySQL builds.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">ROUND</span>(amount, <span class="sql-num">1</span>) <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">CEIL(x) / CEILING(x)</div>
+      <div class="fn-desc">Rounds UP to the next whole number.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CEIL</span>(amount), amount <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">FLOOR(x)</div>
+      <div class="fn-desc">Rounds DOWN to the previous whole number.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">FLOOR</span>(amount) <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">TRUNCATE(x, n)</div>
+      <div class="fn-desc">Chops the decimal at n digits without rounding. <code>TRUNCATE(3.789, 1)</code> → <code>3.7</code>.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">TRUNCATE</span>(amount, <span class="sql-num">1</span>) <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">ABS(x)</div>
+      <div class="fn-desc">Absolute value of x.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">ABS</span>(amount - <span class="sql-num">5.00</span>) <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">SIGN(x)</div>
+      <div class="fn-desc">Returns -1, 0, or 1 depending on whether x is negative, zero, or positive.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">SIGN</span>(amount - <span class="sql-num">5.00</span>) <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">MOD(a, b)   or   a % b</div>
+      <div class="fn-desc">Remainder of a / b. Often used for "every nth row" tricks.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> customer_id, <span class="sql-func">MOD</span>(customer_id, <span class="sql-num">10</span>) <span class="sql-kw">FROM</span> customer;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">POWER(x, y)   or   POW(x, y)</div>
+      <div class="fn-desc">x raised to the power of y.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">POWER</span>(<span class="sql-num">2</span>, <span class="sql-num">10</span>);  <span class="sql-cm">-- 1024</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">SQRT(x)</div>
+      <div class="fn-desc">Square root of x. Returns NULL for negative inputs.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">SQRT</span>(<span class="sql-num">81</span>);  <span class="sql-cm">-- 9</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">EXP(x) / LN(x) / LOG(b, x)</div>
+      <div class="fn-desc">e^x, natural log of x, log of x to base b.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">LN</span>(<span class="sql-num">2.718</span>), <span class="sql-func">LOG</span>(<span class="sql-num">10</span>, <span class="sql-num">1000</span>);</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">PI()</div>
+      <div class="fn-desc">Returns π (about 3.14159...).</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">PI</span>() * <span class="sql-num">2</span>;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">RAND()</div>
+      <div class="fn-desc">A pseudo-random number in <code>[0, 1)</code>. Useful with ORDER BY for random sampling.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> title <span class="sql-kw">FROM</span> film <span class="sql-kw">ORDER BY</span> <span class="sql-func">RAND</span>() <span class="sql-kw">LIMIT</span> <span class="sql-num">5</span>;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">GREATEST(a, b, c, ...) / LEAST(a, b, c, ...)</div>
+      <div class="fn-desc">Returns the largest / smallest of the given values. NOT the same as MAX/MIN aggregates.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">GREATEST</span>(rental_rate, <span class="sql-num">3.99</span>) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DIV / MOD operators</div>
+      <div class="fn-desc">Integer division: <code>a DIV b</code>; remainder: <code>a MOD b</code> or <code>a % b</code>.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-num">17</span> <span class="sql-kw">DIV</span> <span class="sql-num">5</span>, <span class="sql-num">17</span> <span class="sql-kw">MOD</span> <span class="sql-num">5</span>;  <span class="sql-cm">-- 3, 2</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DATE AND TIME ================= -->
+<section class="category" id="datetime">
+  <h2><span class="ico">📅</span>Date and time functions</h2>
+  <p>The most useful set of functions for any real-world database. Sakila has plenty of date columns to practice on (rental_date, payment_date, last_update, etc.).</p>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">NOW()</div>
+      <div class="fn-desc">Current date and time (a DATETIME). Constant within a single statement.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">NOW</span>();  <span class="sql-cm">-- e.g. '2026-05-11 14:30:00'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">CURDATE() / CURRENT_DATE</div>
+      <div class="fn-desc">Just today's date (no time).</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CURDATE</span>();  <span class="sql-cm">-- '2026-05-11'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">CURTIME() / CURRENT_TIME</div>
+      <div class="fn-desc">Just the current time of day.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CURTIME</span>();  <span class="sql-cm">-- '14:30:00'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">YEAR(d) / MONTH(d) / DAY(d)</div>
+      <div class="fn-desc">Extracts the year, month, or day-of-month from a DATE or DATETIME.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">YEAR</span>(rental_date), <span class="sql-func">MONTH</span>(rental_date), <span class="sql-func">DAY</span>(rental_date) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">HOUR(t) / MINUTE(t) / SECOND(t)</div>
+      <div class="fn-desc">Extracts pieces of a TIME or DATETIME.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">HOUR</span>(rental_date), <span class="sql-func">MINUTE</span>(rental_date) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DAYNAME(d) / MONTHNAME(d)</div>
+      <div class="fn-desc">Returns the English name of the day or month.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DAYNAME</span>(rental_date) <span class="sql-kw">FROM</span> rental;  <span class="sql-cm">-- 'Tuesday'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DAYOFWEEK(d) / DAYOFYEAR(d) / WEEK(d)</div>
+      <div class="fn-desc">Numeric variants. DAYOFWEEK uses 1=Sunday by default.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DAYOFWEEK</span>(rental_date), <span class="sql-func">WEEK</span>(rental_date) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DATE(dt) / TIME(dt)</div>
+      <div class="fn-desc">Extracts just the date portion or just the time portion from a DATETIME.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DATE</span>(rental_date) <span class="sql-kw">FROM</span> rental;  <span class="sql-cm">-- drop the time</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DATE_ADD(d, INTERVAL n unit) / DATE_SUB</div>
+      <div class="fn-desc">Add or subtract a duration. unit can be DAY, MONTH, YEAR, HOUR, MINUTE, SECOND, etc.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DATE_ADD</span>(rental_date, <span class="sql-kw">INTERVAL</span> <span class="sql-num">7</span> <span class="sql-kw">DAY</span>) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">ADDDATE(d, n) / SUBDATE(d, n)</div>
+      <div class="fn-desc">Shorthand for adding/subtracting n DAYS.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">ADDDATE</span>(rental_date, <span class="sql-num">7</span>) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DATEDIFF(d1, d2)</div>
+      <div class="fn-desc">Number of days from d2 to d1 (d1 - d2). Negative if d1 is earlier.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DATEDIFF</span>(return_date, rental_date) <span class="sql-kw">AS</span> days_kept <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">TIMESTAMPDIFF(unit, d1, d2)</div>
+      <div class="fn-desc">Difference between two dates in any unit (YEAR, MONTH, DAY, HOUR, MINUTE, ...). d2 - d1.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">TIMESTAMPDIFF</span>(<span class="sql-kw">YEAR</span>, create_date, <span class="sql-func">NOW</span>()) <span class="sql-kw">FROM</span> customer;  <span class="sql-cm">-- account age in years</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">DATE_FORMAT(d, fmt)</div>
+      <div class="fn-desc">Format a date using format codes (%Y year, %m month, %d day, %H hour, etc.). The string version of pretty-printing dates.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DATE_FORMAT</span>(rental_date, <span class="sql-str">'%d-%b-%Y'</span>) <span class="sql-kw">FROM</span> rental;  <span class="sql-cm">-- '14-Jun-2005'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">STR_TO_DATE(s, fmt)</div>
+      <div class="fn-desc">Parse a text date back into a DATE using the same format codes. Inverse of DATE_FORMAT.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">STR_TO_DATE</span>(<span class="sql-str">'14-06-2005'</span>, <span class="sql-str">'%d-%m-%Y'</span>);</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">LAST_DAY(d)</div>
+      <div class="fn-desc">Last day of the month containing d. Handy for month-end reports.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">LAST_DAY</span>(<span class="sql-str">'2005-06-14'</span>);  <span class="sql-cm">-- '2005-06-30'</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">EXTRACT(unit FROM d)</div>
+      <div class="fn-desc">Standard-SQL equivalent of YEAR/MONTH/DAY etc. but with one unified syntax.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">EXTRACT</span>(<span class="sql-kw">YEAR</span> <span class="sql-kw">FROM</span> rental_date) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">UNIX_TIMESTAMP() / FROM_UNIXTIME(t)</div>
+      <div class="fn-desc">Convert between MySQL date/time and Unix epoch seconds (seconds since 1970).</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">UNIX_TIMESTAMP</span>(rental_date) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">QUARTER(d)</div>
+      <div class="fn-desc">Returns the quarter (1, 2, 3, or 4) of the date.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">QUARTER</span>(rental_date), <span class="sql-func">COUNT</span>(*) <span class="sql-kw">FROM</span> rental <span class="sql-kw">GROUP BY</span> <span class="sql-num">1</span>;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NULL HANDLING ================= -->
+<section class="category" id="null">
+  <h2><span class="ico">∅</span>NULL handling and conditionals</h2>
+  <p>Tools for turning NULLs into something useful, or for picking between values.</p>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">IFNULL(a, b)</div>
+      <div class="fn-desc">If a is NULL, return b; otherwise return a. Handy for default-on-display.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">IFNULL</span>(return_date, <span class="sql-str">'STILL OUT'</span>) <span class="sql-kw">FROM</span> rental;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">COALESCE(a, b, c, ...)</div>
+      <div class="fn-desc">Returns the first non-NULL argument. The N-way generalization of IFNULL.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">COALESCE</span>(phone, email, <span class="sql-str">'no contact'</span>) <span class="sql-kw">FROM</span> customer;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">NULLIF(a, b)</div>
+      <div class="fn-desc">Returns NULL if a equals b; otherwise returns a. Useful for turning sentinel values back into NULL.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">NULLIF</span>(phone, <span class="sql-str">''</span>) <span class="sql-kw">FROM</span> customer;  <span class="sql-cm">-- empty string -> NULL</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">IF(condition, true_val, false_val)</div>
+      <div class="fn-desc">Inline conditional. Like a ternary operator.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> title, <span class="sql-func">IF</span>(length &gt; <span class="sql-num">120</span>, <span class="sql-str">'long'</span>, <span class="sql-str">'short'</span>) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">CASE WHEN ... THEN ... [ELSE ...] END</div>
+      <div class="fn-desc">Multi-branch conditional. The general-purpose if/else of SQL.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> title,
+       <span class="sql-kw">CASE</span>
+         <span class="sql-kw">WHEN</span> length &lt; <span class="sql-num">60</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'short'</span>
+         <span class="sql-kw">WHEN</span> length &lt; <span class="sql-num">120</span> <span class="sql-kw">THEN</span> <span class="sql-str">'medium'</span>
+         <span class="sql-kw">ELSE</span> <span class="sql-str">'long'</span>
+       <span class="sql-kw">END</span> <span class="sql-kw">AS</span> length_bucket
+<span class="sql-kw">FROM</span> film;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TYPE CONVERSION ================= -->
+<section class="category" id="cast">
+  <h2><span class="ico">🔄</span>Type conversion</h2>
+  <p>Force a value to a specific type, useful when MySQL's automatic coercion gets in your way.</p>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">CAST(x AS type)</div>
+      <div class="fn-desc">Standard SQL conversion. Types include CHAR, DATE, DATETIME, DECIMAL, SIGNED, UNSIGNED, TIME.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CAST</span>(<span class="sql-str">'2026-05-11'</span> <span class="sql-kw">AS</span> <span class="sql-kw">DATE</span>);</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">CONVERT(x, type)</div>
+      <div class="fn-desc">MySQL's variant with similar effect. <code>CONVERT(x USING utf8)</code> also changes character set.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">CONVERT</span>(amount, <span class="sql-kw">CHAR</span>) <span class="sql-kw">FROM</span> payment;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AGGREGATE ================= -->
+<section class="category" id="aggregate">
+  <h2><span class="ico">∑</span>Aggregate functions (preview)</h2>
+  <p>These work on a <em>group</em> of rows rather than a single row. We'll cover them properly in Lecture 7, but here's a head start.</p>
+
+  <div class="cover-note"><strong>Note:</strong> aggregate functions are commonly used with <code>GROUP BY</code>, which is Lecture 7's main topic. Used alone on the whole table, they collapse all rows into one summary row.</div>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">COUNT(*) / COUNT(col)</div>
+      <div class="fn-desc">Number of rows. <code>COUNT(*)</code> counts all rows; <code>COUNT(col)</code> counts rows where col is not NULL.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">COUNT</span>(*) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">SUM(col)</div>
+      <div class="fn-desc">Total of a numeric column.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">SUM</span>(amount) <span class="sql-kw">FROM</span> payment;  <span class="sql-cm">-- total revenue</span></pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">AVG(col)</div>
+      <div class="fn-desc">Mean of a numeric column. Ignores NULLs.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">AVG</span>(rental_rate) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">MIN(col) / MAX(col)</div>
+      <div class="fn-desc">Smallest / largest value. Works on numbers, strings, and dates.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">MIN</span>(length), <span class="sql-func">MAX</span>(length) <span class="sql-kw">FROM</span> film;</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">GROUP_CONCAT(col SEPARATOR ', ')</div>
+      <div class="fn-desc">Joins all values in the group into a single comma-separated string. Useful for compact listings.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> rating, <span class="sql-func">GROUP_CONCAT</span>(title <span class="sql-kw">SEPARATOR</span> <span class="sql-str">', '</span>) <span class="sql-kw">FROM</span> film <span class="sql-kw">GROUP BY</span> rating;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INFO ================= -->
+<section class="category" id="info">
+  <h2><span class="ico">ℹ️</span>Session and system info</h2>
+  <p>Little helpers that come up when debugging or writing portable queries.</p>
+
+  <div class="fn-grid">
+    <div class="fn">
+      <div class="fn-sig">DATABASE()</div>
+      <div class="fn-desc">Name of the currently selected database (the one you USE'd).</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">DATABASE</span>();</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">USER() / CURRENT_USER()</div>
+      <div class="fn-desc">Username of the current connection.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">USER</span>();</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">VERSION()</div>
+      <div class="fn-desc">The MySQL server version string. Useful in bug reports.</div>
+      <pre class="fn-ex"><span class="sql-kw">SELECT</span> <span class="sql-func">VERSION</span>();</pre>
+    </div>
+    <div class="fn">
+      <div class="fn-sig">LAST_INSERT_ID()</div>
+      <div class="fn-desc">The AUTO_INCREMENT value generated by your most recent INSERT in this session. Common after inserting a parent row and needing the new id for the child row.</div>
+      <pre class="fn-ex"><span class="sql-kw">INSERT INTO</span> author (name) <span class="sql-kw">VALUES</span> (<span class="sql-str">'New Author'</span>);
+<span class="sql-kw">SELECT</span> <span class="sql-func">LAST_INSERT_ID</span>();</pre>
+    </div>
+  </div>
+</section>
+
+<a class="back-link" href="../index.html">← Back to course home</a>
+
+</div>
+</body>
+</html>
