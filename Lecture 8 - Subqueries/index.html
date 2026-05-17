@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 8: Subqueries</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #dbeafe;
+  --accent: #4f46e5; --success: #059669; --success-light: #d1fae5;
+  --danger: #dc2626; --danger-light: #fee2e2; --warning: #d97706; --warning-light: #fef3c7;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px; --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+header.lecture-header { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; padding: 32px 28px; border-radius: var(--radius); margin-bottom: 20px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+header.lecture-header::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+header.lecture-header::after { content: ""; position: absolute; bottom: -30px; right: 80px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+header.lecture-header .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; position: relative; z-index: 1; }
+header.lecture-header h1 { font-size: 28px; margin: 12px 0 8px; font-weight: 700; position: relative; z-index: 1; }
+header.lecture-header p.instructor { font-size: 13px; opacity: 0.85; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); max-width: 720px; position: relative; z-index: 1; }
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 14px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+.tabs { display: flex; gap: 4px; background: white; padding: 6px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; flex-wrap: wrap; }
+.tab-btn { flex: 1; min-width: 110px; padding: 11px 16px; background: transparent; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all var(--transition); font-family: inherit; }
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.28); }
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.card { background: var(--card); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 16px; }
+
+.progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+.slide-counter { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 14px; font-weight: 500; }
+.slide { display: none; min-height: 420px; padding: 4px; animation: slideIn 0.3s ease; }
+.slide.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+.slide h2 { font-size: 26px; margin-bottom: 6px; color: var(--primary-dark); font-weight: 700; line-height: 1.25; }
+.slide h3 { font-size: 18px; margin: 22px 0 10px; color: var(--text); font-weight: 600; }
+.slide p { margin-bottom: 12px; color: #334155; }
+.slide ul, .slide ol { margin: 0 0 14px 22px; }
+.slide li { margin-bottom: 6px; color: #334155; }
+.slide .slide-subtitle { color: var(--muted); font-size: 15px; margin-bottom: 18px; font-style: italic; }
+
+.example-box { background: var(--primary-light); border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.example-box strong { color: var(--primary-dark); }
+.tip-box { background: var(--success-light); border-left: 4px solid var(--success); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.tip-box strong { color: var(--success); }
+.warn-box { background: var(--warning-light); border-left: 4px solid var(--warning); padding: 16px 20px; border-radius: var(--radius-sm); margin: 16px 0; }
+.warn-box strong { color: var(--warning); }
+
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; color: #be185d; }
+pre { background: #1e293b; color: #e2e8f0; padding: 16px 18px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.6; }
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #7dd3fc; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #f9a8d4; }
+.sql-type { color: #fcd34d; font-weight: 600; }
+
+table.data-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; box-shadow: var(--shadow); border-radius: var(--radius-sm); overflow: hidden; }
+table.data-table th { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.3px; }
+table.data-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); background: white; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #f8fafc; }
+table.data-table tr:hover td { background: var(--primary-light); }
+table.data-table .hl { background: #fef3c7 !important; }
+
+.slide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+.btn { padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: all var(--transition); font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.28); }
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.key-hint { font-size: 12px; color: var(--muted); }
+
+.practice { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 18px; margin: 18px 0; }
+.practice h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.practice-q { margin-bottom: 10px; color: var(--text); font-weight: 500; }
+.practice-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.practice-btn { padding: 8px 14px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all var(--transition); color: var(--text); }
+.practice-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.practice-btn.correct { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+.practice-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.practice-btn.disabled { pointer-events: none; opacity: 0.75; }
+.practice-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 14px; display: none; animation: fadeIn 0.2s; }
+.practice-feedback.show { display: block; }
+.practice-feedback.right { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+.practice-feedback.wrong { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+.quiz-intro { background: white; padding: 22px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+.quiz-question { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option { padding: 11px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: white; transition: all var(--transition); font-size: 14px; color: var(--text); text-align: left; font-family: inherit; }
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain { display: none; margin-top: 10px; padding: 10px 14px; background: #f8fafc; border-left: 3px solid var(--primary); border-radius: 4px; font-size: 13px; color: #334155; }
+.quiz-explain.show { display: block; }
+.quiz-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); flex-wrap: wrap; }
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result { display: none; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%); border-radius: var(--radius); text-align: center; margin-top: 16px; box-shadow: var(--shadow); animation: fadeIn 0.4s ease; }
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: var(--warning-light); color: var(--warning); }
+
+.flashcards-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.flashcards-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.flashcards-header p { color: var(--muted); font-size: 14px; }
+.flashcards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.flashcard { perspective: 1000px; height: 180px; cursor: pointer; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.55s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: var(--shadow); }
+.flashcard-front { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2px solid var(--primary-light); color: var(--primary-dark); font-weight: 600; font-size: 17px; }
+.flashcard-front .hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 8px; font-style: italic; }
+.flashcard-back { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; transform: rotateY(180deg); font-size: 13px; line-height: 1.5; }
+
+.exercises-header { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.exercise { background: white; border-radius: var(--radius); padding: 22px; margin-bottom: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--warning-light); color: var(--warning); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise textarea { width: 100%; min-height: 90px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; background: #f8fafc; color: var(--text); transition: border-color var(--transition); }
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach { display: none; margin-top: 12px; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13.5px; }
+.exercise-hint { background: var(--warning-light); border-left: 3px solid var(--warning); color: #78350f; }
+.exercise-approach { background: #eff6ff; border-left: 3px solid var(--primary); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li { padding: 8px 0 8px 30px; position: relative; color: #334155; }
+.objectives-list li::before { content: "✓"; position: absolute; left: 0; top: 10px; color: var(--success); font-weight: bold; background: var(--success-light); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.compare-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.compare-card h4 { color: var(--primary); margin-bottom: 10px; font-size: 15px; font-weight: 600; }
+.compare-card ul { margin: 0 0 0 18px; }
+
+.kbd { display: inline-block; background: #f1f5f9; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; color: var(--text); }
+
+.reset-btn { position: fixed; bottom: 18px; right: 18px; background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 13px; color: var(--muted); cursor: pointer; box-shadow: var(--shadow); font-family: inherit; transition: all var(--transition); z-index: 100; }
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  .compare-grid { grid-template-columns: 1fr; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .slide h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Lecture 8</span>
+  <h1>Subqueries</h1>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="progStat">0%</div><div class="stat-label">Slides Viewed</div></div>
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Quiz Score</div></div>
+  <div class="stat"><div class="stat-value" id="flipStat">0</div><div class="stat-label">Cards Flipped</div></div>
+  <div class="stat"><div class="stat-value" id="exStat">0</div><div class="stat-label">Exercises Worked</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="slides">📖 Slides</button>
+  <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+  <button class="tab-btn" data-tab="flashcards">🃏 Flashcards</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+</nav>
+
+<main>
+
+<!-- ============ SLIDES TAB ============ -->
+<section id="slides" class="tab-content active">
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  <div class="slide-counter" id="slideCounter">Slide 1 of 8</div>
+  <div class="card">
+    <div id="slidesContainer">
+
+      <!-- SLIDE 1 -->
+      <div class="slide active" data-slide="1">
+        <h2>Welcome to Lecture 8</h2>
+        <h3>What you'll learn today</h3>
+        <ul class="objectives-list">
+          <li>What a <strong>subquery</strong> is, a SELECT nested inside another SQL statement</li>
+          <li><strong>Scalar subqueries</strong>, which return one row and one column</li>
+          <li>Using subqueries with comparison operators like <code>=</code>, <code>&lt;</code>, <code>&gt;</code></li>
+          <li><code>IN</code> with a subquery, when the inner query produces a list of values</li>
+          <li><code>EXISTS</code> and <code>NOT EXISTS</code>, the boolean check on whether any matching row exists</li>
+          <li>When to reach for a subquery, and when a join would do (next lecture)</li>
+        </ul>
+        <p style="margin-top: 14px; color: var(--muted); font-size: 14px;">When you're ready, click <strong>Next →</strong> to begin.</p>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="slide" data-slide="2">
+        <h2>What is a subquery?</h2>
+        <p>A <strong>subquery</strong> is a <code>SELECT</code> statement written inside another SQL statement, always wrapped in parentheses. The inner query runs first (conceptually), produces a result, and the outer query uses that result as a value.</p>
+
+        <h3>A first taste</h3>
+<pre><code><span class="sql-cm">-- Films priced above the catalogue average</span>
+<span class="sql-kw">SELECT</span> title, rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rental_rate &gt; (
+  <span class="sql-kw">SELECT</span> <span class="sql-func">AVG</span>(rental_rate) <span class="sql-kw">FROM</span> film
+);</code></pre>
+        <p>The inner query computes one number, the catalogue average. The outer query then compares every film against that number. Two queries, one statement.</p>
+
+        <h3>Three shapes by what the inner query returns</h3>
+        <ul>
+          <li><strong>Scalar:</strong> one row, one column. Behaves like a single value.</li>
+          <li><strong>Row:</strong> one row, several columns.</li>
+          <li><strong>Table:</strong> many rows. Used with <code>IN</code> or <code>EXISTS</code>.</li>
+        </ul>
+
+        <div class="example-box">
+          <strong>Mental model:</strong> a subquery is just another query whose result becomes an input. Treat the inner query as a black box that returns "something", and ask: is the outer query expecting a single value, a list, or a yes/no answer?
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide" data-slide="3">
+        <h2>Scalar subqueries</h2>
+        <p>A <strong>scalar subquery</strong> returns exactly one row and one column. That makes it behave like a literal value, you can use it anywhere a single value goes.</p>
+
+        <h3>Anatomy</h3>
+<pre><code><span class="sql-cm">-- The inner query returns exactly one number:</span>
+<span class="sql-kw">SELECT</span> <span class="sql-func">AVG</span>(rental_rate) <span class="sql-kw">FROM</span> film;
+<span class="sql-cm">-- Result: 2.98</span>
+
+<span class="sql-cm">-- That number is then used as if you had typed 2.98:</span>
+<span class="sql-kw">SELECT</span> title, rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rental_rate &gt; (<span class="sql-kw">SELECT</span> <span class="sql-func">AVG</span>(rental_rate) <span class="sql-kw">FROM</span> film);</code></pre>
+
+        <h3>Why use a scalar subquery instead of typing the number?</h3>
+        <p>Because the average changes as the data changes. The subquery <em>recomputes</em> the value every time the outer query runs, so your filter stays correct without manual updates.</p>
+
+        <div class="warn-box">
+          <strong>Common pitfall:</strong> if the inner query returns more than one row, MySQL raises <code>Subquery returns more than 1 row</code>. Aggregates (AVG, MAX, MIN, SUM, COUNT) always return one row, so they are safe scalar subqueries.
+        </div>
+
+        <div class="practice" data-q="s3">
+          <h4>⚡ Quick check</h4>
+          <p class="practice-q">Which of these is guaranteed to be a scalar subquery?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">SELECT title FROM film WHERE rating = 'PG'</button>
+            <button class="practice-btn" data-correct="true">SELECT MAX(rental_rate) FROM film</button>
+            <button class="practice-btn" data-correct="false">SELECT first_name, last_name FROM customer WHERE customer_id = 1</button>
+            <button class="practice-btn" data-correct="false">SELECT title, length FROM film</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div class="slide" data-slide="4">
+        <h2>Subqueries with comparison operators</h2>
+        <p>When the inner query is scalar, you can use any comparison operator: <code>=</code>, <code>&lt;&gt;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>.</p>
+
+        <h3>The most expensive film(s)</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, rental_rate
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rental_rate = (
+  <span class="sql-kw">SELECT</span> <span class="sql-func">MAX</span>(rental_rate) <span class="sql-kw">FROM</span> film
+);</code></pre>
+        <p>The inner query finds the maximum price. The outer query returns every film priced at that exact value. (There can be ties, so you may get more than one row.)</p>
+
+        <h3>Films shorter than the average length</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, length
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> length &lt; (
+  <span class="sql-kw">SELECT</span> <span class="sql-func">AVG</span>(length) <span class="sql-kw">FROM</span> film
+)
+<span class="sql-kw">ORDER BY</span> length;</code></pre>
+
+        <h3>Films released no earlier than customer 1's join year</h3>
+<pre><code><span class="sql-kw">SELECT</span> title, release_year
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> release_year &gt;= (
+  <span class="sql-kw">SELECT</span> <span class="sql-func">YEAR</span>(create_date) <span class="sql-kw">FROM</span> customer <span class="sql-kw">WHERE</span> customer_id = <span class="sql-num">1</span>
+);</code></pre>
+        <p>Here the inner query returns one value (the create-year of customer 1), and the outer query uses it as a threshold.</p>
+
+        <div class="tip-box">
+          <strong>Habit to build:</strong> when you write a scalar subquery inside a comparison, mentally ask "does this <em>always</em> return one row?". Aggregates do. <code>WHERE id = some_unique_value</code> does. <code>WHERE rating = 'PG'</code> usually doesn't.
+        </div>
+      </div>
+
+      <!-- SLIDE 5 -->
+      <div class="slide" data-slide="5">
+        <h2>IN with a subquery</h2>
+        <p>When the inner query returns <em>multiple values</em>, you use <code>IN</code> instead of <code>=</code>. It's the same <code>IN</code> you used last week with a hardcoded list, except now the list comes from a query.</p>
+
+        <h3>Customers who belong to store 1</h3>
+<pre><code><span class="sql-cm">-- Hardcoded list version:</span>
+<span class="sql-kw">SELECT</span> first_name, last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> customer_id <span class="sql-kw">IN</span> (<span class="sql-num">1</span>, <span class="sql-num">2</span>, <span class="sql-num">3</span>, <span class="sql-num">4</span>, <span class="sql-num">5</span>);
+
+<span class="sql-cm">-- Subquery version, the list comes from another query:</span>
+<span class="sql-kw">SELECT</span> first_name, last_name
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> customer_id <span class="sql-kw">IN</span> (
+  <span class="sql-kw">SELECT</span> customer_id <span class="sql-kw">FROM</span> customer <span class="sql-kw">WHERE</span> store_id = <span class="sql-num">1</span>
+);</code></pre>
+
+        <h3>Films that have at least one actor named PENELOPE</h3>
+<pre><code><span class="sql-kw">SELECT</span> title
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> film_id <span class="sql-kw">IN</span> (
+  <span class="sql-kw">SELECT</span> film_id
+  <span class="sql-kw">FROM</span> film_actor
+  <span class="sql-kw">WHERE</span> actor_id <span class="sql-kw">IN</span> (
+    <span class="sql-kw">SELECT</span> actor_id <span class="sql-kw">FROM</span> actor <span class="sql-kw">WHERE</span> first_name = <span class="sql-str">'PENELOPE'</span>
+  )
+);</code></pre>
+
+        <p>Nested subqueries are fine. Each level peels off one step toward the answer: from actor name to actor ID, from actor ID to film ID, from film ID to title.</p>
+
+        <div class="tip-box">
+          <strong>Rule of thumb:</strong> when the inner query produces a column of values, use <code>IN</code>. When it produces a single number or string, use <code>=</code> (or any other comparison operator).
+        </div>
+      </div>
+
+      <!-- SLIDE 6 -->
+      <div class="slide" data-slide="6">
+        <h2>EXISTS and NOT EXISTS</h2>
+        <p><code>EXISTS</code> takes a subquery and returns true if that subquery produces at least one row, false otherwise. <code>NOT EXISTS</code> is its inverse.</p>
+
+        <h3>Customers who have ever rented at least once</h3>
+<pre><code><span class="sql-kw">SELECT</span> customer_id, first_name, last_name
+<span class="sql-kw">FROM</span> customer c
+<span class="sql-kw">WHERE</span> <span class="sql-kw">EXISTS</span> (
+  <span class="sql-kw">SELECT</span> <span class="sql-num">1</span> <span class="sql-kw">FROM</span> rental r <span class="sql-kw">WHERE</span> r.customer_id = c.customer_id
+);</code></pre>
+        <p>For each customer row, the inner query asks "is there at least one rental linked to this customer?". If yes, the row survives.</p>
+
+        <h3>Customers who have never rented anything</h3>
+<pre><code><span class="sql-kw">SELECT</span> customer_id, first_name, last_name
+<span class="sql-kw">FROM</span> customer c
+<span class="sql-kw">WHERE</span> <span class="sql-kw">NOT EXISTS</span> (
+  <span class="sql-kw">SELECT</span> <span class="sql-num">1</span> <span class="sql-kw">FROM</span> rental r <span class="sql-kw">WHERE</span> r.customer_id = c.customer_id
+);</code></pre>
+
+        <h3>Why SELECT 1?</h3>
+        <p>Inside <code>EXISTS</code> the column list does not matter, only whether any row comes back. Writing <code>SELECT 1</code> is a convention that says "I don't care what columns, just check existence". <code>SELECT *</code> works too; both are equivalent here.</p>
+
+        <div class="practice" data-q="s6">
+          <h4>⚡ Quick check</h4>
+          <p class="practice-q">Which statement about <code>EXISTS</code> is true?</p>
+          <div class="practice-options">
+            <button class="practice-btn" data-correct="false">It returns the rows of the subquery</button>
+            <button class="practice-btn" data-correct="true">It returns true or false, based on whether the subquery has any rows</button>
+            <button class="practice-btn" data-correct="false">It requires the subquery to return exactly one row</button>
+            <button class="practice-btn" data-correct="false">It can only be used with COUNT</button>
+          </div>
+          <div class="practice-feedback"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 -->
+      <div class="slide" data-slide="7">
+        <h2>Putting it together, a worked example</h2>
+        <p class="slide-subtitle">"List the customers who have ever rented one of the most expensive films."</p>
+
+        <h3>Step 1, find the maximum rental rate</h3>
+<pre><code><span class="sql-kw">SELECT</span> <span class="sql-func">MAX</span>(rental_rate) <span class="sql-kw">FROM</span> film;
+<span class="sql-cm">-- Result: 4.99</span></code></pre>
+
+        <h3>Step 2, find the film_ids priced at that maximum</h3>
+<pre><code><span class="sql-kw">SELECT</span> film_id
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rental_rate = (<span class="sql-kw">SELECT</span> <span class="sql-func">MAX</span>(rental_rate) <span class="sql-kw">FROM</span> film);</code></pre>
+
+        <h3>Step 3, find the inventory rows for those films</h3>
+<pre><code><span class="sql-kw">SELECT</span> inventory_id
+<span class="sql-kw">FROM</span> inventory
+<span class="sql-kw">WHERE</span> film_id <span class="sql-kw">IN</span> (
+  <span class="sql-kw">SELECT</span> film_id <span class="sql-kw">FROM</span> film
+  <span class="sql-kw">WHERE</span> rental_rate = (<span class="sql-kw">SELECT</span> <span class="sql-func">MAX</span>(rental_rate) <span class="sql-kw">FROM</span> film)
+);</code></pre>
+
+        <h3>Step 4, find customers whose rentals match those inventory rows</h3>
+<pre><code><span class="sql-kw">SELECT</span> <span class="sql-kw">DISTINCT</span> customer_id
+<span class="sql-kw">FROM</span> rental
+<span class="sql-kw">WHERE</span> inventory_id <span class="sql-kw">IN</span> (
+  <span class="sql-kw">SELECT</span> inventory_id <span class="sql-kw">FROM</span> inventory
+  <span class="sql-kw">WHERE</span> film_id <span class="sql-kw">IN</span> (
+    <span class="sql-kw">SELECT</span> film_id <span class="sql-kw">FROM</span> film
+    <span class="sql-kw">WHERE</span> rental_rate = (<span class="sql-kw">SELECT</span> <span class="sql-func">MAX</span>(rental_rate) <span class="sql-kw">FROM</span> film)
+  )
+);</code></pre>
+
+        <div class="example-box">
+          <strong>What just happened:</strong> we layered three subqueries, each peeling off one step toward the answer. The innermost finds the max rate (scalar). The middle two filter by <code>IN</code> using the result of the level below. <code>DISTINCT</code> at the top deduplicates customers who rented more than one expensive film.
+        </div>
+
+        <div class="tip-box">
+          <strong>Next time:</strong> the same answer with a <em>join</em> is shorter and usually faster. Subqueries shine when you want a value to compare against; joins shine when you want columns from another table.
+        </div>
+      </div>
+
+      <!-- SLIDE 8 -->
+      <div class="slide" data-slide="8">
+        <h2>You Made It! 🎉</h2>
+        <p>Subqueries let one query feed another. You can compute thresholds, build lists, and check existence, all without leaving SQL.</p>
+
+        <h3>Recap, what we covered</h3>
+        <ul>
+          <li><strong>Subquery:</strong> a SELECT in parentheses, used inside another SQL statement.</li>
+          <li><strong>Scalar subquery:</strong> one row, one column. Behaves like a single value, works with <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, and the rest.</li>
+          <li><strong>IN with subquery:</strong> the list of values comes from a query, not a hardcoded list.</li>
+          <li><strong>EXISTS / NOT EXISTS:</strong> boolean check on whether the subquery produces any rows. Use <code>SELECT 1</code> inside by convention.</li>
+          <li><strong>Pitfalls:</strong> a scalar comparison fails if the inner query returns more than one row. Always know what shape your inner query has.</li>
+        </ul>
+
+        <h3>Before next class</h3>
+        <ol>
+          <li>On Sakila, list the films priced at the catalogue maximum using a scalar subquery.</li>
+          <li>Find customers who have rented at least one film, using <code>EXISTS</code>.</li>
+          <li>Skim joins in your notes. Most of today's subqueries can be rewritten as joins, often more efficiently.</li>
+        </ol>
+
+        <div class="tip-box">
+          <strong>Coming next:</strong> Lecture 9, Joining Tables. INNER, LEFT, RIGHT, FULL OUTER, and CROSS joins. You'll learn to combine columns from several tables in one query, which is what real reports almost always need.
+        </div>
+
+        <p style="text-align: center; margin-top: 24px; color: var(--muted);">Explore the other tabs to keep learning. Your progress is saved. 💾</p>
+      </div>
+
+    </div>
+
+    <div class="slide-nav">
+      <button class="btn btn-ghost" id="prevBtn">← Previous</button>
+      <span class="key-hint">Use <span class="kbd">←</span> <span class="kbd">→</span> keys</span>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>📝 Quiz Time</h2>
+    <p>9 questions on subqueries, all on Sakila tables.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 9 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Great work!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/9</span></div>
+    <p id="quizMessage">You've completed the Lecture 8 quiz.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS TAB ============ -->
+<section id="flashcards" class="tab-content">
+  <div class="flashcards-header">
+    <h2>🃏 Key Terms, Flashcards</h2>
+    <p>Click any card to flip it and see the definition.</p>
+  </div>
+  <div class="flashcards-grid" id="flashcardsGrid"></div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>Exercises</h2>
+    <p>All exercises run against the Sakila database. Write the SQL on paper or in your editor first; run it on the ISRT Sakila when you can.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Lecture 8">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   LECTURE 8, SUBQUERIES  (Sakila edition)
+   ================================================================ */
+
+const STORAGE_KEY = 'lecture8-progress-v2';
+
+const state = {
+  currentSlide: 1,
+  totalSlides: 8,
+  maxSlideReached: 1,
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  flashcardsFlipped: new Set(),
+  exercisesOpened: new Set(),
+  exerciseAnswers: {},
+  practiceAnswers: {}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      flashcardsFlipped: [...state.flashcardsFlipped],
+      exercisesOpened: [...state.exercisesOpened]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.flashcardsFlipped = new Set(data.flashcardsFlipped || []);
+    state.exercisesOpened = new Set(data.exercisesOpened || []);
+    state.practiceAnswers = data.practiceAnswers || {};
+  } catch (e) {}
+}
+
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progFill = document.getElementById('progFill');
+const slideCounter = document.getElementById('slideCounter');
+
+function showSlide(n) {
+  if (n < 1 || n > state.totalSlides) return;
+  state.currentSlide = n;
+  if (n > state.maxSlideReached) state.maxSlideReached = n;
+  slides.forEach(s => s.classList.toggle('active', +s.dataset.slide === n));
+  const pct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  progFill.style.width = pct + '%';
+  slideCounter.textContent = `Slide ${n} of ${state.totalSlides}`;
+  prevBtn.disabled = n === 1;
+  nextBtn.textContent = n === state.totalSlides ? 'Finish ✓' : 'Next →';
+  updateStats();
+  saveState();
+}
+prevBtn.addEventListener('click', () => showSlide(state.currentSlide - 1));
+nextBtn.addEventListener('click', () => {
+  if (state.currentSlide < state.totalSlides) showSlide(state.currentSlide + 1);
+});
+document.addEventListener('keydown', (e) => {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (!activeTab || activeTab.id !== 'slides') return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prevBtn.click(); }
+});
+
+document.querySelectorAll('.practice').forEach(p => {
+  const qid = p.dataset.q;
+  const feedback = p.querySelector('.practice-feedback');
+  if (!feedback) return;
+  const btns = p.querySelectorAll('.practice-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (p.dataset.answered === 'true') return;
+      const correct = btn.dataset.correct === 'true';
+      btns.forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.correct === 'true') b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+      feedback.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+      feedback.textContent = correct
+        ? '✓ Correct!'
+        : '✗ Not quite, the correct answer is highlighted in green.';
+      p.dataset.answered = 'true';
+      state.practiceAnswers[qid] = correct;
+      saveState();
+    });
+  });
+});
+
+const quizData = [
+  {
+    q: "A subquery is:",
+    options: [
+      "A SELECT inside another SQL statement, wrapped in parentheses",
+      "An UPDATE that runs after a SELECT",
+      "A function written in SQL",
+      "A second connection to the database"
+    ],
+    answer: 0,
+    explain: "Subquery = SELECT inside another SQL statement, in parentheses. The inner result feeds the outer statement."
+  },
+  {
+    q: "Which of the following always returns a scalar (one-row, one-column) result?",
+    options: [
+      "SELECT title FROM film WHERE rating = 'PG'",
+      "SELECT customer_id FROM rental",
+      "SELECT MAX(rental_rate) FROM film",
+      "SELECT first_name, last_name FROM customer"
+    ],
+    answer: 2,
+    explain: "Aggregates without GROUP BY always return one row, one column. The other queries can return many rows or many columns."
+  },
+  {
+    q: "Which is correct for 'films priced above the catalogue average'?",
+    options: [
+      "WHERE rental_rate > AVG(rental_rate)",
+      "WHERE rental_rate > (SELECT AVG(rental_rate) FROM film)",
+      "WHERE AVG(rental_rate) > rental_rate",
+      "WHERE rental_rate > ALL(rental_rate)"
+    ],
+    answer: 1,
+    explain: "Aggregates aren't allowed directly in WHERE on the same row. You have to compute the average in a scalar subquery first."
+  },
+  {
+    q: "What happens with WHERE rental_rate = (SELECT rental_rate FROM film); when there's no aggregate?",
+    options: [
+      "It returns every film",
+      "It returns the first film",
+      "It errors: subquery returns more than one row",
+      "It returns the average"
+    ],
+    answer: 2,
+    explain: "The inner query returns many rows, but = expects one value. MySQL raises 'Subquery returns more than 1 row'."
+  },
+  {
+    q: "WHERE customer_id IN (SELECT customer_id FROM customer WHERE store_id = 1); does what?",
+    options: [
+      "Returns customers in store 1",
+      "Returns rows in the outer table whose customer_id matches any customer_id from store 1",
+      "Returns store 1's address",
+      "An error, IN can't take a subquery"
+    ],
+    answer: 1,
+    explain: "IN with a subquery checks membership against the column produced by the inner query."
+  },
+  {
+    q: "When should you use IN with a subquery instead of =?",
+    options: [
+      "Always, IN is faster",
+      "When the inner query can return multiple values",
+      "Only when the inner query has a JOIN",
+      "Never, = always works"
+    ],
+    answer: 1,
+    explain: "Use = with a scalar subquery (one value). Use IN when the inner query produces a column of values (the 'list' case)."
+  },
+  {
+    q: "EXISTS (subquery) returns:",
+    options: [
+      "The first row of the subquery",
+      "The count of rows in the subquery",
+      "True if the subquery produces at least one row, false otherwise",
+      "The columns named in the subquery"
+    ],
+    answer: 2,
+    explain: "EXISTS is a boolean. It checks for the presence of any row in the subquery, not its content."
+  },
+  {
+    q: "Inside EXISTS, why is SELECT 1 commonly used?",
+    options: [
+      "It runs faster than SELECT *",
+      "EXISTS only cares whether any row exists, the column list is irrelevant",
+      "It's required by SQL syntax",
+      "It avoids NULL values"
+    ],
+    answer: 1,
+    explain: "EXISTS doesn't look at the returned columns, only whether there's a row. SELECT 1 is just a convention saying 'I'm not using the result'."
+  },
+  {
+    q: "Which query finds 'customers who have never rented anything'?",
+    options: [
+      "SELECT ... FROM customer c WHERE EXISTS (SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id)",
+      "SELECT ... FROM customer c WHERE NOT EXISTS (SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id)",
+      "SELECT ... FROM customer WHERE rental_id IS NULL",
+      "SELECT ... FROM customer WHERE COUNT(rental) = 0"
+    ],
+    answer: 1,
+    explain: "NOT EXISTS keeps customer rows for which the inner rental subquery returns no rows, i.e., customers with no rentals."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const msg = document.getElementById('quizMessage');
+  const verdict = document.getElementById('quizVerdict');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent!';
+    msg.textContent = "Subqueries make sense to you. Onward to joins.";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good work';
+    msg.textContent = "Solid. Review the wrong ones, then try the exercises.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Keep going 💪';
+    msg.textContent = "No worries, revisit the slides and flashcards, then retake.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+const flashcards = [
+  { term: "Subquery", def: "A SELECT statement nested inside another SQL statement, always in parentheses. The inner query's result is used by the outer query." },
+  { term: "Scalar subquery", def: "A subquery that returns exactly one row and one column. Behaves like a single value, works with =, <, >, etc." },
+  { term: "Table subquery", def: "A subquery that returns multiple rows. Used with IN or EXISTS in the outer query." },
+  { term: "Comparison with subquery", def: "Use =, <, >, <=, >=, <> with a scalar subquery. If the inner query returns more than one row, MySQL raises an error." },
+  { term: "IN with subquery", def: "Checks if a value appears in the column produced by the inner query. Cleaner than chaining many = OR = checks." },
+  { term: "EXISTS", def: "Boolean: true if the subquery produces at least one row. The column list inside is irrelevant; SELECT 1 is the convention." },
+  { term: "NOT EXISTS", def: "Inverse of EXISTS. True when the subquery produces no rows. Useful for 'find rows that have no matching ...' questions." },
+  { term: "Why SELECT 1 inside EXISTS?", def: "Convention. EXISTS doesn't look at the returned columns, only whether any row is returned, so the column list is meaningless." },
+  { term: "Subquery returns more than 1 row", def: "MySQL error you get when a scalar context (= , <, >) is given a subquery with multiple rows. Fix: use an aggregate, or use IN." },
+  { term: "Nested subqueries", def: "A subquery can itself contain another subquery. Each level peels off one step toward the final answer." },
+  { term: "When to reach for a subquery", def: "When you need a value computed from the data itself (an average, a max, a list of IDs) as part of another query, without round-tripping through the application." }
+];
+const fcGrid = document.getElementById('flashcardsGrid');
+flashcards.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'flashcard';
+  card.dataset.idx = i;
+  card.innerHTML = `
+    <div class="flashcard-inner">
+      <div class="flashcard-front">
+        ${c.term}
+        <span class="hint">click to flip</span>
+      </div>
+      <div class="flashcard-back">${c.def}</div>
+    </div>
+  `;
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
+    if (card.classList.contains('flipped')) state.flashcardsFlipped.add(i);
+    updateStats();
+    saveState();
+  });
+  fcGrid.appendChild(card);
+});
+function restoreFlashcards() {
+  fcGrid.querySelectorAll('.flashcard').forEach(c => {
+    if (state.flashcardsFlipped.has(+c.dataset.idx)) c.classList.add('flipped');
+  });
+}
+
+const exercises = [
+  {
+    title: "1. Longest film via scalar subquery",
+    diff: "easy",
+    prompt: "From <code>film</code>, return the title and length of every film whose length equals the longest length in the table.",
+    hint: "WHERE length = (SELECT MAX(length) FROM film).",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM film\nWHERE length = (SELECT MAX(length) FROM film);</pre>There may be ties; the query returns all of them."
+  },
+  {
+    title: "2. Above-average rental rate",
+    diff: "easy",
+    prompt: "From <code>film</code>, list the title and rental_rate of films whose rental_rate is above the catalogue average. Sort by rental_rate descending.",
+    hint: "WHERE rental_rate > (SELECT AVG(rental_rate) FROM film). Then ORDER BY.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_rate\nFROM film\nWHERE rental_rate &gt; (SELECT AVG(rental_rate) FROM film)\nORDER BY rental_rate DESC;</pre>"
+  },
+  {
+    title: "3. Customers from store 1, via IN",
+    diff: "easy",
+    prompt: "From <code>customer</code>, list customer_id, first_name, last_name for customers whose customer_id appears in a subquery that selects all customer_ids whose store_id is 1. (Yes, in this toy case you could do it without a subquery; do it WITH a subquery for practice.)",
+    hint: "WHERE customer_id IN (SELECT customer_id FROM customer WHERE store_id = 1).",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer_id, first_name, last_name\nFROM customer\nWHERE customer_id IN (\n  SELECT customer_id FROM customer WHERE store_id = 1\n);</pre>"
+  },
+  {
+    title: "4. Films featuring actor PENELOPE GUINESS",
+    diff: "med",
+    prompt: "From <code>film</code>, list the title of every film that features actor PENELOPE GUINESS. Use two nested IN subqueries (actor.actor_id → film_actor.film_id → film.title).",
+    hint: "Outer: title FROM film WHERE film_id IN (...). Middle: film_id FROM film_actor WHERE actor_id IN (...). Inner: actor_id FROM actor WHERE first_name = 'PENELOPE' AND last_name = 'GUINESS'.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title\nFROM film\nWHERE film_id IN (\n  SELECT film_id\n  FROM film_actor\n  WHERE actor_id IN (\n    SELECT actor_id FROM actor\n    WHERE first_name = 'PENELOPE' AND last_name = 'GUINESS'\n  )\n);</pre>"
+  },
+  {
+    title: "5. Customers who have ever rented",
+    diff: "med",
+    prompt: "From <code>customer</code>, list customer_id, first_name, last_name for customers who have at least one row in the <code>rental</code> table. Use <code>EXISTS</code>.",
+    hint: "WHERE EXISTS (SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id). Don't forget the table alias on customer.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer_id, first_name, last_name\nFROM customer c\nWHERE EXISTS (\n  SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id\n);</pre>"
+  },
+  {
+    title: "6. Customers who have NEVER rented",
+    diff: "med",
+    prompt: "Same data, opposite question. Find customer_id, first_name, last_name for customers who have NO row in the <code>rental</code> table. Use <code>NOT EXISTS</code>.",
+    hint: "Just flip EXISTS to NOT EXISTS in the previous exercise.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer_id, first_name, last_name\nFROM customer c\nWHERE NOT EXISTS (\n  SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id\n);</pre>"
+  },
+  {
+    title: "7. Films priced above the max G-rated price",
+    diff: "hard",
+    prompt: "From <code>film</code>, list title and rental_rate for films whose rental_rate is strictly higher than the highest rental_rate among films with rating 'G'. Sort by rental_rate descending.",
+    hint: "The inner subquery is a scalar: SELECT MAX(rental_rate) FROM film WHERE rating = 'G'. The outer query uses > to filter against it.",
+    approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_rate\nFROM film\nWHERE rental_rate &gt; (\n  SELECT MAX(rental_rate) FROM film WHERE rating = 'G'\n)\nORDER BY rental_rate DESC;</pre>The inner query returns one number (the max among G-rated). The outer compares every film's rental_rate against it."
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+exercises.forEach((ex, i) => {
+  const div = document.createElement('div');
+  div.className = 'exercise';
+  div.dataset.idx = i;
+  div.innerHTML = `
+    <div class="exercise-head">
+      <h4>${ex.title}</h4>
+      <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+    </div>
+    <div class="exercise-prompt">${ex.prompt}</div>
+    <textarea placeholder="Write your answer here..." data-ex="${i}"></textarea>
+    <div class="exercise-actions">
+      <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${i}">💡 Hint</button>
+      <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${i}">👀 Show Suggested Approach</button>
+      <span class="save-indicator" data-ex="${i}"></span>
+    </div>
+    <div class="exercise-hint" data-ex="${i}"><strong>Hint:</strong> ${ex.hint}</div>
+    <div class="exercise-approach" data-ex="${i}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+  `;
+  exContainer.appendChild(div);
+});
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesOpened.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    state.exercisesOpened.add(+idx);
+    updateStats();
+    saveState();
+  });
+});
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+}
+
+function updateStats() {
+  const slidePct = Math.round((state.maxSlideReached / state.totalSlides) * 100);
+  document.getElementById('progStat').textContent = slidePct + '%';
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('flipStat').textContent = state.flashcardsFlipped.size;
+  document.getElementById('exStat').textContent = state.exercisesOpened.size;
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Lecture 8? Your slide position, quiz score, flashcards, and exercise answers will be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+loadState();
+renderQuiz();
+restoreFlashcards();
+restoreExercises();
+showSlide(state.currentSlide);
+updateStats();
+
+Object.entries(state.practiceAnswers).forEach(([qid, correct]) => {
+  const p = document.querySelector(`.practice[data-q="${qid}"]`);
+  if (!p) return;
+  const fb = p.querySelector('.practice-feedback');
+  if (!fb) return;
+  p.dataset.answered = 'true';
+  p.querySelectorAll('.practice-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  });
+  fb.className = 'practice-feedback show ' + (correct ? 'right' : 'wrong');
+  fb.textContent = correct ? '✓ Correct!' : '✗ The correct answer is highlighted.';
+});
+</script>
+</body>
+</html>

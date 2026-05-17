@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise Class 2: Querying Sakila</title>
+<style>
+/* ============ BASE ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fffaf3;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --primary: #d97706;
+  --primary-dark: #b45309;
+  --primary-light: #fef3c7;
+  --accent: #c2410c;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --info: #2563eb;
+  --info-light: #dbeafe;
+  --border: #fde68a;
+  --border-soft: #f5e3b8;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* ============ HEADER ============ */
+header.lecture-header {
+  background: linear-gradient(135deg, #d97706 0%, #c2410c 100%);
+  color: white;
+  padding: 32px 28px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+header.lecture-header::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+header.lecture-header::after {
+  content: "";
+  position: absolute;
+  bottom: -30px; right: 80px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+header.lecture-header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  position: relative; z-index: 1;
+}
+header.lecture-header h1 {
+  font-size: 28px;
+  margin: 12px 0 8px;
+  font-weight: 700;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.subtitle {
+  font-size: 15px;
+  opacity: 0.92;
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+/* ============ STATS ============ */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  background: white; padding: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1; min-width: 110px;
+  padding: 11px 16px;
+  background: transparent; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active {
+  background: var(--primary); color: white;
+  box-shadow: 0 2px 8px rgba(217,119,6,0.30);
+}
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ CARD ============ */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.card h2 { font-size: 22px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 700; }
+.card h3 { font-size: 17px; color: var(--text); margin: 18px 0 8px; font-weight: 600; }
+.card p { color: #334155; margin-bottom: 12px; }
+.card ul, .card ol { margin: 0 0 14px 22px; }
+.card li { margin-bottom: 6px; color: #334155; }
+
+/* ============ CONTENT BOXES ============ */
+.example-box {
+  background: var(--info-light);
+  border-left: 4px solid var(--info);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.example-box strong { color: var(--info); }
+.tip-box {
+  background: var(--success-light);
+  border-left: 4px solid var(--success);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.tip-box strong { color: var(--success); }
+.warn-box {
+  background: var(--primary-light);
+  border-left: 4px solid var(--primary);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.warn-box strong { color: var(--primary-dark); }
+
+/* ============ CODE ============ */
+code {
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: #b45309;
+}
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 12px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #fcd34d; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #c4b5fd; }
+.sql-type { color: #7dd3fc; font-weight: 600; }
+
+/* ============ DATA TABLES ============ */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+table.data-table th {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+table.data-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  background: white;
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:nth-child(even) td { background: #fffaf3; }
+
+/* ============ QUIZ ============ */
+.quiz-intro {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+
+.quiz-question {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option {
+  padding: 11px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  transition: all var(--transition);
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  font-family: inherit;
+}
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #fffaf3;
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  font-size: 13px;
+  color: #334155;
+}
+.quiz-explain.show { display: block; }
+.quiz-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result {
+  display: none;
+  padding: 30px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-top: 16px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.4s ease;
+}
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: #fee2e2; color: var(--danger); }
+
+/* ============ EXERCISES ============ */
+.exercises-header {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.section-header {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  margin: 22px 0 14px;
+  border-left: 4px solid var(--primary);
+}
+.section-header h3 { color: var(--primary-dark); margin: 0 0 4px 0; font-size: 17px; font-weight: 700; }
+.section-header p { color: var(--muted); margin: 0; font-size: 13px; }
+.exercise {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+}
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--primary-light); color: var(--primary-dark); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise-prompt code { background: #fef3c7; }
+.exercise textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fffaf3;
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+}
+.exercise-hint { background: var(--primary-light); border-left: 3px solid var(--primary); color: #78350f; }
+.exercise-approach { background: var(--info-light); border-left: 3px solid var(--info); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.exercise-approach pre { background: #1e293b; color: #e2e8f0; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.done-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--muted);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.done-toggle:hover { border-color: var(--success); color: var(--success); }
+.done-toggle.done { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+
+/* ============ BUTTONS ============ */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(217,119,6,0.30);
+}
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-soft); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* ============ OBJECTIVES ============ */
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li {
+  padding: 8px 0 8px 30px;
+  position: relative;
+  color: #334155;
+}
+.objectives-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0; top: 10px;
+  color: var(--success);
+  font-weight: bold;
+  background: var(--success-light);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* ============ CHALLENGE ============ */
+.challenge-intro {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  border-left: 6px solid var(--primary);
+}
+.challenge-intro h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.challenge-intro p { color: #334155; margin-bottom: 0; }
+.challenge-step {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  border-left: 4px solid var(--primary);
+}
+.challenge-step h4 { font-size: 16px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 700; }
+.challenge-step .step-num {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 13px;
+  margin-right: 8px;
+  line-height: 24px;
+}
+.challenge-step textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fffaf3;
+  color: var(--text);
+}
+.challenge-step textarea:focus { outline: none; border-color: var(--primary); background: white; }
+
+/* ============ RESET ============ */
+.reset-btn {
+  position: fixed;
+  bottom: 18px; right: 18px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-family: inherit;
+  transition: all var(--transition);
+  z-index: 100;
+}
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  table.data-table { font-size: 12px; }
+  table.data-table th, table.data-table td { padding: 7px 9px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Class 8 · Exercise 2</span>
+  <h1>Exercise Class 2: Querying Sakila</h1>
+  <p class="subtitle">Hands-on practice covering Lectures 5 and 6. Project columns, alias them, compute new ones with functions, filter with WHERE, drop duplicates with DISTINCT, sort with ORDER BY, page with LIMIT, and reach for BETWEEN, IN, IS NULL, and LIKE when they fit.</p>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Warm-up Score</div></div>
+  <div class="stat"><div class="stat-value" id="exDoneStat">0 / 10</div><div class="stat-label">Exercises Marked Done</div></div>
+  <div class="stat"><div class="stat-value" id="exTouchedStat">0</div><div class="stat-label">Exercises Worked</div></div>
+  <div class="stat"><div class="stat-value" id="challengeStat">0%</div><div class="stat-label">Challenge Progress</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="brief">📋 Brief</button>
+  <button class="tab-btn" data-tab="quiz">🔥 Warm-up Quiz</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+  <button class="tab-btn" data-tab="challenge">🚀 Challenge</button>
+</nav>
+
+<main>
+
+<!-- ============ BRIEF TAB ============ -->
+<section id="brief" class="tab-content active">
+  <div class="card">
+    <h2>Today's Class</h2>
+    <p>Welcome to the second exercise class. By now you have two lectures of query-writing under your belt. You can pull columns from a table, give them prettier names, compute new ones, throw away rows you don't want, drop duplicates, sort the survivors, and crop the result down to the rows that matter. Today we put all of that to work on the Sakila sample database.</p>
+
+    <h3>What you'll do today</h3>
+    <ul class="objectives-list">
+      <li>Run a quick <strong>warm-up quiz</strong> (10 questions, covers Lectures 5 and 6)</li>
+      <li>Work through <strong>10 main exercises</strong> grouped into five sections by topic</li>
+      <li>Finish with a <strong>capstone challenge</strong>: build one report query, step by step, over the Sakila <code>film</code> table</li>
+    </ul>
+
+    <h3>How to work today</h3>
+    <ol>
+      <li>Open <strong>MySQL Workbench</strong> and connect to the ISRT server. Make sure you are using the <code>sakila</code> database.</li>
+      <li>Run each query you write. Don't just stare at it, see what comes back.</li>
+      <li>Try every exercise <em>before</em> peeking at the suggested approach. The struggle is the point.</li>
+      <li>Click "Mark done" after each one. Your typed answers autosave in your browser, so you can come back later.</li>
+    </ol>
+
+    <h3>The Sakila tables you'll use today</h3>
+    <p>Mostly these:</p>
+    <ul>
+      <li><code>film</code>, with columns like <code>film_id</code>, <code>title</code>, <code>description</code>, <code>release_year</code>, <code>length</code>, <code>rating</code>, <code>rental_rate</code>, <code>replacement_cost</code>, <code>rental_duration</code>.</li>
+      <li><code>actor</code>, with <code>actor_id</code>, <code>first_name</code>, <code>last_name</code>.</li>
+      <li><code>customer</code>, with <code>customer_id</code>, <code>first_name</code>, <code>last_name</code>, <code>email</code>, <code>create_date</code>, <code>active</code>.</li>
+      <li><code>rental</code> and <code>payment</code>, with date columns like <code>rental_date</code>, <code>payment_date</code>, and an <code>amount</code> on payment.</li>
+      <li><code>address</code> and <code>city</code> for location filters.</li>
+    </ul>
+
+    <h3>Topics covered</h3>
+    <p>Everything from Lectures 5 and 6:</p>
+    <ul>
+      <li><strong>Lecture 5:</strong> column projection, <code>AS</code> aliases, computed columns, built-in functions (CONCAT, UPPER, LOWER, LENGTH, ROUND, CEIL, FLOOR, ABS, YEAR, MONTH, DAY), <code>DISTINCT</code>, <code>WHERE</code>, combining conditions with AND / OR / NOT.</li>
+      <li><strong>Lecture 6:</strong> <code>ORDER BY</code> (single column, multiple columns, ASC/DESC, by expression or alias), <code>LIMIT</code> and <code>OFFSET</code> for top-N and pagination, <code>BETWEEN</code>, <code>IN</code>, <code>IS NULL</code> / <code>IS NOT NULL</code>, <code>LIKE</code> with <code>%</code> and <code>_</code>, plus <code>NOT LIKE</code> and escaping.</li>
+    </ul>
+
+    <div class="tip-box">
+      <strong>If you're stuck:</strong> open Lecture 5 or 6 in another tab. Each section of today's exercises maps cleanly to a lecture topic, so flipping back for a refresher is fair game.
+    </div>
+
+    <div class="warn-box">
+      <strong>Quick reminder:</strong> Sakila stores most strings in upper case (titles, names). When you write <code>WHERE title LIKE '%love%'</code> the default collation is case insensitive, so it still works. But when you compare with <code>=</code>, be exact about case.
+    </div>
+  </div>
+</section>
+
+<!-- ============ WARM-UP QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>🔥 Warm-up Quiz</h2>
+    <p>10 quick questions across Lectures 5 and 6. Pick an answer for each, then submit to see your score and explanations.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 10 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Nice warm-up!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/10</span></div>
+    <p id="quizMessage">Onward to the exercises.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>💪 Practice Exercises</h2>
+    <p>Ten exercises grouped into five sections. Try each on your own first, then peek at the suggested approach.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+<!-- ============ CHALLENGE TAB ============ -->
+<section id="challenge" class="tab-content">
+  <div class="challenge-intro">
+    <h2>🚀 Challenge: Sakila Top-Performers Report</h2>
+    <p>One report query, built up step by step. You'll start with a plain SELECT on the <code>film</code> table and finish with a polished top-N list that uses aliases, a computed column, IN, BETWEEN, LIKE, ORDER BY, and LIMIT all together.</p>
+  </div>
+
+  <div class="card">
+    <h2>The Scenario</h2>
+    <p>The store manager wants a quick report: the <strong>longest family-friendly films</strong> in the catalog, with a <em>readable runtime</em>, a <em>computed value-for-money</em> column, and only those whose title hints at a popular theme. You'll build it in five steps so you see each new ingredient on its own.</p>
+    <h3>Tables in play</h3>
+    <p>Only one: <code>film</code>. The columns you'll touch are <code>title</code>, <code>length</code> (in minutes), <code>rating</code>, <code>rental_rate</code>, <code>rental_duration</code>.</p>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">1</span>Plain SELECT</h4>
+    <p>Write a <code>SELECT</code> that returns <code>title</code>, <code>length</code>, <code>rating</code>, and <code>rental_rate</code> from the <code>film</code> table. No filter yet, no sort. Just the four columns.</p>
+    <textarea id="ch-step-1" placeholder="SELECT ...&#10;FROM ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">2</span>Add aliases and a computed column</h4>
+    <p>Rename <code>length</code> to <code>minutes</code>. Add a new column <code>hours</code> that is <code>length</code> divided by 60, rounded to 1 decimal place. Rename <code>rental_rate</code> to <code>price_per_rental</code>.</p>
+    <textarea id="ch-step-2" placeholder="SELECT title,&#10;       length AS minutes,&#10;       ROUND(...) AS hours,&#10;       ...&#10;FROM film;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">3</span>Filter with IN and BETWEEN</h4>
+    <p>Keep only family-friendly films, where <code>rating</code> is one of <code>'G'</code>, <code>'PG'</code>, or <code>'PG-13'</code>, and the runtime is reasonable: <code>length</code> between 90 and 150 minutes (inclusive).</p>
+    <textarea id="ch-step-3" placeholder="SELECT ...&#10;FROM film&#10;WHERE rating IN (...)&#10;  AND length BETWEEN ... AND ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">4</span>Add a title pattern with LIKE</h4>
+    <p>Restrict further to films whose title contains the word <code>LOVE</code> anywhere. (Sakila stores titles in upper case; the default collation is case insensitive but write it in upper case to be safe.)</p>
+    <textarea id="ch-step-4" placeholder="SELECT ...&#10;FROM film&#10;WHERE rating IN (...)&#10;  AND length BETWEEN ... AND ...&#10;  AND title LIKE '%...%';"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">5</span>Sort and crop the result</h4>
+    <p>Sort the survivors longest first (<code>length DESC</code>), break ties alphabetically by <code>title</code>, and keep only the top 10 rows. That's your finished report.</p>
+    <textarea id="ch-step-5" placeholder="SELECT ...&#10;FROM film&#10;WHERE ...&#10;ORDER BY ...&#10;LIMIT ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Compare with the suggested solution</h4>
+    <p>When you've worked through steps 1 to 5, click below to see one possible final query. Yours might differ; what matters is that it returns sensible rows and uses the ingredients correctly.</p>
+    <button class="btn btn-primary btn-sm" id="revealChallenge">👀 Show suggested solution</button>
+    <div id="challengeReveal" style="display: none; margin-top: 16px;">
+<pre><code><span class="sql-cm">-- Final report: top 10 longest family-friendly love stories</span>
+<span class="sql-kw">SELECT</span> title,
+       length        <span class="sql-kw">AS</span> minutes,
+       <span class="sql-func">ROUND</span>(length / <span class="sql-num">60</span>, <span class="sql-num">1</span>) <span class="sql-kw">AS</span> hours,
+       rating,
+       rental_rate   <span class="sql-kw">AS</span> price_per_rental
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'G'</span>, <span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>)
+  <span class="sql-kw">AND</span> length <span class="sql-kw">BETWEEN</span> <span class="sql-num">90</span> <span class="sql-kw">AND</span> <span class="sql-num">150</span>
+  <span class="sql-kw">AND</span> title <span class="sql-kw">LIKE</span> <span class="sql-str">'%LOVE%'</span>
+<span class="sql-kw">ORDER BY</span> length <span class="sql-kw">DESC</span>, title <span class="sql-kw">ASC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">10</span>;</code></pre>
+      <div class="example-box">
+        <strong>Why each piece is there:</strong>
+        <ul style="margin-top: 8px;">
+          <li><code>AS minutes</code> and <code>AS hours</code> give the report column names that read like a human wrote them, not a database engine.</li>
+          <li><code>ROUND(length / 60, 1)</code> turns 142 minutes into <code>2.4</code>, easier to scan than raw minutes.</li>
+          <li><code>IN ('G', 'PG', 'PG-13')</code> is shorter and clearer than three OR clauses.</li>
+          <li><code>BETWEEN 90 AND 150</code> is inclusive on both ends, so a 90-minute and a 150-minute film both qualify.</li>
+          <li><code>LIKE '%LOVE%'</code> matches the word anywhere in the title. With <code>'LOVE%'</code> it would only match titles that start with LOVE.</li>
+          <li>The two-column <code>ORDER BY</code> sorts ties deterministically, important for paginated reports.</li>
+          <li><code>LIMIT 10</code> crops to the top of the sorted list. Without ORDER BY it would just be the first 10 rows the database happens to find, which is rarely what you want.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Exercise Class 2">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   EXERCISE CLASS 2, QUERYING SAKILA
+   ================================================================ */
+
+const STORAGE_KEY = 'exclass2-progress-v1';
+
+const state = {
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  exerciseAnswers: {},
+  exercisesDone: new Set(),
+  exercisesTouched: new Set(),
+  hintsOpen: new Set(),
+  approachesOpen: new Set(),
+  challengeAnswers: {},
+  challengeRevealed: false
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      exercisesDone: [...state.exercisesDone],
+      exercisesTouched: [...state.exercisesTouched],
+      hintsOpen: [...state.hintsOpen],
+      approachesOpen: [...state.approachesOpen]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.exercisesDone = new Set(data.exercisesDone || []);
+    state.exercisesTouched = new Set(data.exercisesTouched || []);
+    state.hintsOpen = new Set(data.hintsOpen || []);
+    state.approachesOpen = new Set(data.approachesOpen || []);
+    state.challengeAnswers = data.challengeAnswers || {};
+  } catch (e) {}
+}
+
+/* ============ TABS ============ */
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ============ QUIZ ============ */
+const quizData = [
+  {
+    q: "Which of these is a valid use of AS?",
+    options: [
+      "SELECT title AS film_title FROM film;",
+      "SELECT title FROM film AS f;",
+      "Both of the above are valid",
+      "Neither, AS only works on tables"
+    ],
+    answer: 2,
+    explain: "AS works on column names in the SELECT list and on table names in the FROM clause. Both are valid, and in MySQL the AS keyword is even optional."
+  },
+  {
+    q: "What does SELECT DISTINCT first_name, last_name FROM customer return?",
+    options: [
+      "Only the unique first_name values",
+      "Only the unique last_name values",
+      "Each unique combination of (first_name, last_name)",
+      "An error, DISTINCT only works on one column"
+    ],
+    answer: 2,
+    explain: "DISTINCT applies to the whole row of selected columns. Two rows are duplicates only if every selected column matches."
+  },
+  {
+    q: "Which expression returns TRUE for a row where rental_date IS NULL?",
+    options: [
+      "rental_date = NULL",
+      "rental_date != NULL",
+      "rental_date IS NULL",
+      "NOT rental_date"
+    ],
+    answer: 2,
+    explain: "You can't compare NULL with = or != (the result is unknown). Use IS NULL or IS NOT NULL."
+  },
+  {
+    q: "Without parentheses, how does MySQL evaluate WHERE a = 1 OR b = 2 AND c = 3?",
+    options: [
+      "Like (a = 1 OR b = 2) AND c = 3",
+      "Like a = 1 OR (b = 2 AND c = 3)",
+      "Left to right, exactly as written",
+      "It throws a syntax error"
+    ],
+    answer: 1,
+    explain: "AND binds tighter than OR, so b = 2 AND c = 3 is evaluated first. Use parentheses if you want the other grouping."
+  },
+  {
+    q: "What's the default sort direction of ORDER BY length?",
+    options: ["DESC (high to low)", "ASC (low to high)", "Random", "Insertion order"],
+    answer: 1,
+    explain: "ASC is the default. Write ORDER BY length DESC to flip it."
+  },
+  {
+    q: "ORDER BY rating DESC, title ASC means:",
+    options: [
+      "Sort by rating descending, ties broken by title ascending",
+      "Sort by rating ascending, ties broken by title descending",
+      "Sort by both columns descending",
+      "An error, you can't mix ASC and DESC"
+    ],
+    answer: 0,
+    explain: "Each column has its own direction. The first column is the primary sort; later columns only break ties."
+  },
+  {
+    q: "What does LIMIT 5 OFFSET 10 return?",
+    options: [
+      "Rows 1 through 5, then skip 10",
+      "Rows 11 through 15 (skip 10, then take 5)",
+      "5 random rows after row 10",
+      "An error, you can't combine LIMIT and OFFSET"
+    ],
+    answer: 1,
+    explain: "OFFSET 10 skips the first 10 rows of the (sorted) result, then LIMIT 5 keeps the next 5. That's how pagination is built."
+  },
+  {
+    q: "Are the endpoints inclusive in WHERE length BETWEEN 90 AND 120?",
+    options: [
+      "Yes, 90 and 120 both qualify",
+      "No, only values strictly between (91 to 119)",
+      "Only the lower endpoint is inclusive",
+      "Only the upper endpoint is inclusive"
+    ],
+    answer: 0,
+    explain: "BETWEEN is inclusive on both ends. It's equivalent to length >= 90 AND length <= 120."
+  },
+  {
+    q: "WHERE rating IN ('PG', 'PG-13') is equivalent to:",
+    options: [
+      "WHERE rating = 'PG' AND rating = 'PG-13'",
+      "WHERE rating = 'PG' OR rating = 'PG-13'",
+      "WHERE rating LIKE 'PG%'",
+      "WHERE rating BETWEEN 'PG' AND 'PG-13'"
+    ],
+    answer: 1,
+    explain: "IN expands to a chain of OR conditions on the same column. AND would be impossible (one column can't equal two different values at once)."
+  },
+  {
+    q: "Which titles does LIKE '_A%' match?",
+    options: [
+      "Titles that start with the letter A",
+      "Titles whose second character is A",
+      "Titles that contain an A anywhere",
+      "Titles that end with A"
+    ],
+    answer: 1,
+    explain: "Underscore (_) is exactly one character, percent (%) is zero or more. So _A% means: one char, then A, then anything. The A is in position 2."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const verdict = document.getElementById('quizVerdict');
+  const msg = document.getElementById('quizMessage');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent recall!';
+    msg.textContent = "Your filtering and sorting instincts are solid. Move on with confidence.";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good warm-up';
+    msg.textContent = "Skim the wrong ones quickly, then jump to the exercises.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Quick review needed';
+    msg.textContent = "Open Lectures 5 and 6 in another tab, revisit the wrong ones, then come back.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+/* ============ EXERCISES ============ */
+const exerciseGroups = [
+  {
+    section: "Section A · Projection, AS, and computed columns",
+    description: "Pick the columns you want, give them friendly names, and compute brand-new columns from the originals.",
+    items: [
+      {
+        title: "1. Build a customer directory line",
+        diff: "easy",
+        prompt: "From the <code>customer</code> table, return one column called <code>directory_line</code> that looks like <code>'Last, First &lt;email&gt;'</code> for every customer. Example: <code>'SMITH, MARY &lt;mary.smith@sakilacustomer.org&gt;'</code>.",
+        hint: "Use CONCAT to glue strings together. Don't forget the comma, the space, the angle brackets, and the literal '&lt;' and '&gt;' characters as string parts.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT CONCAT(last_name, ', ', first_name, ' &lt;', email, '&gt;') AS directory_line\nFROM customer;</pre>The literal characters (comma, space, angle brackets) go inside quotes as their own string fragments. CONCAT stitches them all together."
+      },
+      {
+        title: "2. Films with a value-for-money score",
+        diff: "med",
+        prompt: "From <code>film</code>, return <code>title</code>, <code>length</code> aliased as <code>minutes</code>, <code>rental_rate</code>, and a new column <code>price_per_hour</code> that equals <code>rental_rate</code> divided by <code>(length / 60)</code>, rounded to 2 decimals. Films where this number is small are a better deal.",
+        hint: "Use ROUND(rental_rate / (length / 60), 2). Wrap (length / 60) in parentheses so division order is clear.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title,\n       length          AS minutes,\n       rental_rate,\n       ROUND(rental_rate / (length / 60), 2) AS price_per_hour\nFROM film;</pre>Note the parentheses around <code>(length / 60)</code>. Without them, MySQL would compute <code>rental_rate / length</code> first, then divide by 60, which is the wrong order."
+      }
+    ]
+  },
+  {
+    section: "Section B · Built-in functions",
+    description: "String, numeric, and date functions in practice. Pick the right tool for each shape of data.",
+    items: [
+      {
+        title: "3. Customer cards in upper case",
+        diff: "easy",
+        prompt: "From <code>customer</code>, return one column <code>card</code> that contains the first name in upper case, a space, the last name in upper case, then the email length in parentheses. Example: <code>'MARY SMITH (28)'</code>.",
+        hint: "UPPER(first_name), UPPER(last_name), LENGTH(email), and CONCAT to glue them.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT CONCAT(UPPER(first_name), ' ', UPPER(last_name),\n              ' (', LENGTH(email), ')') AS card\nFROM customer;</pre>You can also write this with <code>||</code> in standard SQL, but MySQL's default mode treats <code>||</code> as OR, so stick with CONCAT."
+      },
+      {
+        title: "4. Payments by year and month",
+        diff: "med",
+        prompt: "From the <code>payment</code> table, return four columns: <code>payment_id</code>, the <code>year</code> of <code>payment_date</code>, the <code>month</code> of <code>payment_date</code>, and a rounded <code>amount</code> (no decimals). Use clean aliases.",
+        hint: "YEAR(payment_date), MONTH(payment_date), ROUND(amount, 0).",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_id,\n       YEAR(payment_date)  AS pay_year,\n       MONTH(payment_date) AS pay_month,\n       ROUND(amount, 0)    AS amount_rounded\nFROM payment;</pre>YEAR and MONTH pull just one piece out of a date. ROUND with second argument 0 (or no second argument) rounds to the nearest whole number."
+      }
+    ]
+  },
+  {
+    section: "Section C · WHERE, AND, OR, NOT, DISTINCT",
+    description: "Filter rows out of the result, combine conditions correctly, and stop counting duplicates.",
+    items: [
+      {
+        title: "5. Find the long, expensive films",
+        diff: "med",
+        prompt: "From <code>film</code>, list <code>title</code>, <code>length</code>, and <code>rental_rate</code> for films that are <strong>longer than 150 minutes</strong> AND have a <code>rental_rate</code> of <strong>more than $3.99</strong>.",
+        hint: "Two simple conditions joined by AND in the WHERE clause. Both must be true for a row to survive.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length, rental_rate\nFROM film\nWHERE length &gt; 150\n  AND rental_rate &gt; 3.99;</pre>Indenting the second condition makes it easier to scan a long WHERE clause. Both filters apply on the same row before it appears in the output."
+      },
+      {
+        title: "6. Distinct rating values",
+        diff: "easy",
+        prompt: "How many <strong>distinct rating values</strong> exist in the <code>film</code> table, and what are they? Write a query that returns each unique rating exactly once.",
+        hint: "DISTINCT works on whatever columns you list after it. Here you only need the one column.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT rating\nFROM film;</pre>You'll see something like G, PG, PG-13, R, NC-17. Five distinct values. Without DISTINCT the same five values would repeat about 200 times each (once per film of that rating)."
+      },
+      {
+        title: "7. Active customers NOT in store 1",
+        diff: "med",
+        prompt: "From <code>customer</code>, list <code>customer_id</code>, <code>first_name</code>, <code>last_name</code> for customers who are <strong>active</strong> (<code>active = 1</code>) but are <strong>not</strong> in store 1. Use parentheses so the reader sees the grouping clearly.",
+        hint: "Two simple conditions joined by AND. The 'not in store 1' part can be written as <code>NOT (store_id = 1)</code> or just <code>store_id &lt;&gt; 1</code>.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer_id, first_name, last_name\nFROM customer\nWHERE active = 1\n  AND NOT (store_id = 1);</pre>Equivalent and arguably cleaner: <code>WHERE active = 1 AND store_id &lt;&gt; 1</code>. Both are fine; <code>NOT (...)</code> reads nicely when the inner condition is more complex."
+      }
+    ]
+  },
+  {
+    section: "Section D · ORDER BY and LIMIT",
+    description: "Put the result in a useful order, then crop it down to what you actually need.",
+    items: [
+      {
+        title: "8. Top 10 longest films",
+        diff: "easy",
+        prompt: "From <code>film</code>, return the <strong>10 longest films</strong>: show <code>title</code> and <code>length</code>, sorted longest first. Break ties by <code>title</code> alphabetically.",
+        hint: "ORDER BY length DESC, title ASC, then LIMIT 10.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM film\nORDER BY length DESC, title ASC\nLIMIT 10;</pre>Without the secondary sort by title, films with the same length would appear in an unpredictable order. With two ties broken cleanly, the result is reproducible."
+      },
+      {
+        title: "9. Paginate the actor list",
+        diff: "med",
+        prompt: "You want to show the <code>actor</code> table 20 rows per page, sorted by <code>last_name</code> then <code>first_name</code>. Write the query that returns <strong>page 3</strong> (rows 41 to 60).",
+        hint: "ORDER BY first, then LIMIT 20 OFFSET (page - 1) * 20. For page 3 that's OFFSET 40.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT actor_id, first_name, last_name\nFROM actor\nORDER BY last_name, first_name\nLIMIT 20 OFFSET 40;</pre>Pagination formula: OFFSET = (page - 1) × page_size. Page 1 starts at offset 0, page 2 at offset 20, page 3 at offset 40, and so on."
+      }
+    ]
+  },
+  {
+    section: "Section E · BETWEEN, IN, IS NULL, LIKE",
+    description: "The four shortcuts that make WHERE clauses readable. Use the right one for the shape of the filter.",
+    items: [
+      {
+        title: "10. Mid-length films, family ratings, titles starting with 'A'",
+        diff: "hard",
+        prompt: "From <code>film</code>, return <code>title</code>, <code>length</code>, and <code>rating</code> for films that are: <br>(a) between 90 and 120 minutes (inclusive), AND <br>(b) have a <code>rating</code> in <code>('G', 'PG', 'PG-13')</code>, AND <br>(c) whose <code>title</code> starts with the letter <code>A</code>. <br>Sort the result by <code>title</code>.",
+        hint: "Three different shortcuts in one WHERE clause: BETWEEN for the length, IN for the ratings, LIKE 'A%' for the title.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length, rating\nFROM film\nWHERE length BETWEEN 90 AND 120\n  AND rating IN ('G', 'PG', 'PG-13')\n  AND title LIKE 'A%'\nORDER BY title;</pre>Each line is a self-contained filter. <code>BETWEEN ... AND ...</code> is inclusive on both ends. <code>IN (...)</code> reads cleaner than three OR clauses. <code>'A%'</code> matches titles starting with A; <code>'%A%'</code> would match A anywhere in the title."
+      }
+    ]
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+let globalExIdx = 0;
+const exerciseFlatIndex = [];
+
+exerciseGroups.forEach(group => {
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'section-header';
+  sectionEl.innerHTML = `<h3>${group.section}</h3><p>${group.description}</p>`;
+  exContainer.appendChild(sectionEl);
+
+  group.items.forEach(ex => {
+    const idx = globalExIdx++;
+    exerciseFlatIndex.push(ex);
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <div class="exercise-head">
+        <h4>${ex.title}</h4>
+        <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+      </div>
+      <div class="exercise-prompt">${ex.prompt}</div>
+      <textarea placeholder="Write your answer here..." data-ex="${idx}"></textarea>
+      <div class="exercise-actions">
+        <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${idx}">💡 Hint</button>
+        <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${idx}">👀 Show Approach</button>
+        <button class="done-toggle" data-ex="${idx}">○ Mark done</button>
+        <span class="save-indicator" data-ex="${idx}"></span>
+      </div>
+      <div class="exercise-hint" data-ex="${idx}"><strong>Hint:</strong> ${ex.hint}</div>
+      <div class="exercise-approach" data-ex="${idx}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+    `;
+    exContainer.appendChild(div);
+  });
+});
+
+const totalExercises = exerciseFlatIndex.length;
+document.getElementById('exDoneStat').textContent = `0 / ${totalExercises}`;
+
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesTouched.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = +btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    if (action === 'hint') {
+      if (target.classList.contains('show')) state.hintsOpen.add(idx);
+      else state.hintsOpen.delete(idx);
+    } else {
+      if (target.classList.contains('show')) state.approachesOpen.add(idx);
+      else state.approachesOpen.delete(idx);
+    }
+    state.exercisesTouched.add(idx);
+    updateStats();
+    saveState();
+  });
+});
+
+exContainer.querySelectorAll('.done-toggle').forEach(btn => {
+  const idx = +btn.dataset.ex;
+  btn.addEventListener('click', () => {
+    if (state.exercisesDone.has(idx)) {
+      state.exercisesDone.delete(idx);
+      btn.classList.remove('done');
+      btn.textContent = '○ Mark done';
+    } else {
+      state.exercisesDone.add(idx);
+      btn.classList.add('done');
+      btn.textContent = '✓ Done';
+    }
+    updateStats();
+    saveState();
+  });
+});
+
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+  state.exercisesDone.forEach(idx => {
+    const btn = exContainer.querySelector(`.done-toggle[data-ex="${idx}"]`);
+    if (btn) { btn.classList.add('done'); btn.textContent = '✓ Done'; }
+  });
+  state.hintsOpen.forEach(idx => {
+    const el = exContainer.querySelector(`.exercise-hint[data-ex="${idx}"]`);
+    if (el) el.classList.add('show');
+  });
+  state.approachesOpen.forEach(idx => {
+    const el = exContainer.querySelector(`.exercise-approach[data-ex="${idx}"]`);
+    if (el) el.classList.add('show');
+  });
+}
+
+/* ============ CHALLENGE ============ */
+const challengeTextareas = document.querySelectorAll('.challenge-step textarea');
+challengeTextareas.forEach(ta => {
+  const id = ta.id;
+  ta.addEventListener('input', () => {
+    state.challengeAnswers[id] = ta.value;
+    updateStats();
+    saveState();
+  });
+});
+
+document.getElementById('revealChallenge').addEventListener('click', () => {
+  const reveal = document.getElementById('challengeReveal');
+  const isOpen = reveal.style.display !== 'none';
+  reveal.style.display = isOpen ? 'none' : 'block';
+  state.challengeRevealed = !isOpen;
+  document.getElementById('revealChallenge').textContent = isOpen ? '👀 Show suggested solution' : '🙈 Hide suggested solution';
+  saveState();
+});
+
+function restoreChallenge() {
+  Object.entries(state.challengeAnswers).forEach(([id, val]) => {
+    const ta = document.getElementById(id);
+    if (ta) ta.value = val;
+  });
+  if (state.challengeRevealed) {
+    document.getElementById('challengeReveal').style.display = 'block';
+    document.getElementById('revealChallenge').textContent = '🙈 Hide suggested solution';
+  }
+}
+
+/* ============ STATS ============ */
+function updateStats() {
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('exDoneStat').textContent = `${state.exercisesDone.size} / ${totalExercises}`;
+  document.getElementById('exTouchedStat').textContent = state.exercisesTouched.size;
+  const filled = challengeTextareas.length === 0 ? 0 :
+    Array.from(challengeTextareas).filter(ta => (ta.value || '').trim().length > 0).length;
+  const pct = challengeTextareas.length === 0 ? 0 :
+    Math.round((filled / challengeTextareas.length) * 100);
+  document.getElementById('challengeStat').textContent = pct + '%';
+}
+
+/* ============ RESET ============ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Exercise Class 2? Your quiz answers, written exercises, and challenge work will all be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+/* ============ INIT ============ */
+loadState();
+renderQuiz();
+restoreExercises();
+restoreChallenge();
+updateStats();
+</script>
+</body>
+</html>

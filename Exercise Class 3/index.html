@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise Class 3: Analysis Practice</title>
+<style>
+/* ============ BASE ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fffaf3;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --primary: #d97706;
+  --primary-dark: #b45309;
+  --primary-light: #fef3c7;
+  --accent: #c2410c;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --info: #2563eb;
+  --info-light: #dbeafe;
+  --border: #fde68a;
+  --border-soft: #f5e3b8;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* ============ HEADER ============ */
+header.lecture-header {
+  background: linear-gradient(135deg, #d97706 0%, #c2410c 100%);
+  color: white;
+  padding: 32px 28px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+header.lecture-header::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+header.lecture-header::after {
+  content: "";
+  position: absolute;
+  bottom: -30px; right: 80px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+header.lecture-header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  position: relative; z-index: 1;
+}
+header.lecture-header h1 {
+  font-size: 28px;
+  margin: 12px 0 8px;
+  font-weight: 700;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.subtitle {
+  font-size: 15px;
+  opacity: 0.92;
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  max-width: 720px;
+  position: relative; z-index: 1;
+}
+header.lecture-header p.instructor strong { font-weight: 700; }
+
+/* ============ STATS ============ */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.stat { text-align: center; padding: 6px; }
+.stat .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  background: white; padding: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1; min-width: 110px;
+  padding: 11px 16px;
+  background: transparent; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.tab-btn:hover { background: var(--bg); color: var(--text); }
+.tab-btn.active {
+  background: var(--primary); color: white;
+  box-shadow: 0 2px 8px rgba(217,119,6,0.30);
+}
+.tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
+.tab-content.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ CARD ============ */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.card h2 { font-size: 22px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 700; }
+.card h3 { font-size: 17px; color: var(--text); margin: 18px 0 8px; font-weight: 600; }
+.card p { color: #334155; margin-bottom: 12px; }
+.card ul, .card ol { margin: 0 0 14px 22px; }
+.card li { margin-bottom: 6px; color: #334155; }
+
+/* ============ CONTENT BOXES ============ */
+.example-box {
+  background: var(--info-light);
+  border-left: 4px solid var(--info);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.example-box strong { color: var(--info); }
+.tip-box {
+  background: var(--success-light);
+  border-left: 4px solid var(--success);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.tip-box strong { color: var(--success); }
+.warn-box {
+  background: var(--primary-light);
+  border-left: 4px solid var(--primary);
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+}
+.warn-box strong { color: var(--primary-dark); }
+
+/* ============ CODE ============ */
+code {
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: #b45309;
+}
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 12px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+.sql-kw { color: #fcd34d; font-weight: 600; }
+.sql-str { color: #fdba74; }
+.sql-num { color: #86efac; }
+.sql-cm { color: #94a3b8; font-style: italic; }
+.sql-func { color: #c4b5fd; }
+.sql-type { color: #7dd3fc; font-weight: 600; }
+
+/* ============ QUIZ ============ */
+.quiz-intro {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.quiz-intro h2 { color: var(--primary-dark); margin-bottom: 8px; }
+.quiz-intro p { color: var(--muted); margin-bottom: 14px; }
+
+.quiz-question {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.quiz-question h4 { font-size: 16px; margin-bottom: 14px; color: var(--text); font-weight: 600; }
+.quiz-question .q-num { color: var(--primary); font-weight: 700; margin-right: 8px; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-option {
+  padding: 11px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  transition: all var(--transition);
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  font-family: inherit;
+}
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(2px); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: var(--success); font-weight: 600; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-explain {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #fffaf3;
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  font-size: 13px;
+  color: #334155;
+}
+.quiz-explain.show { display: block; }
+.quiz-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+.quiz-result {
+  display: none;
+  padding: 30px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-top: 16px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.4s ease;
+}
+.quiz-result.show { display: block; }
+.quiz-result h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-dark); }
+.quiz-result .score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 14px 0; line-height: 1; }
+.quiz-result .score .total { font-size: 26px; color: var(--muted); }
+.quiz-result p { color: #334155; margin-bottom: 16px; font-size: 15px; }
+.quiz-result .verdict { display: inline-block; padding: 6px 14px; border-radius: 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.quiz-result .verdict.great { background: var(--success-light); color: var(--success); }
+.quiz-result .verdict.good { background: var(--primary-light); color: var(--primary-dark); }
+.quiz-result .verdict.ok { background: #fee2e2; color: var(--danger); }
+
+/* ============ EXERCISES ============ */
+.exercises-header {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.exercises-header p { color: var(--muted); font-size: 14px; }
+.section-header {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  margin: 22px 0 14px;
+  border-left: 4px solid var(--primary);
+}
+.section-header h3 { color: var(--primary-dark); margin: 0 0 4px 0; font-size: 17px; font-weight: 700; }
+.section-header p { color: var(--muted); margin: 0; font-size: 13px; }
+.exercise {
+  background: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+}
+.exercise-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.exercise h4 { font-size: 16px; color: var(--primary-dark); font-weight: 600; }
+.exercise .diff { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.exercise .diff.easy { background: var(--success-light); color: var(--success); }
+.exercise .diff.med { background: var(--primary-light); color: var(--primary-dark); }
+.exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
+.exercise-prompt { color: #334155; margin: 8px 0 12px; }
+.exercise-prompt code { background: #fef3c7; }
+.exercise textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fffaf3;
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+.exercise textarea:focus { outline: none; border-color: var(--primary); background: white; }
+.exercise-actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.exercise-hint, .exercise-approach {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+}
+.exercise-hint { background: var(--primary-light); border-left: 3px solid var(--primary); color: #78350f; }
+.exercise-approach { background: var(--info-light); border-left: 3px solid var(--info); color: #1e3a8a; }
+.exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
+.exercise-approach pre { background: #1e293b; color: #e2e8f0; }
+.save-indicator { font-size: 12px; color: var(--muted); margin-left: auto; }
+.save-indicator.saved { color: var(--success); }
+.done-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--muted);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.done-toggle:hover { border-color: var(--success); color: var(--success); }
+.done-toggle.done { background: var(--success-light); border-color: var(--success); color: var(--success); font-weight: 600; }
+
+/* ============ BUTTONS ============ */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(217,119,6,0.30);
+}
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-soft); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* ============ OBJECTIVES ============ */
+.objectives-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.objectives-list li {
+  padding: 8px 0 8px 30px;
+  position: relative;
+  color: #334155;
+}
+.objectives-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0; top: 10px;
+  color: var(--success);
+  font-weight: bold;
+  background: var(--success-light);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* ============ CHALLENGE ============ */
+.challenge-intro {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  border-left: 6px solid var(--primary);
+}
+.challenge-intro h2 { color: var(--primary-dark); margin-bottom: 6px; }
+.challenge-intro p { color: #334155; margin-bottom: 0; }
+.challenge-step {
+  background: white;
+  padding: 22px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  border-left: 4px solid var(--primary);
+}
+.challenge-step h4 { font-size: 16px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 700; }
+.challenge-step .step-num {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 13px;
+  margin-right: 8px;
+  line-height: 24px;
+}
+.challenge-step textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  resize: vertical;
+  background: #fffaf3;
+  color: var(--text);
+}
+.challenge-step textarea:focus { outline: none; border-color: var(--primary); background: white; }
+
+/* ============ RESET ============ */
+.reset-btn {
+  position: fixed;
+  bottom: 18px; right: 18px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-family: inherit;
+  transition: all var(--transition);
+  z-index: 100;
+}
+.reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 80px; }
+  header.lecture-header { padding: 22px 18px; }
+  header.lecture-header h1 { font-size: 22px; }
+  .card { padding: 20px 18px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ HEADER ============ -->
+<header class="lecture-header">
+  <span class="badge">ISRT • SQL Course • Class 13 · Exercise 3</span>
+  <h1>Exercise Class 3: Analysis Practice</h1>
+  <p class="subtitle">Hands-on practice with the three big analysis tools: aggregation and grouping, subqueries, and joins. Real Sakila scenarios, all of them mixing ideas from Lectures 7, 8, and 9.</p>
+  <p class="instructor">Instructor: <strong>K.M. Tanvir</strong> • Institute of Statistical Research and Training (ISRT), University of Dhaka</p>
+</header>
+
+<!-- ============ STATS ============ -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Warm-up Score</div></div>
+  <div class="stat"><div class="stat-value" id="exDoneStat">0 / 10</div><div class="stat-label">Exercises Marked Done</div></div>
+  <div class="stat"><div class="stat-value" id="exTouchedStat">0</div><div class="stat-label">Exercises Worked</div></div>
+  <div class="stat"><div class="stat-value" id="challengeStat">0%</div><div class="stat-label">Challenge Progress</div></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="brief">📋 Brief</button>
+  <button class="tab-btn" data-tab="quiz">🔥 Warm-up Quiz</button>
+  <button class="tab-btn" data-tab="exercises">💪 Exercises</button>
+  <button class="tab-btn" data-tab="challenge">🚀 Challenge</button>
+</nav>
+
+<main>
+
+<!-- ============ BRIEF TAB ============ -->
+<section id="brief" class="tab-content active">
+  <div class="card">
+    <h2>Today's Class</h2>
+    <p>Welcome to the third exercise class. The last three lectures have given you the analyst's toolkit: aggregation, subqueries, and joins. Most real reports are written with some combination of these three. Today you put them together on Sakila.</p>
+
+    <h3>What you'll do today</h3>
+    <ul class="objectives-list">
+      <li>A quick <strong>warm-up quiz</strong> (10 questions across Lectures 7, 8, 9)</li>
+      <li><strong>10 main exercises</strong>, two per section, building from grouping to joins to combined queries</li>
+      <li>A <strong>capstone challenge</strong>: build a "high-value customers" report in four steps using JOIN, GROUP BY, a scalar subquery, and HAVING</li>
+    </ul>
+
+    <h3>How to work today</h3>
+    <ol>
+      <li>Open <strong>MySQL Workbench</strong> and connect to the ISRT Sakila.</li>
+      <li>Try each exercise <em>before</em> looking at the suggested approach.</li>
+      <li>Click "Mark done" after each exercise. Your typed answers autosave in the browser.</li>
+      <li>Run every query you write, don't just stare at it. Look at the row count and the columns.</li>
+    </ol>
+
+    <h3>Topics covered</h3>
+    <ul>
+      <li><strong>Lecture 7:</strong> COUNT, SUM, AVG, MIN, MAX, GROUP BY, HAVING, NULL handling.</li>
+      <li><strong>Lecture 8:</strong> scalar subqueries, comparison operators, IN with subquery, EXISTS, NOT EXISTS.</li>
+      <li><strong>Lecture 9:</strong> INNER JOIN, LEFT JOIN, RIGHT JOIN, ON vs USING, chained joins, JOIN + GROUP BY.</li>
+    </ul>
+
+    <div class="tip-box">
+      <strong>If you're stuck:</strong> open the relevant lecture in another tab. Each section of today's exercises is mapped to specific lecture content. Flipping back for a refresher is fair game.
+    </div>
+
+    <div class="warn-box">
+      <strong>A reminder:</strong> when columns from two tables share a name, always qualify with the table name (e.g., <code>customer.first_name</code>). Sakila has lots of <code>name</code> columns; ambiguity will bite you otherwise.
+    </div>
+  </div>
+</section>
+
+<!-- ============ WARM-UP QUIZ TAB ============ -->
+<section id="quiz" class="tab-content">
+  <div class="quiz-intro">
+    <h2>🔥 Warm-up Quiz</h2>
+    <p>10 quick questions across aggregation, subqueries, and joins. Pick an answer for each, then submit to see your score and explanations.</p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+  <div class="quiz-footer">
+    <span class="quiz-progress-text" id="quizProgText">0 of 10 answered</span>
+    <button class="btn btn-primary" id="submitQuiz" disabled>Submit Answers</button>
+  </div>
+
+  <div class="quiz-result" id="quizResult">
+    <div class="verdict" id="quizVerdict">Nice warm-up!</div>
+    <h3>Your Score</h3>
+    <div class="score"><span id="scoreNum">0</span><span class="total">/10</span></div>
+    <p id="quizMessage">Onward to the exercises.</p>
+    <button class="btn btn-ghost" id="retakeQuiz">↺ Retake Quiz</button>
+  </div>
+</section>
+
+<!-- ============ EXERCISES TAB ============ -->
+<section id="exercises" class="tab-content">
+  <div class="exercises-header">
+    <h2>💪 Practice Exercises</h2>
+    <p>Ten exercises grouped into five sections. Try each on your own first, then peek at the suggested approach.</p>
+  </div>
+  <div id="exercisesContainer"></div>
+</section>
+
+<!-- ============ CHALLENGE TAB ============ -->
+<section id="challenge" class="tab-content">
+  <div class="challenge-intro">
+    <h2>🚀 Challenge: Top Spenders Above the Average</h2>
+    <p>One report, built up in four steps. You'll combine a JOIN, aggregation, a scalar subquery, and a final sort, exactly the tools from Lectures 7, 8, and 9.</p>
+  </div>
+
+  <div class="card">
+    <h2>The Scenario</h2>
+    <p>The store manager wants a "high-value customers" list. For each customer in the system, show their name and total spend, then keep only customers whose total spend is above the per-customer average. Sort by total spend, top first, and cap at 10 rows.</p>
+
+    <h3>Tables in play</h3>
+    <p><code>customer</code> and <code>payment</code>. Foreign key: customer.customer_id ↔ payment.customer_id.</p>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">1</span>Per-customer total spend (JOIN + GROUP BY)</h4>
+    <p>Join <code>customer</code> with <code>payment</code>. For each customer, return customer_id, first_name, last_name, and total_spent (SUM of amount, rounded to 2 decimals).</p>
+    <textarea id="ch-step-1" placeholder="SELECT customer.customer_id, customer.first_name, customer.last_name,&#10;       ROUND(SUM(payment.amount), 2) AS total_spent&#10;FROM   sakila.customer&#10;INNER JOIN sakila.payment&#10;       ON customer.customer_id = payment.customer_id&#10;GROUP BY ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">2</span>Find the per-customer average spend (scalar subquery)</h4>
+    <p>On its own, write a query that returns one number: the average per-customer total spend. (Hint: take the result of step 1, drop the customer columns, AVG the totals.) You'll use this number as a threshold in step 3.</p>
+    <textarea id="ch-step-2" placeholder="-- One-row, one-column result: the average per-customer total spend.&#10;-- Approach: average over a per-customer SUM.&#10;SELECT AVG(total)&#10;FROM (&#10;  SELECT SUM(amount) AS total&#10;  FROM sakila.payment&#10;  GROUP BY customer_id&#10;) AS per_cust;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">3</span>Filter step 1 with HAVING using the scalar subquery from step 2</h4>
+    <p>Combine the two: keep only customers whose <code>SUM(payment.amount)</code> is greater than the scalar subquery's average. The condition lives in <code>HAVING</code> because it involves an aggregate.</p>
+    <textarea id="ch-step-3" placeholder="-- Same SELECT and JOIN as step 1, plus:&#10;-- HAVING SUM(payment.amount) > (... the scalar subquery from step 2 ...)"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4><span class="step-num">4</span>Sort and crop</h4>
+    <p>Order the result by total_spent descending and keep only the top 10 rows. That's the finished report.</p>
+    <textarea id="ch-step-4" placeholder="-- Final query: customer + payment JOIN, GROUP BY customer fields,&#10;-- HAVING SUM(amount) > scalar subquery,&#10;-- ORDER BY total_spent DESC,&#10;-- LIMIT 10;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Compare with the suggested solution</h4>
+    <p>When you've worked through all four steps, click below to see one possible final query.</p>
+    <button class="btn btn-primary btn-sm" id="revealChallenge">👀 Show suggested solution</button>
+    <div id="challengeReveal" style="display: none; margin-top: 16px;">
+<pre><code><span class="sql-cm">-- Top 10 customers whose total spend is above the per-customer average</span>
+<span class="sql-kw">SELECT</span> customer.customer_id,
+       customer.first_name,
+       customer.last_name,
+       <span class="sql-func">ROUND</span>(<span class="sql-func">SUM</span>(payment.amount), <span class="sql-num">2</span>) <span class="sql-kw">AS</span> total_spent
+<span class="sql-kw">FROM</span>       sakila.customer
+<span class="sql-kw">INNER JOIN</span> sakila.payment
+          <span class="sql-kw">ON</span> customer.customer_id = payment.customer_id
+<span class="sql-kw">GROUP BY</span> customer.customer_id, customer.first_name, customer.last_name
+<span class="sql-kw">HAVING</span> <span class="sql-func">SUM</span>(payment.amount) &gt; (
+  <span class="sql-kw">SELECT</span> <span class="sql-func">AVG</span>(total) <span class="sql-kw">FROM</span> (
+    <span class="sql-kw">SELECT</span> <span class="sql-func">SUM</span>(amount) <span class="sql-kw">AS</span> total
+    <span class="sql-kw">FROM</span>   sakila.payment
+    <span class="sql-kw">GROUP BY</span> customer_id
+  ) <span class="sql-kw">AS</span> per_cust
+)
+<span class="sql-kw">ORDER BY</span> total_spent <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">10</span>;</code></pre>
+      <div class="example-box">
+        <strong>How the pieces fit:</strong>
+        <ul style="margin-top: 8px;">
+          <li>One INNER JOIN brings customer.first_name and customer.last_name alongside payment.amount.</li>
+          <li>GROUP BY rolls up to one row per customer; SUM(payment.amount) aggregates per group.</li>
+          <li>HAVING (not WHERE) filters whole groups, because the condition involves an aggregate.</li>
+          <li>The scalar subquery returns one number, the per-customer average spend, used as the HAVING threshold.</li>
+          <li>ORDER BY + LIMIT crop to the top 10 high-value customers.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset all progress for Exercise Class 3">↺ Reset Progress</button>
+
+<script>
+/* ================================================================
+   EXERCISE CLASS 3, ANALYSIS PRACTICE
+   ================================================================ */
+
+const STORAGE_KEY = 'exclass3-progress-v2';
+
+const state = {
+  quizAnswers: {},
+  quizScore: null,
+  quizSubmitted: false,
+  exerciseAnswers: {},
+  exercisesDone: new Set(),
+  exercisesTouched: new Set(),
+  hintsOpen: new Set(),
+  approachesOpen: new Set(),
+  challengeAnswers: {},
+  challengeRevealed: false
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...state,
+      exercisesDone: [...state.exercisesDone],
+      exercisesTouched: [...state.exercisesTouched],
+      hintsOpen: [...state.hintsOpen],
+      approachesOpen: [...state.approachesOpen]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    state.exercisesDone = new Set(data.exercisesDone || []);
+    state.exercisesTouched = new Set(data.exercisesTouched || []);
+    state.hintsOpen = new Set(data.hintsOpen || []);
+    state.approachesOpen = new Set(data.approachesOpen || []);
+    state.challengeAnswers = data.challengeAnswers || {};
+  } catch (e) {}
+}
+
+/* ============ TABS ============ */
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabSections.forEach(s => s.classList.toggle('active', s.id === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ============ QUIZ ============ */
+const quizData = [
+  {
+    q: "What does COUNT(return_date) FROM rental tell you?",
+    options: [
+      "The total number of rentals",
+      "The number of rentals that have NOT been returned",
+      "The number of rentals that HAVE been returned",
+      "An error"
+    ],
+    answer: 2,
+    explain: "COUNT(col) counts rows where the column is NOT NULL. return_date is NULL until the rental is returned, so this counts returned rentals."
+  },
+  {
+    q: "Which condition belongs in HAVING, not WHERE?",
+    options: [
+      "rating = 'PG'",
+      "amount > 5",
+      "COUNT(*) > 100",
+      "rental_date IS NOT NULL"
+    ],
+    answer: 2,
+    explain: "Aggregates (COUNT, SUM, AVG, MIN, MAX) belong in HAVING because they don't exist yet when WHERE runs. Plain column conditions go in WHERE."
+  },
+  {
+    q: "GROUP BY rating, rental_duration produces:",
+    options: [
+      "One row per rating",
+      "One row per rental_duration",
+      "One row per unique (rating, rental_duration) combination",
+      "One row per film"
+    ],
+    answer: 2,
+    explain: "Multi-column GROUP BY makes a group for each unique combination of the listed expressions."
+  },
+  {
+    q: "Which always returns a scalar (single value)?",
+    options: [
+      "SELECT customer_id FROM rental",
+      "SELECT MAX(rental_rate) FROM film",
+      "SELECT title FROM film WHERE rating = 'PG'",
+      "SELECT * FROM language"
+    ],
+    answer: 1,
+    explain: "Aggregates without GROUP BY return exactly one row, one column. The others can produce many rows or many columns."
+  },
+  {
+    q: "When the inner query returns multiple values, you must use:",
+    options: ["=", "IN", ">", "EXISTS"],
+    answer: 1,
+    explain: "= expects one value. IN compares against the list produced by the inner query. (EXISTS is a different shape; it just checks for any matching row.)"
+  },
+  {
+    q: "Which finds customers with at least one rental?",
+    options: [
+      "WHERE EXISTS (SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id)",
+      "WHERE NOT EXISTS (SELECT 1 FROM rental r WHERE r.customer_id = c.customer_id)",
+      "WHERE COUNT(rental) > 0",
+      "WHERE rental_id IS NOT NULL"
+    ],
+    answer: 0,
+    explain: "EXISTS returns true if the subquery yields any row, so this keeps customers who have at least one rental row."
+  },
+  {
+    q: "INNER JOIN customer + address ON address_id. A customer whose address_id has no matching address row:",
+    options: [
+      "Appears with NULL address fields",
+      "Is excluded from the result",
+      "Causes an error",
+      "Appears twice"
+    ],
+    answer: 1,
+    explain: "INNER JOIN drops unmatched rows on either side. Use LEFT JOIN if you want the left rows to survive."
+  },
+  {
+    q: "After LEFT JOIN film with film_actor, how do you find films with NO actors?",
+    options: [
+      "WHERE film_actor.actor_id = NULL",
+      "WHERE film_actor.actor_id IS NULL",
+      "WHERE actor_id NOT FOUND",
+      "Use INNER JOIN instead"
+    ],
+    answer: 1,
+    explain: "After LEFT JOIN, unmatched left rows have NULLs on the right. Filter IS NULL on a right-side column to keep just those rows."
+  },
+  {
+    q: "Which is a correct three-table chain to find every film customer 1 has rented?",
+    options: [
+      "FROM film WHERE customer_id = 1",
+      "FROM film INNER JOIN inventory ON film.film_id = inventory.film_id INNER JOIN rental ON inventory.inventory_id = rental.inventory_id WHERE rental.customer_id = 1",
+      "FROM film, inventory, rental WHERE customer_id = 1",
+      "FROM customer JOIN rental WHERE film_id = 1"
+    ],
+    answer: 1,
+    explain: "Chained joins follow the foreign keys: film → inventory on film_id, inventory → rental on inventory_id, then filter by customer_id."
+  },
+  {
+    q: "JOIN + GROUP BY is the standard recipe for:",
+    options: [
+      "Disabling indexes",
+      "Reports that show a name from one table plus a summary number from a related table",
+      "Avoiding foreign keys",
+      "Encrypting data"
+    ],
+    answer: 1,
+    explain: "JOIN brings in the human-readable columns; GROUP BY rolls up. Together they answer 'show me name + summary' questions."
+  }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+function renderQuiz() {
+  quizContainer.innerHTML = '';
+  quizData.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <h4><span class="q-num">Q${i + 1}.</span>${q.q}</h4>
+      <div class="quiz-options" data-qi="${i}">
+        ${q.options.map((opt, j) => `<button class="quiz-option" data-choice="${j}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-explain"><strong>Explanation:</strong> ${q.explain}</div>
+    `;
+    quizContainer.appendChild(div);
+  });
+  bindQuiz();
+  restoreQuizState();
+}
+function bindQuiz() {
+  quizContainer.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.quizSubmitted) return;
+      const parent = btn.parentElement;
+      const qi = +parent.dataset.qi;
+      parent.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.quizAnswers[qi] = +btn.dataset.choice;
+      updateQuizProgress();
+      saveState();
+    });
+  });
+}
+function updateQuizProgress() {
+  const answered = Object.keys(state.quizAnswers).length;
+  document.getElementById('quizProgText').textContent = `${answered} of ${quizData.length} answered`;
+  document.getElementById('submitQuiz').disabled = answered !== quizData.length || state.quizSubmitted;
+}
+function restoreQuizState() {
+  Object.entries(state.quizAnswers).forEach(([qi, choice]) => {
+    const opts = quizContainer.querySelector(`[data-qi="${qi}"]`);
+    if (!opts) return;
+    const btn = opts.querySelector(`[data-choice="${choice}"]`);
+    if (btn) btn.classList.add('selected');
+  });
+  if (state.quizSubmitted) revealQuizResults();
+  updateQuizProgress();
+}
+function revealQuizResults() {
+  let score = 0;
+  quizData.forEach((q, i) => {
+    const opts = quizContainer.querySelector(`[data-qi="${i}"]`);
+    if (!opts) return;
+    const chosen = state.quizAnswers[i];
+    opts.querySelectorAll('.quiz-option').forEach(b => {
+      b.classList.add('disabled');
+      const c = +b.dataset.choice;
+      if (c === q.answer) b.classList.add('correct');
+      else if (c === chosen) b.classList.add('wrong');
+    });
+    opts.parentElement.querySelector('.quiz-explain').classList.add('show');
+    if (chosen === q.answer) score++;
+  });
+  state.quizScore = score;
+  document.getElementById('scoreNum').textContent = score;
+  const verdict = document.getElementById('quizVerdict');
+  const msg = document.getElementById('quizMessage');
+  const pct = score / quizData.length;
+  if (pct >= 0.85) {
+    verdict.className = 'verdict great';
+    verdict.textContent = '🏆 Excellent recall!';
+    msg.textContent = "Block 3 material is solid. Onto the exercises with confidence.";
+  } else if (pct >= 0.6) {
+    verdict.className = 'verdict good';
+    verdict.textContent = '👍 Good warm-up';
+    msg.textContent = "Review the wrong ones quickly, then jump to the exercises.";
+  } else {
+    verdict.className = 'verdict ok';
+    verdict.textContent = 'Quick review needed';
+    msg.textContent = "Open Lectures 7 to 9 in another tab and revisit the wrong ones, then come back.";
+  }
+  document.getElementById('quizResult').classList.add('show');
+  document.getElementById('submitQuiz').disabled = true;
+}
+document.getElementById('submitQuiz').addEventListener('click', () => {
+  state.quizSubmitted = true;
+  revealQuizResults();
+  updateStats();
+  saveState();
+});
+document.getElementById('retakeQuiz').addEventListener('click', () => {
+  state.quizAnswers = {};
+  state.quizScore = null;
+  state.quizSubmitted = false;
+  document.getElementById('quizResult').classList.remove('show');
+  renderQuiz();
+  updateQuizProgress();
+  updateStats();
+  saveState();
+});
+
+/* ============ EXERCISES ============ */
+const exerciseGroups = [
+  {
+    section: "Section A · Aggregation and GROUP BY",
+    description: "Practice reducing many rows to one summary, and one summary per bucket.",
+    items: [
+      {
+        title: "1. Films per rating",
+        diff: "easy",
+        prompt: "From <code>film</code>, return one row per <code>rating</code> with the rating, the film count, and the average rental_rate rounded to 2 decimals. Sort by film count descending.",
+        hint: "GROUP BY rating, with COUNT(*) and ROUND(AVG(rental_rate), 2).",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT rating,\n       COUNT(*)                AS film_count,\n       ROUND(AVG(rental_rate), 2) AS avg_price\nFROM   sakila.film\nGROUP BY rating\nORDER BY film_count DESC;</pre>"
+      },
+      {
+        title: "2. Big-spending months (HAVING)",
+        diff: "med",
+        prompt: "From <code>payment</code>, return the year, month, payment count, and total revenue per (year, month) pair. Keep only months where total revenue exceeded $5,000. Sort by revenue descending.",
+        hint: "GROUP BY YEAR(payment_date), MONTH(payment_date), with HAVING SUM(amount) > 5000.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT YEAR(payment_date)   AS y,\n       MONTH(payment_date)  AS m,\n       COUNT(*)             AS payments,\n       ROUND(SUM(amount), 2) AS revenue\nFROM   sakila.payment\nGROUP BY YEAR(payment_date), MONTH(payment_date)\nHAVING SUM(amount) > 5000\nORDER BY revenue DESC;</pre>"
+      }
+    ]
+  },
+  {
+    section: "Section B · Subqueries",
+    description: "Use one query's result as input to another. Pick scalar, IN, or EXISTS based on what you need.",
+    items: [
+      {
+        title: "3. Films priced above average",
+        diff: "easy",
+        prompt: "From <code>film</code>, list the title and rental_rate of films whose rental_rate is above the catalogue average. Sort by rental_rate descending.",
+        hint: "Scalar subquery in WHERE: rental_rate > (SELECT AVG(rental_rate) FROM film).",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_rate\nFROM   sakila.film\nWHERE  rental_rate > (SELECT AVG(rental_rate) FROM sakila.film)\nORDER BY rental_rate DESC;</pre>"
+      },
+      {
+        title: "4. Films featuring actor PENELOPE GUINESS (nested IN)",
+        diff: "med",
+        prompt: "Find every distinct film title that features actor PENELOPE GUINESS. Use two nested IN subqueries through the actor → film_actor → film chain.",
+        hint: "Outer: film WHERE film_id IN (...). Middle: film_actor WHERE actor_id IN (...). Inner: actor with both first_name and last_name filters.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title\nFROM   sakila.film\nWHERE  film_id IN (\n  SELECT film_id FROM sakila.film_actor\n  WHERE  actor_id IN (\n    SELECT actor_id FROM sakila.actor\n    WHERE  first_name = 'PENELOPE' AND last_name = 'GUINESS'\n  )\n);</pre>"
+      }
+    ]
+  },
+  {
+    section: "Section C · INNER JOIN",
+    description: "Combine columns from two or more tables. Same problems as before, often shorter than the subquery version.",
+    items: [
+      {
+        title: "5. Customers and their addresses",
+        diff: "easy",
+        prompt: "From <code>customer</code> and <code>address</code>, list each customer's first_name, last_name, and street address. Limit to 20 rows.",
+        hint: "INNER JOIN sakila.address ON customer.address_id = address.address_id.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer.first_name, customer.last_name, address.address\nFROM   sakila.customer\nINNER JOIN sakila.address\n       ON customer.address_id = address.address_id\nLIMIT 20;</pre>"
+      },
+      {
+        title: "6. Films featuring PENELOPE GUINESS, rewritten as a join",
+        diff: "med",
+        prompt: "Repeat Exercise 4, but now using INNER JOINs through actor → film_actor → film. Add SELECT DISTINCT to avoid duplicate titles.",
+        hint: "Chain three tables. The actor table provides the filter, film_actor links to films, film provides the title.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT film.title\nFROM      sakila.actor\nINNER JOIN sakila.film_actor\n          ON actor.actor_id = film_actor.actor_id\nINNER JOIN sakila.film\n          ON film_actor.film_id = film.film_id\nWHERE     actor.first_name = 'PENELOPE'\n  AND     actor.last_name  = 'GUINESS';</pre>Compare with Exercise 4: the join version is often easier to read once you have several tables in play."
+      }
+    ]
+  },
+  {
+    section: "Section D · LEFT JOIN and outer questions",
+    description: "Questions about \"who has no matching row in the other table\" and \"include even unmatched\".",
+    items: [
+      {
+        title: "7. Customers with no rentals (LEFT JOIN ... IS NULL)",
+        diff: "med",
+        prompt: "Find customer_id, first_name, last_name for customers who have no row in the <code>rental</code> table. Use LEFT JOIN, then filter for IS NULL on a right-side column.",
+        hint: "LEFT JOIN sakila.rental ON customer.customer_id = rental.customer_id, then WHERE rental.rental_id IS NULL.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer.customer_id, customer.first_name, customer.last_name\nFROM   sakila.customer\nLEFT JOIN sakila.rental\n       ON customer.customer_id = rental.customer_id\nWHERE  rental.rental_id IS NULL;</pre>This is the join-version of NOT EXISTS from Lecture 8."
+      },
+      {
+        title: "8. Number of films per language (LEFT JOIN preserves zeros)",
+        diff: "med",
+        prompt: "Join <code>language</code> with <code>film</code> and count how many films each language has. Use LEFT JOIN so languages with zero films still appear (with a count of 0). Sort by film_count descending.",
+        hint: "FROM language LEFT JOIN film ON film.language_id = language.language_id, then GROUP BY language.language_id, language.name.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT language.name AS language, COUNT(film.film_id) AS film_count\nFROM   sakila.language\nLEFT JOIN sakila.film\n       ON film.language_id = language.language_id\nGROUP BY language.language_id, language.name\nORDER BY film_count DESC;</pre>Note: <code>COUNT(film.film_id)</code> counts non-NULL film_ids, so a language with no films gets 0 (not 1)."
+      }
+    ]
+  },
+  {
+    section: "Section E · Combined analysis",
+    description: "Joins + aggregation + sometimes a subquery, the way real reports get built.",
+    items: [
+      {
+        title: "9. Top 10 customers by total spend (JOIN + GROUP BY)",
+        diff: "med",
+        prompt: "Join <code>customer</code> with <code>payment</code>. For each customer, return first_name, last_name, payment count, and total spend rounded to 2 decimals. Sort by total spend descending, top 10.",
+        hint: "INNER JOIN, GROUP BY customer.customer_id (and the names), ORDER BY SUM(payment.amount) DESC, LIMIT 10.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer.customer_id, customer.first_name, customer.last_name,\n       COUNT(payment.payment_id)        AS num_payments,\n       ROUND(SUM(payment.amount), 2)    AS total_spent\nFROM   sakila.customer\nINNER JOIN sakila.payment\n       ON customer.customer_id = payment.customer_id\nGROUP BY customer.customer_id, customer.first_name, customer.last_name\nORDER BY total_spent DESC\nLIMIT 10;</pre>"
+      },
+      {
+        title: "10. Big spenders above the per-customer average",
+        diff: "hard",
+        prompt: "From <code>payment</code>, list the customer_ids whose total spend exceeds the per-customer average total spend. Return customer_id and their total_spent, sorted descending. Use a scalar subquery on a derived table.",
+        hint: "Outer: GROUP BY customer_id with HAVING SUM(amount) > (scalar subquery). Inner scalar: AVG of per-customer totals.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer_id, ROUND(SUM(amount), 2) AS total_spent\nFROM   sakila.payment\nGROUP BY customer_id\nHAVING SUM(amount) > (\n  SELECT AVG(total) FROM (\n    SELECT SUM(amount) AS total\n    FROM   sakila.payment\n    GROUP BY customer_id\n  ) AS per_cust\n)\nORDER BY total_spent DESC;</pre>"
+      }
+    ]
+  }
+];
+
+const exContainer = document.getElementById('exercisesContainer');
+let globalExIdx = 0;
+const exerciseFlatIndex = [];
+
+exerciseGroups.forEach(group => {
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'section-header';
+  sectionEl.innerHTML = `<h3>${group.section}</h3><p>${group.description}</p>`;
+  exContainer.appendChild(sectionEl);
+
+  group.items.forEach(ex => {
+    const idx = globalExIdx++;
+    exerciseFlatIndex.push(ex);
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <div class="exercise-head">
+        <h4>${ex.title}</h4>
+        <span class="diff ${ex.diff}">${ex.diff === 'easy' ? 'Beginner' : ex.diff === 'med' ? 'Intermediate' : 'Advanced'}</span>
+      </div>
+      <div class="exercise-prompt">${ex.prompt}</div>
+      <textarea placeholder="Write your answer here..." data-ex="${idx}"></textarea>
+      <div class="exercise-actions">
+        <button class="btn btn-ghost btn-sm" data-action="hint" data-ex="${idx}">💡 Hint</button>
+        <button class="btn btn-ghost btn-sm" data-action="approach" data-ex="${idx}">👀 Show Approach</button>
+        <button class="done-toggle" data-ex="${idx}">○ Mark done</button>
+        <span class="save-indicator" data-ex="${idx}"></span>
+      </div>
+      <div class="exercise-hint" data-ex="${idx}"><strong>Hint:</strong> ${ex.hint}</div>
+      <div class="exercise-approach" data-ex="${idx}"><strong>Suggested approach:</strong> ${ex.approach}</div>
+    `;
+    exContainer.appendChild(div);
+  });
+});
+
+const totalExercises = exerciseFlatIndex.length;
+document.getElementById('exDoneStat').textContent = `0 / ${totalExercises}`;
+
+exContainer.querySelectorAll('textarea').forEach(ta => {
+  const idx = +ta.dataset.ex;
+  ta.addEventListener('input', () => {
+    state.exerciseAnswers[idx] = ta.value;
+    state.exercisesTouched.add(idx);
+    const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+    indicator.textContent = '✓ Saved';
+    indicator.classList.add('saved');
+    updateStats();
+    saveState();
+  });
+});
+
+exContainer.querySelectorAll('button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = +btn.dataset.ex;
+    const action = btn.dataset.action;
+    const target = exContainer.querySelector(`.exercise-${action}[data-ex="${idx}"]`);
+    target.classList.toggle('show');
+    if (action === 'hint') {
+      if (target.classList.contains('show')) state.hintsOpen.add(idx);
+      else state.hintsOpen.delete(idx);
+    } else {
+      if (target.classList.contains('show')) state.approachesOpen.add(idx);
+      else state.approachesOpen.delete(idx);
+    }
+    state.exercisesTouched.add(idx);
+    updateStats();
+    saveState();
+  });
+});
+
+exContainer.querySelectorAll('.done-toggle').forEach(btn => {
+  const idx = +btn.dataset.ex;
+  btn.addEventListener('click', () => {
+    if (state.exercisesDone.has(idx)) {
+      state.exercisesDone.delete(idx);
+      btn.classList.remove('done');
+      btn.textContent = '○ Mark done';
+    } else {
+      state.exercisesDone.add(idx);
+      btn.classList.add('done');
+      btn.textContent = '✓ Done';
+    }
+    updateStats();
+    saveState();
+  });
+});
+
+function restoreExercises() {
+  Object.entries(state.exerciseAnswers).forEach(([idx, val]) => {
+    const ta = exContainer.querySelector(`textarea[data-ex="${idx}"]`);
+    if (ta) {
+      ta.value = val;
+      const indicator = exContainer.querySelector(`.save-indicator[data-ex="${idx}"]`);
+      if (val && val.trim()) { indicator.textContent = '✓ Saved'; indicator.classList.add('saved'); }
+    }
+  });
+  state.exercisesDone.forEach(idx => {
+    const btn = exContainer.querySelector(`.done-toggle[data-ex="${idx}"]`);
+    if (btn) { btn.classList.add('done'); btn.textContent = '✓ Done'; }
+  });
+  state.hintsOpen.forEach(idx => {
+    const el = exContainer.querySelector(`.exercise-hint[data-ex="${idx}"]`);
+    if (el) el.classList.add('show');
+  });
+  state.approachesOpen.forEach(idx => {
+    const el = exContainer.querySelector(`.exercise-approach[data-ex="${idx}"]`);
+    if (el) el.classList.add('show');
+  });
+}
+
+/* ============ CHALLENGE ============ */
+const challengeTextareas = document.querySelectorAll('.challenge-step textarea');
+challengeTextareas.forEach(ta => {
+  const id = ta.id;
+  ta.addEventListener('input', () => {
+    state.challengeAnswers[id] = ta.value;
+    updateStats();
+    saveState();
+  });
+});
+
+document.getElementById('revealChallenge').addEventListener('click', () => {
+  const reveal = document.getElementById('challengeReveal');
+  const isOpen = reveal.style.display !== 'none';
+  reveal.style.display = isOpen ? 'none' : 'block';
+  state.challengeRevealed = !isOpen;
+  document.getElementById('revealChallenge').textContent = isOpen ? '👀 Show suggested solution' : '🙈 Hide suggested solution';
+  saveState();
+});
+
+function restoreChallenge() {
+  Object.entries(state.challengeAnswers).forEach(([id, val]) => {
+    const ta = document.getElementById(id);
+    if (ta) ta.value = val;
+  });
+  if (state.challengeRevealed) {
+    document.getElementById('challengeReveal').style.display = 'block';
+    document.getElementById('revealChallenge').textContent = '🙈 Hide suggested solution';
+  }
+}
+
+/* ============ STATS ============ */
+function updateStats() {
+  document.getElementById('quizStat').textContent = state.quizScore === null ? '—' : `${state.quizScore}/${quizData.length}`;
+  document.getElementById('exDoneStat').textContent = `${state.exercisesDone.size} / ${totalExercises}`;
+  document.getElementById('exTouchedStat').textContent = state.exercisesTouched.size;
+  const filled = challengeTextareas.length === 0 ? 0 :
+    Array.from(challengeTextareas).filter(ta => (ta.value || '').trim().length > 0).length;
+  const pct = challengeTextareas.length === 0 ? 0 :
+    Math.round((filled / challengeTextareas.length) * 100);
+  document.getElementById('challengeStat').textContent = pct + '%';
+}
+
+/* ============ RESET ============ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all progress for Exercise Class 3? Your quiz answers, written exercises, and challenge work will all be cleared.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+
+/* ============ INIT ============ */
+loadState();
+renderQuiz();
+restoreExercises();
+restoreChallenge();
+updateStats();
+</script>
+</body>
+</html>
