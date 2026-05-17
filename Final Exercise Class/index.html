@@ -718,8 +718,8 @@ pre code { background: transparent; color: inherit; padding: 0; font-size: inher
         <strong>What the dashboard tells the manager:</strong>
         <ul style="margin-top: 8px;">
           <li>Which categories carry the catalogue (so they can stock more of the popular ones).</li>
-          <li>Who their top customers are and where they live (for marketing).</li>
-          <li>Which films aren't moving (the "dead inventory" candidates).</li>
+          <li>Who their top customers are by spend (for marketing).</li>
+          <li>Which films are out of circulation (the "dead catalogue" candidates).</li>
           <li>Month-on-month revenue trend, ready to query any time.</li>
           <li>One concrete operational tweak (the index) that keeps the dashboard responsive as data grows.</li>
         </ul>
@@ -741,7 +741,7 @@ pre code { background: transparent; color: inherit; padding: 0; font-size: inher
    FINAL EXERCISE CLASS, COMPREHENSIVE REVIEW
    ================================================================ */
 
-const STORAGE_KEY = 'finalexclass-progress-v1';
+const STORAGE_KEY = 'finalexclass-progress-v2';
 
 const state = {
   quizAnswers: {},
@@ -1139,11 +1139,11 @@ const exerciseGroups = [
     description: "Views and indexing in service of an end-to-end analysis.",
     items: [
       {
-        title: "11. Save \"customer total spend\" as a view",
+        title: "11. Save \"customer total spend\" as a view (in testdb)",
         diff: "med",
-        prompt: "Create a view <code>customer_total_spend</code> over customer + payment that returns customer_id, first_name, last_name, num_payments, and total_spent (rounded). Then query the view to find customers with total_spent above $150, sorted descending.",
-        hint: "CREATE VIEW with an INNER JOIN and GROUP BY. Then a regular SELECT on the view.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>CREATE OR REPLACE VIEW customer_total_spend AS\nSELECT customer.customer_id,\n       customer.first_name,\n       customer.last_name,\n       COUNT(payment.payment_id)         AS num_payments,\n       ROUND(SUM(payment.amount), 2)     AS total_spent\nFROM   sakila.customer\nINNER JOIN sakila.payment\n       ON customer.customer_id = payment.customer_id\nGROUP BY customer.customer_id, customer.first_name, customer.last_name;\n\nSELECT * FROM customer_total_spend\nWHERE  total_spent &gt; 150\nORDER BY total_spent DESC;</pre>"
+        prompt: "In your <code>testdb</code>, create a view <code>customer_total_spend</code> over customer + payment that returns customer_id, first_name, last_name, num_payments, and total_spent (rounded). Then query the view to find customers with total_spent above $150, sorted descending. (Pick a unique view name; the lab doesn't let you DROP or REPLACE.)",
+        hint: "USE testdb; then CREATE VIEW ... with an INNER JOIN and GROUP BY. Finish with a regular SELECT on the view.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>USE testdb;\n\nCREATE VIEW customer_total_spend AS\nSELECT customer.customer_id,\n       customer.first_name,\n       customer.last_name,\n       COUNT(payment.payment_id)         AS num_payments,\n       ROUND(SUM(payment.amount), 2)     AS total_spent\nFROM   sakila.customer\nINNER JOIN sakila.payment\n       ON customer.customer_id = payment.customer_id\nGROUP BY customer.customer_id, customer.first_name, customer.last_name;\n\nSELECT * FROM customer_total_spend\nWHERE  total_spent &gt; 150\nORDER BY total_spent DESC;</pre>"
       },
       {
         title: "12. Big spenders above the per-customer average",
