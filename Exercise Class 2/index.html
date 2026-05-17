@@ -8,22 +8,22 @@
 /* ============ BASE ============ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #fffaf3;
+  --bg: #faf5ff;
   --card: #ffffff;
   --text: #1e293b;
   --muted: #64748b;
-  --primary: #d97706;
-  --primary-dark: #b45309;
-  --primary-light: #fef3c7;
-  --accent: #c2410c;
+  --primary: #7c3aed;
+  --primary-dark: #6d28d9;
+  --primary-light: #ede9fe;
+  --accent: #6d28d9;
   --success: #059669;
   --success-light: #d1fae5;
   --danger: #dc2626;
   --danger-light: #fee2e2;
   --info: #2563eb;
   --info-light: #dbeafe;
-  --border: #fde68a;
-  --border-soft: #f5e3b8;
+  --border: #ddd6fe;
+  --border-soft: #ede9fe;
   --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
   --radius: 12px;
@@ -42,7 +42,7 @@ body {
 
 /* ============ HEADER ============ */
 header.lecture-header {
-  background: linear-gradient(135deg, #d97706 0%, #c2410c 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   color: white;
   padding: 32px 28px;
   border-radius: var(--radius);
@@ -137,7 +137,7 @@ header.lecture-header p.instructor strong { font-weight: 700; }
 .tab-btn:hover { background: var(--bg); color: var(--text); }
 .tab-btn.active {
   background: var(--primary); color: white;
-  box-shadow: 0 2px 8px rgba(217,119,6,0.30);
+  box-shadow: 0 2px 8px rgba(124,58,237,0.30);
 }
 .tab-content { display: none; animation: fadeIn 0.28s ease-in-out; }
 .tab-content.active { display: block; }
@@ -188,12 +188,12 @@ header.lecture-header p.instructor strong { font-weight: 700; }
 
 /* ============ CODE ============ */
 code {
-  background: #fef3c7;
+  background: #ede9fe;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 13px;
-  color: #b45309;
+  color: #6d28d9;
 }
 pre {
   background: #1e293b;
@@ -239,7 +239,7 @@ table.data-table td {
   background: white;
 }
 table.data-table tr:last-child td { border-bottom: none; }
-table.data-table tr:nth-child(even) td { background: #fffaf3; }
+table.data-table tr:nth-child(even) td { background: #faf5ff; }
 
 /* ============ QUIZ ============ */
 .quiz-intro {
@@ -285,7 +285,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
   display: none;
   margin-top: 10px;
   padding: 10px 14px;
-  background: #fffaf3;
+  background: #faf5ff;
   border-left: 3px solid var(--primary);
   border-radius: 4px;
   font-size: 13px;
@@ -307,7 +307,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
 .quiz-result {
   display: none;
   padding: 30px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
   border-radius: var(--radius);
   text-align: center;
   margin-top: 16px;
@@ -335,7 +335,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
 .exercises-header h2 { color: var(--primary-dark); margin-bottom: 6px; }
 .exercises-header p { color: var(--muted); font-size: 14px; }
 .section-header {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
   padding: 14px 20px;
   border-radius: var(--radius);
   margin: 22px 0 14px;
@@ -358,7 +358,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
 .exercise .diff.med { background: var(--primary-light); color: var(--primary-dark); }
 .exercise .diff.hard { background: var(--danger-light); color: var(--danger); }
 .exercise-prompt { color: #334155; margin: 8px 0 12px; }
-.exercise-prompt code { background: #fef3c7; }
+.exercise-prompt code { background: #ede9fe; }
 .exercise textarea {
   width: 100%;
   min-height: 110px;
@@ -368,7 +368,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 13px;
   resize: vertical;
-  background: #fffaf3;
+  background: #faf5ff;
   color: var(--text);
   transition: border-color var(--transition);
 }
@@ -381,7 +381,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
   border-radius: var(--radius-sm);
   font-size: 13.5px;
 }
-.exercise-hint { background: var(--primary-light); border-left: 3px solid var(--primary); color: #78350f; }
+.exercise-hint { background: var(--primary-light); border-left: 3px solid var(--primary); color: #5b21b6; }
 .exercise-approach { background: var(--info-light); border-left: 3px solid var(--info); color: #1e3a8a; }
 .exercise-hint.show, .exercise-approach.show { display: block; animation: fadeIn 0.25s; }
 .exercise-approach pre { background: #1e293b; color: #e2e8f0; }
@@ -422,7 +422,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(217,119,6,0.30);
+  box-shadow: 0 4px 12px rgba(124,58,237,0.30);
 }
 .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-soft); }
@@ -453,7 +453,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
 
 /* ============ CHALLENGE ============ */
 .challenge-intro {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
   padding: 24px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -491,7 +491,7 @@ table.data-table tr:nth-child(even) td { background: #fffaf3; }
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 13px;
   resize: vertical;
-  background: #fffaf3;
+  background: #faf5ff;
   color: var(--text);
 }
 .challenge-step textarea:focus { outline: none; border-color: var(--primary); background: white; }
