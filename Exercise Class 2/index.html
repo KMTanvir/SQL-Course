@@ -540,7 +540,7 @@ table.data-table tr:nth-child(even) td { background: #faf5ff; }
 <!-- ============ STATS ============ -->
 <div class="stats-bar">
   <div class="stat"><div class="stat-value" id="quizStat">—</div><div class="stat-label">Warm-up Score</div></div>
-  <div class="stat"><div class="stat-value" id="exDoneStat">0 / 10</div><div class="stat-label">Exercises Marked Done</div></div>
+  <div class="stat"><div class="stat-value" id="exDoneStat">0 / 28</div><div class="stat-label">Exercises Marked Done</div></div>
   <div class="stat"><div class="stat-value" id="exTouchedStat">0</div><div class="stat-label">Exercises Worked</div></div>
   <div class="stat"><div class="stat-value" id="challengeStat">0%</div><div class="stat-label">Challenge Progress</div></div>
 </div>
@@ -564,8 +564,8 @@ table.data-table tr:nth-child(even) td { background: #faf5ff; }
     <h3>What you'll do today</h3>
     <ul class="objectives-list">
       <li>Run a quick <strong>warm-up quiz</strong> (10 questions, covers Lectures 5 and 6)</li>
-      <li>Work through <strong>10 main exercises</strong> grouped into five sections by topic</li>
-      <li>Finish with a <strong>capstone challenge</strong>: build one report query, step by step, over the Sakila <code>film</code> table</li>
+      <li>Work through <strong>28 main exercises</strong> grouped into five sections by topic, all curated from previous years' incourse exams and exercise sets</li>
+      <li>Finish with <strong>four challenges</strong>: one report query built step by step, then three standalone integrative queries that combine <code>WHERE</code>, <code>ORDER BY</code>, <code>LIMIT</code>, aliases, and more in a single statement</li>
     </ul>
 
     <h3>How to work today</h3>
@@ -629,8 +629,8 @@ table.data-table tr:nth-child(even) td { background: #faf5ff; }
 <!-- ============ EXERCISES TAB ============ -->
 <section id="exercises" class="tab-content">
   <div class="exercises-header">
-    <h2>💪 Practice Exercises</h2>
-    <p>Ten exercises grouped into five sections. Try each on your own first, then peek at the suggested approach.</p>
+    <h2>💪 Practice Exercises (28)</h2>
+    <p>28 exercises grouped into five sections, curated from previous years' incourse exams and exercise sets. Try each on your own first, then peek at the suggested approach.</p>
   </div>
   <div id="exercisesContainer"></div>
 </section>
@@ -638,12 +638,12 @@ table.data-table tr:nth-child(even) td { background: #faf5ff; }
 <!-- ============ CHALLENGE TAB ============ -->
 <section id="challenge" class="tab-content">
   <div class="challenge-intro">
-    <h2>🚀 Challenge: Sakila Top-Performers Report</h2>
-    <p>One report query, built up step by step. You'll start with a plain SELECT on the <code>film</code> table and finish with a polished top-N list that uses aliases, a computed column, IN, BETWEEN, LIKE, ORDER BY, and LIMIT all together.</p>
+    <h2>🚀 Challenges: Four Integrative Sakila Reports</h2>
+    <p>Real query-writing rarely uses one clause at a time. Each challenge below asks for a single statement that combines several ingredients at once, <code>WHERE</code>, aliases, computed columns, <code>ORDER BY</code>, <code>LIMIT</code>, and friends like <code>IN</code>, <code>BETWEEN</code>, and <code>LIKE</code>. Challenge 1 walks you there in five small steps; Challenges 2 to 4 ask you to write the whole integrative query in one go.</p>
   </div>
 
   <div class="card">
-    <h2>The Scenario</h2>
+    <h2>Challenge 1 · The Scenario</h2>
     <p>The store manager wants a quick report: the <strong>longest family-friendly films</strong> in the catalog, with a <em>readable runtime</em>, a <em>computed value-for-money</em> column, and only those whose title hints at a popular theme. You'll build it in five steps so you see each new ingredient on its own.</p>
     <h3>Tables in play</h3>
     <p>Only one: <code>film</code>. The columns you'll touch are <code>title</code>, <code>length</code> (in minutes), <code>rating</code>, <code>rental_rate</code>, <code>rental_duration</code>.</p>
@@ -682,8 +682,8 @@ table.data-table tr:nth-child(even) td { background: #faf5ff; }
   <div class="challenge-step">
     <h4>Compare with the suggested solution</h4>
     <p>When you've worked through steps 1 to 5, click below to see one possible final query. Yours might differ; what matters is that it returns sensible rows and uses the ingredients correctly.</p>
-    <button class="btn btn-primary btn-sm" id="revealChallenge">👀 Show suggested solution</button>
-    <div id="challengeReveal" style="display: none; margin-top: 16px;">
+    <button class="btn btn-primary btn-sm challenge-reveal-btn" data-challenge="ch1">👀 Show suggested solution</button>
+    <div class="challenge-reveal" data-challenge="ch1" style="display: none; margin-top: 16px;">
 <pre><code><span class="sql-cm">-- Final report: top 10 longest family-friendly love stories</span>
 <span class="sql-kw">SELECT</span> title,
        length        <span class="sql-kw">AS</span> minutes,
@@ -706,6 +706,132 @@ table.data-table tr:nth-child(even) td { background: #faf5ff; }
           <li><code>LIKE '%LOVE%'</code> matches the word anywhere in the title. With <code>'LOVE%'</code> it would only match titles that start with LOVE.</li>
           <li>The two-column <code>ORDER BY</code> sorts ties deterministically, important for paginated reports.</li>
           <li><code>LIMIT 10</code> crops to the top of the sorted list. Without ORDER BY it would just be the first 10 rows the database happens to find, which is rarely what you want.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Challenge 2 · VIP Customer Contact Sheet</h2>
+    <p>Marketing wants a one-shot contact sheet: <strong>active customers from stores 1 and 2 whose last name starts with a letter in the first half of the alphabet</strong>, with a friendly full name column, sorted by last name, capped at 15 rows.</p>
+    <h3>Tables in play</h3>
+    <p>Only <code>customer</code>: <code>customer_id</code>, <code>store_id</code>, <code>first_name</code>, <code>last_name</code>, <code>email</code>, <code>active</code>.</p>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Write one integrative query</h4>
+    <p>In a single statement against <code>customer</code>, combine all of the following: <code>WHERE active = 1</code>, <code>store_id IN (1, 2)</code>, and <code>last_name LIKE 'A%'</code> through <code>'M%'</code> (hint: <code>last_name &lt; 'N'</code> is one clean way to say "starts with A to M"); a computed <code>full_name</code> column built from <code>first_name</code> and <code>last_name</code> with <code>CONCAT</code>, aliased with <code>AS</code>; sorted with <code>ORDER BY last_name ASC</code>; and cropped with <code>LIMIT 15</code>.</p>
+    <textarea id="ch2-query" placeholder="SELECT ...,&#10;       CONCAT(...) AS full_name&#10;FROM customer&#10;WHERE active = ...&#10;  AND store_id IN (...)&#10;  AND last_name &lt; ...&#10;ORDER BY ...&#10;LIMIT ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Compare with the suggested solution</h4>
+    <p>Yours might phrase the "A to M" filter differently (some students prefer <code>LIKE</code> chains with <code>OR</code>); either is fine as long as the row set and ordering match.</p>
+    <button class="btn btn-primary btn-sm challenge-reveal-btn" data-challenge="ch2">👀 Show suggested solution</button>
+    <div class="challenge-reveal" data-challenge="ch2" style="display: none; margin-top: 16px;">
+<pre><code><span class="sql-cm">-- Active customers, stores 1-2, last name starting A-M, sorted, top 15</span>
+<span class="sql-kw">SELECT</span> customer_id,
+       <span class="sql-func">CONCAT</span>(first_name, <span class="sql-str">' '</span>, last_name) <span class="sql-kw">AS</span> full_name,
+       email,
+       store_id
+<span class="sql-kw">FROM</span> customer
+<span class="sql-kw">WHERE</span> active   = <span class="sql-num">1</span>
+  <span class="sql-kw">AND</span> store_id <span class="sql-kw">IN</span> (<span class="sql-num">1</span>, <span class="sql-num">2</span>)
+  <span class="sql-kw">AND</span> last_name &lt; <span class="sql-str">'N'</span>
+<span class="sql-kw">ORDER BY</span> last_name <span class="sql-kw">ASC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">15</span>;</code></pre>
+      <div class="example-box">
+        <strong>Why each piece is there:</strong>
+        <ul style="margin-top: 8px;">
+          <li><code>active = 1</code> filters out closed accounts before anything else runs.</li>
+          <li><code>store_id IN (1, 2)</code> is a short list filter, cleaner than two OR conditions.</li>
+          <li><code>last_name &lt; 'N'</code> uses the fact that string comparison in SQL is alphabetical, so it grabs every last name from A up to (not including) N without a wildcard scan on every row.</li>
+          <li><code>CONCAT(...) AS full_name</code> is a computed column: it exists only in the result set, built from two real columns.</li>
+          <li><code>ORDER BY last_name ASC</code> and <code>LIMIT 15</code> together give a deterministic, capped contact sheet, exactly what you'd hand to marketing.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Challenge 3 · Mid-Range Rental Value Films</h2>
+    <p>The purchasing team wants films that are <strong>reasonably priced to rent, family-friendly or teen-rated, and have a title starting with a specific letter</strong>, ranked by how much rental value they pack in per view.</p>
+    <h3>Tables in play</h3>
+    <p>Only <code>film</code>: <code>title</code>, <code>rental_rate</code>, <code>rental_duration</code>, <code>rating</code>.</p>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Write one integrative query</h4>
+    <p>In a single statement against <code>film</code>, combine: <code>rental_rate BETWEEN 2 AND 4</code>; <code>rating IN ('PG', 'PG-13')</code>; <code>title LIKE 'T%'</code>; a computed column <code>total_rental_value</code> equal to <code>rental_rate * rental_duration</code>, aliased with <code>AS</code>; sorted by that computed column descending; and only the top 10 rows.</p>
+    <textarea id="ch3-query" placeholder="SELECT title,&#10;       rental_rate * rental_duration AS ...&#10;FROM film&#10;WHERE rental_rate BETWEEN ... AND ...&#10;  AND rating IN (...)&#10;  AND title LIKE ...&#10;ORDER BY ...&#10;LIMIT ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Compare with the suggested solution</h4>
+    <p>Note that you can <code>ORDER BY</code> a computed column using its alias, MySQL resolves the alias name from the SELECT list.</p>
+    <button class="btn btn-primary btn-sm challenge-reveal-btn" data-challenge="ch3">👀 Show suggested solution</button>
+    <div class="challenge-reveal" data-challenge="ch3" style="display: none; margin-top: 16px;">
+<pre><code><span class="sql-cm">-- Mid-priced PG/PG-13 films starting with T, ranked by rental value</span>
+<span class="sql-kw">SELECT</span> title,
+       rental_rate,
+       rental_duration,
+       rating,
+       rental_rate * rental_duration <span class="sql-kw">AS</span> total_rental_value
+<span class="sql-kw">FROM</span> film
+<span class="sql-kw">WHERE</span> rental_rate <span class="sql-kw">BETWEEN</span> <span class="sql-num">2</span> <span class="sql-kw">AND</span> <span class="sql-num">4</span>
+  <span class="sql-kw">AND</span> rating <span class="sql-kw">IN</span> (<span class="sql-str">'PG'</span>, <span class="sql-str">'PG-13'</span>)
+  <span class="sql-kw">AND</span> title <span class="sql-kw">LIKE</span> <span class="sql-str">'T%'</span>
+<span class="sql-kw">ORDER BY</span> total_rental_value <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">10</span>;</code></pre>
+      <div class="example-box">
+        <strong>Why each piece is there:</strong>
+        <ul style="margin-top: 8px;">
+          <li><code>BETWEEN 2 AND 4</code> keeps the price band inclusive on both ends.</li>
+          <li><code>IN ('PG', 'PG-13')</code> replaces two OR conditions on the same column.</li>
+          <li><code>LIKE 'T%'</code> matches only titles starting with T, no leading wildcard means the pattern anchors to the start of the string.</li>
+          <li><code>rental_rate * rental_duration AS total_rental_value</code> is a computed column: it doesn't exist in the table, it's built fresh for this report.</li>
+          <li><code>ORDER BY total_rental_value DESC</code> sorts by the alias, and <code>LIMIT 10</code> keeps only the top-ranked rows.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Challenge 4 · Recent High-Value Payments Digest</h2>
+    <p>Finance wants a digest of <strong>sizeable payments made in a specific month</strong>, with a friendlier date column name and an estimated late-fee column, sorted with the biggest payments first.</p>
+    <h3>Tables in play</h3>
+    <p>Only <code>payment</code>: <code>payment_id</code>, <code>amount</code>, <code>payment_date</code>.</p>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Write one integrative query</h4>
+    <p>In a single statement against <code>payment</code>, combine: <code>amount &gt; 5</code>; <code>payment_date BETWEEN '2005-07-01' AND '2005-07-31'</code>; a renamed <code>payment_date</code> column aliased as <code>paid_on</code>; a computed column <code>late_fee_estimate</code> equal to <code>amount * 0.15</code>, aliased with <code>AS</code>; sorted by <code>amount</code> descending; and only the top 20 rows.</p>
+    <textarea id="ch4-query" placeholder="SELECT payment_id,&#10;       amount,&#10;       payment_date AS paid_on,&#10;       amount * 0.15 AS ...&#10;FROM payment&#10;WHERE amount &gt; ...&#10;  AND payment_date BETWEEN ... AND ...&#10;ORDER BY ...&#10;LIMIT ...;"></textarea>
+  </div>
+
+  <div class="challenge-step">
+    <h4>Compare with the suggested solution</h4>
+    <p>This is the same shape of query you'll write constantly on the job: filter, compute, rename, sort, cap, all in one pass over the table.</p>
+    <button class="btn btn-primary btn-sm challenge-reveal-btn" data-challenge="ch4">👀 Show suggested solution</button>
+    <div class="challenge-reveal" data-challenge="ch4" style="display: none; margin-top: 16px;">
+<pre><code><span class="sql-cm">-- Payments over $5 in July 2005, with an estimated late fee, biggest first</span>
+<span class="sql-kw">SELECT</span> payment_id,
+       amount,
+       payment_date    <span class="sql-kw">AS</span> paid_on,
+       amount * <span class="sql-num">0.15</span> <span class="sql-kw">AS</span> late_fee_estimate
+<span class="sql-kw">FROM</span> payment
+<span class="sql-kw">WHERE</span> amount <span class="sql-kw">&gt;</span> <span class="sql-num">5</span>
+  <span class="sql-kw">AND</span> payment_date <span class="sql-kw">BETWEEN</span> <span class="sql-str">'2005-07-01'</span> <span class="sql-kw">AND</span> <span class="sql-str">'2005-07-31'</span>
+<span class="sql-kw">ORDER BY</span> amount <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">20</span>;</code></pre>
+      <div class="example-box">
+        <strong>Why each piece is there:</strong>
+        <ul style="margin-top: 8px;">
+          <li><code>amount &gt; 5</code> filters out the small transactions before anything else is computed.</li>
+          <li><code>payment_date BETWEEN '2005-07-01' AND '2005-07-31'</code> is inclusive on both ends, so it covers the whole month.</li>
+          <li><code>payment_date AS paid_on</code> renames a real column purely for readability in the report.</li>
+          <li><code>amount * 0.15 AS late_fee_estimate</code> is a computed column that exists only in the output.</li>
+          <li><code>ORDER BY amount DESC</code> plus <code>LIMIT 20</code> hands finance exactly the top 20 biggest payments in the window, nothing more.</li>
         </ul>
       </div>
     </div>
@@ -734,7 +860,7 @@ const state = {
   hintsOpen: new Set(),
   approachesOpen: new Set(),
   challengeAnswers: {},
-  challengeRevealed: false
+  challengesRevealed: new Set()
 };
 
 function saveState() {
@@ -744,7 +870,8 @@ function saveState() {
       exercisesDone: [...state.exercisesDone],
       exercisesTouched: [...state.exercisesTouched],
       hintsOpen: [...state.hintsOpen],
-      approachesOpen: [...state.approachesOpen]
+      approachesOpen: [...state.approachesOpen],
+      challengesRevealed: [...state.challengesRevealed]
     }));
   } catch (e) {}
 }
@@ -759,6 +886,7 @@ function loadState() {
     state.hintsOpen = new Set(data.hintsOpen || []);
     state.approachesOpen = new Set(data.approachesOpen || []);
     state.challengeAnswers = data.challengeAnswers || {};
+    state.challengesRevealed = new Set(data.challengesRevealed || []);
   } catch (e) {}
 }
 
@@ -986,103 +1114,145 @@ document.getElementById('retakeQuiz').addEventListener('click', () => {
 /* ============ EXERCISES ============ */
 const exerciseGroups = [
   {
-    section: "Section A · Projection, AS, and computed columns",
-    description: "Pick the columns you want, give them friendly names, and compute brand-new columns from the originals.",
+    section: "Section A · SELECT and DISTINCT",
+    description: "Basic column projection and uniqueness. Curated from Exercise.pdf (Set 1) and inc(2)2024.",
     items: [
-      {
-        title: "1. Build a customer directory line",
-        diff: "easy",
-        prompt: "From the <code>customer</code> table, return one column called <code>directory_line</code> that looks like <code>'Last, First &lt;email&gt;'</code> for every customer. Example: <code>'SMITH, MARY &lt;mary.smith@sakilacustomer.org&gt;'</code>.",
-        hint: "Use CONCAT to glue strings together. Don't forget the comma, the space, the angle brackets, and the literal '&lt;' and '&gt;' characters as string parts.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT CONCAT(last_name, ', ', first_name, ' &lt;', email, '&gt;') AS directory_line\nFROM customer;</pre>The literal characters (comma, space, angle brackets) go inside quotes as their own string fragments. CONCAT stitches them all together."
-      },
-      {
-        title: "2. Films with a value-for-money score",
-        diff: "med",
-        prompt: "From <code>film</code>, return <code>title</code>, <code>length</code> aliased as <code>minutes</code>, <code>rental_rate</code>, and a new column <code>price_per_hour</code> that equals <code>rental_rate</code> divided by <code>(length / 60)</code>, rounded to 2 decimals. Films where this number is small are a better deal.",
-        hint: "Use ROUND(rental_rate / (length / 60), 2). Wrap (length / 60) in parentheses so division order is clear.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title,\n       length          AS minutes,\n       rental_rate,\n       ROUND(rental_rate / (length / 60), 2) AS price_per_hour\nFROM film;</pre>Note the parentheses around <code>(length / 60)</code>. Without them, MySQL would compute <code>rental_rate / length</code> first, then divide by 60, which is the wrong order."
-      }
+      { title: "1. All actor rows", diff: "easy",
+        prompt: "Select ALL columns from the <code>actor</code> table.",
+        hint: "SELECT * FROM ...",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT * FROM actor;</pre>" },
+      { title: "2. Just the actor last names", diff: "easy",
+        prompt: "Select only the <code>last_name</code> column from the <code>actor</code> table.",
+        hint: "Name one column instead of *.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT last_name FROM actor;</pre>" },
+      { title: "3. Distinct actor last names", diff: "easy",
+        prompt: "Select all DISTINCT last names from the <code>actor</code> table.",
+        hint: "SELECT DISTINCT last_name ...",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT last_name FROM actor;</pre>" },
+      { title: "4. Distinct postal codes", diff: "easy",
+        prompt: "Select all DISTINCT postal codes from the <code>address</code> table.",
+        hint: "DISTINCT on postal_code.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT postal_code FROM address;</pre>" },
+      { title: "5. Distinct film ratings", diff: "easy",
+        prompt: "List all unique rating values from the <code>film</code> table.",
+        hint: "DISTINCT rating.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT rating FROM film;</pre>You should see five values: G, PG, PG-13, R, NC-17." },
+      { title: "6. Film titles with rental rates", diff: "easy",
+        prompt: "Display the titles of all films along with their rental rates.",
+        hint: "Simple two-column projection from film.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_rate FROM film;</pre>" }
     ]
   },
   {
-    section: "Section B · Built-in functions",
-    description: "String, numeric, and date functions in practice. Pick the right tool for each shape of data.",
+    section: "Section B · WHERE and comparison operators",
+    description: "Filtering rows with =, !=, <, >, AND, OR, NOT. Curated from Exercise.pdf (Set 1 and 2) and inc(2)2024.",
     items: [
-      {
-        title: "3. Customer cards in upper case",
-        diff: "easy",
-        prompt: "From <code>customer</code>, return one column <code>card</code> that contains the first name in upper case, a space, the last name in upper case, then the email length in parentheses. Example: <code>'MARY SMITH (28)'</code>.",
-        hint: "UPPER(first_name), UPPER(last_name), LENGTH(email), and CONCAT to glue them.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT CONCAT(UPPER(first_name), ' ', UPPER(last_name),\n              ' (', LENGTH(email), ')') AS card\nFROM customer;</pre>You can also write this with <code>||</code> in standard SQL, but MySQL's default mode treats <code>||</code> as OR, so stick with CONCAT."
-      },
-      {
-        title: "4. Payments by year and month",
-        diff: "med",
-        prompt: "From the <code>payment</code> table, return four columns: <code>payment_id</code>, the <code>year</code> of <code>payment_date</code>, the <code>month</code> of <code>payment_date</code>, and a rounded <code>amount</code> (no decimals). Use clean aliases.",
-        hint: "YEAR(payment_date), MONTH(payment_date), ROUND(amount, 0).",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_id,\n       YEAR(payment_date)  AS pay_year,\n       MONTH(payment_date) AS pay_month,\n       ROUND(amount, 0)    AS amount_rounded\nFROM payment;</pre>YEAR and MONTH pull just one piece out of a date. ROUND with second argument 0 (or no second argument) rounds to the nearest whole number."
-      }
+      { title: "7. Long films (180 minutes or more)", diff: "easy",
+        prompt: "Select <code>title</code>, <code>description</code>, <code>rating</code>, and <code>length</code> from the <code>film</code> table for films that last 3 hours (180 minutes) or longer.",
+        hint: "WHERE length >= 180.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, description, rating, length\nFROM   film\nWHERE  length &gt;= 180;</pre>" },
+      { title: "8. Payments on or after a date", diff: "easy",
+        prompt: "Select <code>payment_id</code>, <code>amount</code>, and <code>payment_date</code> from the <code>payment</code> table for payments made on or after 2005-05-27.",
+        hint: "WHERE payment_date >= '2005-05-27'.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_id, amount, payment_date\nFROM   payment\nWHERE  payment_date &gt;= '2005-05-27';</pre>" },
+      { title: "9. Payments made ON a specific day", diff: "med",
+        prompt: "Select <code>payment_id</code>, <code>amount</code>, and <code>payment_date</code> for payments made ON 2005-05-27 (any time of that day). Note: <code>payment_date</code> is a DATETIME.",
+        hint: "Use DATE(payment_date) = '2005-05-27' to strip the time part, OR use a BETWEEN spanning the whole day.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_id, amount, payment_date\nFROM   payment\nWHERE  DATE(payment_date) = '2005-05-27';\n\n-- Equivalent:\n-- WHERE payment_date &gt;= '2005-05-27'\n--   AND payment_date &lt;  '2005-05-28';</pre>" },
+      { title: "10. Cheap-to-replace but rentable films", diff: "med",
+        prompt: "Find all film titles where <code>rental_rate</code> is greater than $2 AND <code>replacement_cost</code> is below $15.",
+        hint: "Two conditions joined with AND.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_rate, replacement_cost\nFROM   film\nWHERE  rental_rate     &gt; 2.00\n  AND  replacement_cost &lt; 15.00;</pre>" },
+      { title: "11. Rentals in 2005 but not in May", diff: "med",
+        prompt: "Find all rentals made in 2005 but EXCLUDE those made in May.",
+        hint: "YEAR(rental_date) = 2005 AND MONTH(rental_date) != 5.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT rental_id, rental_date\nFROM   rental\nWHERE  YEAR(rental_date)  = 2005\n  AND  MONTH(rental_date) &lt;&gt; 5;</pre>" },
+      { title: "12. Films neither G nor PG", diff: "med",
+        prompt: "Find all movies from <code>film</code> that are NEITHER rated 'G' NOR 'PG'.",
+        hint: "NOT IN, or two != checks with AND.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rating\nFROM   film\nWHERE  rating NOT IN ('G', 'PG');\n\n-- Equivalent:\n-- WHERE rating != 'G' AND rating != 'PG';</pre>" }
     ]
   },
   {
-    section: "Section C · WHERE, AND, OR, NOT, DISTINCT",
-    description: "Filter rows out of the result, combine conditions correctly, and stop counting duplicates.",
+    section: "Section C · LIKE and patterns",
+    description: "Substring matching with % and _. Curated from Exercise.pdf (Set 1) and inc(2)2024.",
     items: [
-      {
-        title: "5. Find the long, expensive films",
-        diff: "med",
-        prompt: "From <code>film</code>, list <code>title</code>, <code>length</code>, and <code>rental_rate</code> for films that are <strong>longer than 150 minutes</strong> AND have a <code>rental_rate</code> of <strong>more than $3.99</strong>.",
-        hint: "Two simple conditions joined by AND in the WHERE clause. Both must be true for a row to survive.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length, rental_rate\nFROM film\nWHERE length &gt; 150\n  AND rental_rate &gt; 3.99;</pre>Indenting the second condition makes it easier to scan a long WHERE clause. Both filters apply on the same row before it appears in the output."
-      },
-      {
-        title: "6. Distinct rating values",
-        diff: "easy",
-        prompt: "How many <strong>distinct rating values</strong> exist in the <code>film</code> table, and what are they? Write a query that returns each unique rating exactly once.",
-        hint: "DISTINCT works on whatever columns you list after it. Here you only need the one column.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT DISTINCT rating\nFROM film;</pre>You'll see something like G, PG, PG-13, R, NC-17. Five distinct values. Without DISTINCT the same five values would repeat about 200 times each (once per film of that rating)."
-      },
-      {
-        title: "7. Active customers NOT in store 1",
-        diff: "med",
-        prompt: "From <code>customer</code>, list <code>customer_id</code>, <code>first_name</code>, <code>last_name</code> for customers who are <strong>active</strong> (<code>active = 1</code>) but are <strong>not</strong> in store 1. Use parentheses so the reader sees the grouping clearly.",
-        hint: "Two simple conditions joined by AND. The 'not in store 1' part can be written as <code>NOT (store_id = 1)</code> or just <code>store_id &lt;&gt; 1</code>.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT customer_id, first_name, last_name\nFROM customer\nWHERE active = 1\n  AND NOT (store_id = 1);</pre>Equivalent and arguably cleaner: <code>WHERE active = 1 AND store_id &lt;&gt; 1</code>. Both are fine; <code>NOT (...)</code> reads nicely when the inner condition is more complex."
-      }
+      { title: "13. Descriptions containing 'Cat'", diff: "easy",
+        prompt: "Display the titles of all films where the <code>description</code> contains the word 'Cat'.",
+        hint: "LIKE with % on both sides of Cat.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, description\nFROM   film\nWHERE  description LIKE '%Cat%';</pre>" },
+      { title: "14. Descriptions starting with 'A Thoughtful'", diff: "med",
+        prompt: "Select <code>title</code>, <code>description</code>, and <code>release_year</code> from <code>film</code> for rows where description begins with 'A Thoughtful'.",
+        hint: "LIKE 'A Thoughtful%'.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, description, release_year\nFROM   film\nWHERE  description LIKE 'A Thoughtful%';</pre>" },
+      { title: "15. Descriptions ending with 'Boat'", diff: "med",
+        prompt: "Select <code>title</code>, <code>description</code>, and <code>rental_duration</code> from <code>film</code> for rows where description ends with the word 'Boat'.",
+        hint: "LIKE '%Boat'.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, description, rental_duration\nFROM   film\nWHERE  description LIKE '%Boat';</pre>" },
+      { title: "16. Customers with last_name='S...' and first_name='...N'", diff: "hard",
+        prompt: "Select all columns from the <code>customer</code> table for rows where <code>last_name</code> begins with 'S' AND <code>first_name</code> ends with 'N'.",
+        hint: "Combine LIKE 'S%' on last_name AND LIKE '%N' on first_name.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT *\nFROM   customer\nWHERE  last_name  LIKE 'S%'\n  AND  first_name LIKE '%N';</pre>" }
     ]
   },
   {
-    section: "Section D · ORDER BY and LIMIT",
-    description: "Put the result in a useful order, then crop it down to what you actually need.",
+    section: "Section D · BETWEEN and IN",
+    description: "Range and list filters. Curated from Exercise.pdf (Set 1) and inc(2)2024.",
     items: [
-      {
-        title: "8. Top 10 longest films",
-        diff: "easy",
-        prompt: "From <code>film</code>, return the <strong>10 longest films</strong>: show <code>title</code> and <code>length</code>, sorted longest first. Break ties by <code>title</code> alphabetically.",
-        hint: "ORDER BY length DESC, title ASC, then LIMIT 10.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM film\nORDER BY length DESC, title ASC\nLIMIT 10;</pre>Without the secondary sort by title, films with the same length would appear in an unpredictable order. With two ties broken cleanly, the result is reproducible."
-      },
-      {
-        title: "9. Paginate the actor list",
-        diff: "med",
-        prompt: "You want to show the <code>actor</code> table 20 rows per page, sorted by <code>last_name</code> then <code>first_name</code>. Write the query that returns <strong>page 3</strong> (rows 41 to 60).",
-        hint: "ORDER BY first, then LIMIT 20 OFFSET (page - 1) * 20. For page 3 that's OFFSET 40.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT actor_id, first_name, last_name\nFROM actor\nORDER BY last_name, first_name\nLIMIT 20 OFFSET 40;</pre>Pagination formula: OFFSET = (page - 1) × page_size. Page 1 starts at offset 0, page 2 at offset 20, page 3 at offset 40, and so on."
-      }
+      { title: "17. Customers with ID 10-50", diff: "easy",
+        prompt: "Retrieve all customers with <code>customer_id</code> between 10 and 50 (inclusive).",
+        hint: "WHERE customer_id BETWEEN 10 AND 50.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT *\nFROM   customer\nWHERE  customer_id BETWEEN 10 AND 50;</pre>" },
+      { title: "18. Films 90-120 minutes", diff: "easy",
+        prompt: "Find all films with <code>length</code> between 90 and 120 minutes.",
+        hint: "BETWEEN on length.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM   film\nWHERE  length BETWEEN 90 AND 120;</pre>" },
+      { title: "19. Payments between $5 and $7", diff: "easy",
+        prompt: "Get payments with <code>amount</code> between 5.00 and 7.00 inclusive.",
+        hint: "BETWEEN on amount.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_id, amount\nFROM   payment\nWHERE  amount BETWEEN 5.00 AND 7.00;</pre>" },
+      { title: "20. Films released 2005-2010", diff: "easy",
+        prompt: "List all film titles with <code>release_year</code> between 2005 and 2010.",
+        hint: "BETWEEN on release_year.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, release_year\nFROM   film\nWHERE  release_year BETWEEN 2005 AND 2010;</pre>" },
+      { title: "21. Films rated G, PG-13, or NC-17", diff: "med",
+        prompt: "Select all columns from the <code>film</code> table for films rated 'G', 'PG-13', or 'NC-17'. Use IN.",
+        hint: "WHERE rating IN ('G', 'PG-13', 'NC-17').",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT *\nFROM   film\nWHERE  rating IN ('G', 'PG-13', 'NC-17');</pre>" },
+      { title: "22. Addresses in specific districts", diff: "med",
+        prompt: "Select <code>phone</code> and <code>district</code> from the <code>address</code> table for addresses in California, England, Taipei, or West Java. Use IN.",
+        hint: "district IN ('California', 'England', 'Taipei', 'West Java').",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT phone, district\nFROM   address\nWHERE  district IN ('California', 'England', 'Taipei', 'West Java');</pre>" }
     ]
   },
   {
-    section: "Section E · BETWEEN, IN, IS NULL, LIKE",
-    description: "The four shortcuts that make WHERE clauses readable. Use the right one for the shape of the filter.",
+    section: "Section E · ORDER BY, LIMIT, computed columns",
+    description: "Sorting, top-N, expressions with AS. Curated from Exercise.pdf (Set 2) and inc(2)2024.",
     items: [
-      {
-        title: "10. Mid-length films, family ratings, titles starting with 'A'",
-        diff: "hard",
-        prompt: "From <code>film</code>, return <code>title</code>, <code>length</code>, and <code>rating</code> for films that are: <br>(a) between 90 and 120 minutes (inclusive), AND <br>(b) have a <code>rating</code> in <code>('G', 'PG', 'PG-13')</code>, AND <br>(c) whose <code>title</code> starts with the letter <code>A</code>. <br>Sort the result by <code>title</code>.",
-        hint: "Three different shortcuts in one WHERE clause: BETWEEN for the length, IN for the ratings, LIKE 'A%' for the title.",
-        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length, rating\nFROM film\nWHERE length BETWEEN 90 AND 120\n  AND rating IN ('G', 'PG', 'PG-13')\n  AND title LIKE 'A%'\nORDER BY title;</pre>Each line is a self-contained filter. <code>BETWEEN ... AND ...</code> is inclusive on both ends. <code>IN (...)</code> reads cleaner than three OR clauses. <code>'A%'</code> matches titles starting with A; <code>'%A%'</code> would match A anywhere in the title."
-      }
+      { title: "23. Films alphabetical", diff: "easy",
+        prompt: "Retrieve film <code>title</code>, <code>description</code>, and <code>release_year</code>, displayed in alphabetical order of title.",
+        hint: "ORDER BY title (ASC is the default).",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, description, release_year\nFROM   film\nORDER BY title;</pre>" },
+      { title: "24. Top 20 payments by amount DESC", diff: "med",
+        prompt: "Select <code>payment_date</code> and <code>amount</code> from the <code>payment</code> table for the first 20 payments, ordered by payment amount in descending order.",
+        hint: "ORDER BY amount DESC + LIMIT 20.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_date, amount\nFROM   payment\nORDER BY amount DESC\nLIMIT 20;</pre>" },
+      { title: "25. Five longest films", diff: "med",
+        prompt: "Get the titles of the FIVE longest films, sorted by length in descending order.",
+        hint: "ORDER BY length DESC + LIMIT 5.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, length\nFROM   film\nORDER BY length DESC\nLIMIT 5;</pre>" },
+      { title: "26. Sort by rate DESC, length ASC", diff: "med",
+        prompt: "Retrieve <code>title</code>, <code>rental_rate</code>, and <code>length</code> from <code>film</code>. Sort in descending order of rental_rate, and for ties sort by length ascending.",
+        hint: "Two-column ORDER BY with individual directions.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, rental_rate, length\nFROM   film\nORDER BY rental_rate DESC, length ASC;</pre>" },
+      { title: "27. First 10 films alphabetically", diff: "easy",
+        prompt: "Retrieve <code>title</code>, <code>description</code>, and <code>release_year</code> of films. Sort alphabetically by title and display only the first 10.",
+        hint: "ORDER BY title + LIMIT 10.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT title, description, release_year\nFROM   film\nORDER BY title\nLIMIT 10;</pre>" },
+      { title: "28. Convert payment amount USD to BDT", diff: "hard",
+        prompt: "Display <code>payment_id</code> and <code>amount</code> from <code>payment</code>, plus a computed column that converts amount from USD to BDT using the rate 120 BDT per USD. Alias the columns clearly (e.g., <code>amount_usd</code> and <code>amount_bdt</code>).",
+        hint: "SELECT payment_id, amount, amount * 120 AS amount_bdt.",
+        approach: "<pre style='background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;'>SELECT payment_id,\n       amount             AS amount_usd,\n       amount * 120       AS amount_bdt\nFROM   payment;</pre>You can also add an ORDER BY amount_bdt DESC if you want the highest-BDT payments first." }
     ]
   }
 ];
@@ -1209,13 +1379,17 @@ challengeTextareas.forEach(ta => {
   });
 });
 
-document.getElementById('revealChallenge').addEventListener('click', () => {
-  const reveal = document.getElementById('challengeReveal');
-  const isOpen = reveal.style.display !== 'none';
-  reveal.style.display = isOpen ? 'none' : 'block';
-  state.challengeRevealed = !isOpen;
-  document.getElementById('revealChallenge').textContent = isOpen ? '👀 Show suggested solution' : '🙈 Hide suggested solution';
-  saveState();
+document.querySelectorAll('.challenge-reveal-btn').forEach(btn => {
+  const key = btn.dataset.challenge;
+  btn.addEventListener('click', () => {
+    const reveal = document.querySelector(`.challenge-reveal[data-challenge="${key}"]`);
+    const isOpen = reveal.style.display !== 'none';
+    reveal.style.display = isOpen ? 'none' : 'block';
+    if (isOpen) state.challengesRevealed.delete(key);
+    else state.challengesRevealed.add(key);
+    btn.textContent = isOpen ? '👀 Show suggested solution' : '🙈 Hide suggested solution';
+    saveState();
+  });
 });
 
 function restoreChallenge() {
@@ -1223,10 +1397,12 @@ function restoreChallenge() {
     const ta = document.getElementById(id);
     if (ta) ta.value = val;
   });
-  if (state.challengeRevealed) {
-    document.getElementById('challengeReveal').style.display = 'block';
-    document.getElementById('revealChallenge').textContent = '🙈 Hide suggested solution';
-  }
+  state.challengesRevealed.forEach(key => {
+    const reveal = document.querySelector(`.challenge-reveal[data-challenge="${key}"]`);
+    const btn = document.querySelector(`.challenge-reveal-btn[data-challenge="${key}"]`);
+    if (reveal) reveal.style.display = 'block';
+    if (btn) btn.textContent = '🙈 Hide suggested solution';
+  });
 }
 
 /* ============ STATS ============ */
